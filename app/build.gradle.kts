@@ -52,6 +52,17 @@ android {
 }
 
 dependencies {
+    //RETROFIT
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Preferences DataStore (SharedPreferences like APIs)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Compose
+    implementation("androidx.navigation:navigation-compose:2.5.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
     //    HiveMQ MQTT Client Library
     implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
 
