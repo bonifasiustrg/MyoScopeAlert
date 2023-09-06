@@ -8,15 +8,33 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+<<<<<<< HEAD
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+=======
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+>>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.data.login.SignInRequest
 import com.apicta.myoscopealert.data.login.SignInResponse
 import com.apicta.myoscopealert.network.Retro
 import com.apicta.myoscopealert.network.UserApi
+<<<<<<< HEAD
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
+=======
+import com.apicta.myoscopealert.ui.screen.DashboardScreen
+import com.apicta.myoscopealert.ui.screen.LoginScreen
+import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
+import dagger.hilt.android.AndroidEntryPoint
+>>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -24,10 +42,21 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+<<<<<<< HEAD
 import okhttp3.ResponseBody
 import retrofit2.Response
 
 class MainActivity : ComponentActivity() {
+=======
+import retrofit2.Response
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var dataStoreManager: DataStoreManager
+
+>>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +70,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     /*INSTANCE*/
                     MqttClientManager() // nstance of MqttClientManager
+<<<<<<< HEAD
 
                     val context = LocalContext.current
                     val dataStoreManager = DataStoreManager.getInstance(applicationContext)
@@ -84,8 +114,82 @@ class MainActivity : ComponentActivity() {
                             // Tangani exception, misalnya jaringan bermasalah
                         }
                     }
+=======
+                    val navController = rememberNavController()
+
+
+                    AppNavigation(navController)
+
+//                    val context = LocalContext.current
+//                    dataStoreManager = DataStoreManager.getInstance(applicationContext)
+//
+//
+//                    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
+//                    val apiService = Retro.getRetroClientInstance().create(UserApi::class.java)
+//
+//                    val signInRequest = SignInRequest()
+//                    signInRequest.email = "admin@mail.com"
+//                    signInRequest.password = "password"
+//
+//                    // Menggunakan coroutines untuk menjalankan pemanggilan API secara asynchronous
+//                    val scope = rememberCoroutineScope()
+//                    scope.launch {
+//                        try {
+//                            val response: Response<SignInResponse> = withContext(Dispatchers.IO) {
+//                                apiService.login(signInRequest)
+//                            }
+//                            if (response.isSuccessful) {
+////                                val rawResponse: String? = response.body()?.string()
+//                                val rawResponse = response.body()
+//                                if (rawResponse != null) {
+//
+////                                     Lakukan sesuatu dengan rawResponse (data mentah)
+//                                    Log.e("status", "Login Successfully")
+//                                    Log.e("token MainActivity", rawResponse.data?.token ?: "Token not available")
+//                                    Log.e("respon", rawResponse.data?.user?.id ?: "Token not available")
+//                                    Log.e("status", "Login Successfully")
+//                                    val token = rawResponse.data?.token ?: ""
+//                                    GlobalScope.launch {
+//                                        dataStoreManager.setUserToken(token)
+//                                    }
+//
+//                                    Log.e("SignInActivity", "$rawResponse")
+//                                } else {
+//                                    Log.e("SignInActivity", "Response body is null")
+//                                }
+//                            } else {
+//                                Log.e("SignInActivity", "Request failed with code ${response.code()}")
+//                                // Tangani respon gagal
+//                            }
+//                        } catch (e: Exception) {
+//                            Log.e("SignInActivity", "Error during API call: ${e.message}", e)
+//                            // Tangani exception, misalnya jaringan bermasalah
+//                        }
+//                    }
+>>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
                 }
             }
         }
     }
 }
+<<<<<<< HEAD
+=======
+
+@Composable
+fun AppNavigation(navController: NavHostController) {
+//    val navController = rememberNavController()
+//    val startDestination: String
+//    if (!storedToken.isNullOrEmpty()) {
+//        startDestination = "posapp"
+//    } else {
+//        startDestination = "welcome_screen"
+//    }
+    val startDestination = "login_screen"
+    NavHost(navController = navController, startDestination = startDestination, builder = {
+//        composable("welcome_screen", content = { WelcomeScreen(navController = navController) })
+        composable("login_screen", content = { LoginScreen(navController = navController) })
+//        composable("register_screen", content = { RegisterScreen(navController = navController) })
+        composable("dashboard", content = { DashboardScreen() })
+    })
+}
+>>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
