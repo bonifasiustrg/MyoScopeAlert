@@ -43,7 +43,8 @@ class DataStoreManager(val context: Context) {
     }
     suspend fun clearUserToken() {
         context.datastore.edit { preferences ->
-            preferences.remove(USER_TOKEN)
+//            preferences.remove(USER_TOKEN)
+            preferences.clear()
         }
     }
 }

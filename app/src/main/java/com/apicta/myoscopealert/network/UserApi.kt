@@ -1,8 +1,10 @@
 package com.apicta.myoscopealert.network
 
 
+import com.apicta.myoscopealert.data.login.LogoutResponse
 import com.apicta.myoscopealert.data.login.SignInRequest
 import com.apicta.myoscopealert.data.login.SignInResponse
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -16,7 +18,7 @@ interface UserApi {
     ): Response<SignInResponse>
 
     @GET("account/logout")
-    fun logout(
+    suspend fun logout(
         @Header("Authorization") token: String
-    )
+    ): Response<LogoutResponse>
 }

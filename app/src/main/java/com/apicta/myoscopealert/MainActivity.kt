@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
-    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,59 +51,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     /*INSTANCE*/
-                    MqttClientManager() // nstance of MqttClientManager
-
-                    val context = LocalContext.current
-                    val dataStoreManager = DataStoreManager.getInstance(applicationContext)
-                    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
-                    val apiService = Retro.getRetroClientInstance().create(UserApi::class.java)
-
-                    val signInRequest = SignInRequest()
-                    signInRequest.email = "admin@mail.com"
-                    signInRequest.password = "password"
-
-                    // Menggunakan coroutines untuk menjalankan pemanggilan API secara asynchronous
-                    val scope = rememberCoroutineScope()
-                    scope.launch {
-                        try {
-                            val response: Response<SignInResponse> = withContext(Dispatchers.IO) {
-                                apiService.login(signInRequest)
-                            }
-                            if (response.isSuccessful) {
-//                                val rawResponse: String? = response.body()?.string()
-                                val rawResponse = response.body()
-                                if (rawResponse != null) {
-
-//                                     Lakukan sesuatu dengan rawResponse (data mentah)
-                                    Log.e("status", "Login Successfully")
-                                    Log.e("token", rawResponse.data?.token ?: "Token not available")
-                                    val token = rawResponse.data?.token ?: ""
-                                    GlobalScope.launch {
-                                        dataStoreManager.setUserToken(token)
-                                    }
-
-                                    Log.e("SignInActivity", "$rawResponse")
-                                } else {
-                                    Log.e("SignInActivity", "Response body is null")
-                                }
-                            } else {
-                                Log.e("SignInActivity", "Request failed with code ${response.code()}")
-                                // Tangani respon gagal
-                            }
-                        } catch (e: Exception) {
-                            Log.e("SignInActivity", "Error during API call: ${e.message}", e)
-                            // Tangani exception, misalnya jaringan bermasalah
-                        }
-                    }
-                    val navController = rememberNavController()
-
-
-                    AppNavigation(navController)
+//                    MqttClientManager() // nstance of MqttClientManager
 
 //                    val context = LocalContext.current
-//                    dataStoreManager = DataStoreManager.getInstance(applicationContext)
-//
-//
+//                    val dataStoreManager = DataStoreManager.getInstance(applicationContext)
 //                    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
 //                    val apiService = Retro.getRetroClientInstance().create(UserApi::class.java)
 //
@@ -126,9 +76,7 @@ class MainActivity : ComponentActivity() {
 //
 ////                                     Lakukan sesuatu dengan rawResponse (data mentah)
 //                                    Log.e("status", "Login Successfully")
-//                                    Log.e("token MainActivity", rawResponse.data?.token ?: "Token not available")
-//                                    Log.e("respon", rawResponse.data?.user?.id ?: "Token not available")
-//                                    Log.e("status", "Login Successfully")
+//                                    Log.e("token", rawResponse.data?.token ?: "Token not available")
 //                                    val token = rawResponse.data?.token ?: ""
 //                                    GlobalScope.launch {
 //                                        dataStoreManager.setUserToken(token)
@@ -147,6 +95,10 @@ class MainActivity : ComponentActivity() {
 //                            // Tangani exception, misalnya jaringan bermasalah
 //                        }
 //                    }
+                    val navController = rememberNavController()
+
+
+                    AppNavigation(navController, dataStoreManager)
                 }
             }
         }
@@ -154,19 +106,20 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController) {
-//    val navController = rememberNavController()
-//    val startDestination: String
-//    if (!storedToken.isNullOrEmpty()) {
-//        startDestination = "posapp"
-//    } else {
-//        startDestination = "welcome_screen"
-//    }
-    val startDestination = "login_screen"
+fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreManager) {
+    val startDestination: String
+    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
+    Log.e("token app navigation", storedToken.toString())
+    startDestination = if (!storedToken.isNullOrEmpty()) {
+        "dashboard"
+    } else {
+        "login_screen"
+    }
+//    val startDestination = "login_screen"
     NavHost(navController = navController, startDestination = startDestination, builder = {
 //        composable("welcome_screen", content = { WelcomeScreen(navController = navController) })
-        composable("login_screen", content = { LoginScreen(navController = navController) })
+        composable("login_screen", content = { LoginScreen(navController = navController, dataStoreManager) })
 //        composable("register_screen", content = { RegisterScreen(navController = navController) })
-        composable("dashboard", content = { DashboardScreen() })
+        composable("dashboard", content = { DashboardScreen(navController = navController, dataStoreManager) })
     })
 }

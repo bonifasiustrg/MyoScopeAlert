@@ -1,6 +1,8 @@
 package com.apicta.myoscopealert.repository
 
 
+import android.util.Log
+import com.apicta.myoscopealert.data.login.LogoutResponse
 import com.apicta.myoscopealert.data.login.SignInRequest
 import com.apicta.myoscopealert.data.login.SignInResponse
 import com.apicta.myoscopealert.network.UserApi
@@ -12,8 +14,13 @@ class UserRepository(private val userApi: UserApi) {
         val signInRequest = SignInRequest()
         signInRequest.email = email
         signInRequest.password = password
-        return userApi.login(signInRequest)
+        val respon = userApi.login(signInRequest)
+        Log.e("login repo", respon.body().toString())
+        return respon
     }
 
     // Implementasikan fungsi-fungsi lainnya seperti logout jika diperlukan
+    suspend fun logout(token: String): Response<LogoutResponse> {
+        return userApi.logout("Bearer $token")
+    }
 }
