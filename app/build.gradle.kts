@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-=======
 //import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
 
 plugins {
@@ -10,7 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
 }
 
 android {
@@ -40,19 +34,15 @@ android {
         }
     }
     compileOptions {
-<<<<<<< HEAD
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-=======
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
+        jvmTarget = "1.8"
+
+    }
+    kotlinOptions {
         jvmTarget = "17"
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
     }
     buildFeatures {
         compose = true
@@ -67,17 +57,6 @@ android {
 
         }
     }
-<<<<<<< HEAD
-}
-
-dependencies {
-=======
-
-    // Allow references to generated code
-//    kapt {
-//        correctErrorTypes = true
-//    }
-
 }
 
 dependencies {
@@ -88,7 +67,6 @@ dependencies {
 //    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
 //    kapt("androidx.hilt:hilt-compiler:1.0.0")
 
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
     //RETROFIT
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -118,8 +96,4 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)

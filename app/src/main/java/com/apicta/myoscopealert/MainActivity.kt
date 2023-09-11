@@ -8,11 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-<<<<<<< HEAD
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-=======
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -21,20 +16,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.data.login.SignInRequest
 import com.apicta.myoscopealert.data.login.SignInResponse
 import com.apicta.myoscopealert.network.Retro
 import com.apicta.myoscopealert.network.UserApi
-<<<<<<< HEAD
-import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
-=======
 import com.apicta.myoscopealert.ui.screen.DashboardScreen
 import com.apicta.myoscopealert.ui.screen.LoginScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
 import dagger.hilt.android.AndroidEntryPoint
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -42,12 +32,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-<<<<<<< HEAD
-import okhttp3.ResponseBody
-import retrofit2.Response
-
-class MainActivity : ComponentActivity() {
-=======
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -56,7 +40,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +53,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     /*INSTANCE*/
                     MqttClientManager() // nstance of MqttClientManager
-<<<<<<< HEAD
 
                     val context = LocalContext.current
                     val dataStoreManager = DataStoreManager.getInstance(applicationContext)
@@ -114,7 +96,6 @@ class MainActivity : ComponentActivity() {
                             // Tangani exception, misalnya jaringan bermasalah
                         }
                     }
-=======
                     val navController = rememberNavController()
 
 
@@ -166,14 +147,11 @@ class MainActivity : ComponentActivity() {
 //                            // Tangani exception, misalnya jaringan bermasalah
 //                        }
 //                    }
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
                 }
             }
         }
     }
 }
-<<<<<<< HEAD
-=======
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -192,4 +170,3 @@ fun AppNavigation(navController: NavHostController) {
         composable("dashboard", content = { DashboardScreen() })
     })
 }
->>>>>>> 7f1866f (Implement Depedency Injection with Dagger Hilt for Viewmodel, Datastore (stored token), Repository, and Api Interface.)
