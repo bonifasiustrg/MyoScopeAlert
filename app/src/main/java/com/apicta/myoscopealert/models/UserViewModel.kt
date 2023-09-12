@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.data.login.SignInResponse
+import com.apicta.myoscopealert.data.user.ProfileResponse
+import com.apicta.myoscopealert.data.user.SignInResponse
 import com.apicta.myoscopealert.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -27,6 +28,9 @@ class UserViewModel @Inject constructor(
     private val _loginResponse = MutableStateFlow<SignInResponse?>(null)
     val loginResponse: StateFlow<SignInResponse?> = _loginResponse
 
+    private val _profileResponse = MutableStateFlow<ProfileResponse?>(null)
+    val profileResponse: StateFlow<ProfileResponse?> = _profileResponse
+
     fun performLogin(email: String, password: String) {
         viewModelScope.launch {
             try {
@@ -42,7 +46,6 @@ class UserViewModel @Inject constructor(
                         viewModelScope.launch {
                             dataStoreManager.setUserToken(token)
                         }
-//                        Log.e("SignInActivity", "${rawResponse.data}")
                     } else {
                         Log.e("SignInActivity", "Response body is null")
                         _loginResponse.value = null
@@ -85,6 +88,33 @@ class UserViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("LogoutActivity", "Error during API call: ${e.message}", e)
+            }
+        }
+    }
+
+    fun performProfile(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.profile(token)
+
+                if (response.isSuccessful) {
+                    val rawResponse = response.body()
+                    if (rawResponse != null) {
+
+                        Log.e("ProfileActivity", "profile nya ${rawResponse.status}")
+                        _profileResponse.value = rawResponse
+                    } else {
+                        Log.e("ProfileActivity", "Response body is null")
+                        _profileResponse.value = null
+                    }
+                } else {
+                    Log.e("ProfileActivity", "Request failed with code ${response.code()}")
+                    Log.e("ProfileActivity", "Response: ${response.errorBody()?.string()}")
+                    _profileResponse.value = null
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileActivity", "Error during API call: ${e.message}", e)
+                _profileResponse.value = null
             }
         }
     }

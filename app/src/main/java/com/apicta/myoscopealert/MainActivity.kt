@@ -9,30 +9,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.data.login.SignInRequest
-import com.apicta.myoscopealert.data.login.SignInResponse
-import com.apicta.myoscopealert.network.Retro
-import com.apicta.myoscopealert.network.UserApi
 import com.apicta.myoscopealert.ui.screen.DashboardScreen
 import com.apicta.myoscopealert.ui.screen.LoginScreen
+import com.apicta.myoscopealert.ui.screen.ProfileScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import retrofit2.Response
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -121,5 +110,6 @@ fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreM
         composable("login_screen", content = { LoginScreen(navController = navController, dataStoreManager) })
 //        composable("register_screen", content = { RegisterScreen(navController = navController) })
         composable("dashboard", content = { DashboardScreen(navController = navController, dataStoreManager) })
+        composable("profile_screen", content = { ProfileScreen(navController = navController, storedToken!!) })
     })
 }

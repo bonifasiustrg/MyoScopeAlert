@@ -29,14 +29,10 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
 
     Button(
         onClick = {
-            viewModel.performLogout(storedToken!!)
-//            runBlocking {
-//                dataStoreManager.clearUserToken()
-//            }
-            navController.navigate("login_screen")
+            navController.navigate("profile_screen")
 
         }
     ) {
-        Text("Logout")
+        Text("Profile")
     }
 }

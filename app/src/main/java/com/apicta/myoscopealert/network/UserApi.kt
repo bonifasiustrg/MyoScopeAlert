@@ -1,10 +1,10 @@
 package com.apicta.myoscopealert.network
 
 
-import com.apicta.myoscopealert.data.login.LogoutResponse
-import com.apicta.myoscopealert.data.login.SignInRequest
-import com.apicta.myoscopealert.data.login.SignInResponse
-import okhttp3.ResponseBody
+import com.apicta.myoscopealert.data.user.LogoutResponse
+import com.apicta.myoscopealert.data.user.ProfileResponse
+import com.apicta.myoscopealert.data.user.SignInRequest
+import com.apicta.myoscopealert.data.user.SignInResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -21,4 +21,9 @@ interface UserApi {
     suspend fun logout(
         @Header("Authorization") token: String
     ): Response<LogoutResponse>
+
+    @GET("account/profile")
+    suspend fun profile(
+        @Header("Authorization") token: String
+    ): Response<ProfileResponse>
 }

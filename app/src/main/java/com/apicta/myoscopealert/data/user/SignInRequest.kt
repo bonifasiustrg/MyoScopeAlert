@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.data.login
+package com.apicta.myoscopealert.data.user
 
 
 import com.google.gson.annotations.Expose
