@@ -14,12 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,24 +25,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
-import com.apicta.myoscopealert.ui.GradientButton
-import com.apicta.myoscopealert.ui.SimpleOutlinedPasswordTextField
-import com.apicta.myoscopealert.ui.SimpleOutlinedTextFieldSample
+import com.apicta.myoscopealert.ui.component.GradientButton
+import com.apicta.myoscopealert.ui.component.SimpleOutlinedPasswordTextField
+import com.apicta.myoscopealert.ui.component.SimpleOutlinedTextFieldSample
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +105,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .padding(top = 130.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth( ),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -134,7 +130,31 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                                 viewModel.performLogin(emailState.value, passwordState.value)
                                 Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
 
-                                navController.navigate("dashboard")
+
+                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
+                                viewModel.viewModelScope.launch {
+                                    delay(1000) // Penundaan selama 1 detik (1000 ms)
+                                    navController.navigate("dashboard")
+                                    Log.e("login", "navigate to dashboard")
+                                }
+//                                viewModel.viewModelScope.launch {
+//                                    val loginJob = async(Dispatchers.IO) {
+//                                        viewModel.performLogin(emailState.value, passwordState.value)
+//                                    }
+//                                    loginJob.await() // Wait for the login job to complete
+//                                    delay(4000) // Delay for 1 second (1000 ms
+//                                    val storedToken = runBlocking { dataStoreManager.getAuthToken.first()
+//                                    }
+//
+//
+//                                    if (/*loginJob.isCompleted &&*/ storedToken?.isNotBlank() == true) {
+//                                        Log.e("login tes", "token stored $storedToken")
+//                                        // Navigasi ke Dashboard hanya jika login berhasil
+//                                        navController.navigate("dashboard")
+//                                    } else {
+//                                        Log.e("login", "Login failed")
+//                                    }
+//                                }
                             } else {
                                 Log.e("login", "Try Again, email and password are empty")
                             }

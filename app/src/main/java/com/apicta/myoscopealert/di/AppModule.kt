@@ -4,6 +4,7 @@ import android.content.Context
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.network.Retro
 import com.apicta.myoscopealert.network.UserApi
+import com.apicta.myoscopealert.repository.DiagnosesRepository
 import com.apicta.myoscopealert.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -32,5 +33,10 @@ object AppModule {
     @Singleton
     fun provideUserRepository(userApi: UserApi): UserRepository {
         return UserRepository(userApi)
+    }
+    @Provides
+    @Singleton
+    fun provideDiagnosesRepository(userApi: UserApi): DiagnosesRepository {
+        return DiagnosesRepository(userApi)
     }
 }

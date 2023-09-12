@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.ui.screen.DashboardScreen
+import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.LoginScreen
 import com.apicta.myoscopealert.ui.screen.ProfileScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
@@ -111,5 +112,6 @@ fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreM
 //        composable("register_screen", content = { RegisterScreen(navController = navController) })
         composable("dashboard", content = { DashboardScreen(navController = navController, dataStoreManager) })
         composable("profile_screen", content = { ProfileScreen(navController = navController, storedToken!!) })
+        composable("history_screen", content = { HistoryScreen(navController = navController, storedToken!!) })
     })
 }

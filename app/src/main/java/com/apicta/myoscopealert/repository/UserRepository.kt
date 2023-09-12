@@ -18,6 +18,7 @@ class UserRepository(private val userApi: UserApi) {
         val respon = userApi.login(signInRequest)
         Log.e("login repo", respon.body().toString())
         return respon
+//        return userApi.login(signInRequest)
     }
 
     // Implementasikan fungsi-fungsi lainnya seperti logout jika diperlukan
@@ -26,6 +27,8 @@ class UserRepository(private val userApi: UserApi) {
     }
 
     suspend fun profile(token: String): Response<ProfileResponse> {
-        return userApi.profile("Bearer $token")
+        val respon = userApi.profile("Bearer $token")
+        Log.e("profile repo", respon.body().toString())
+        return respon
     }
 }

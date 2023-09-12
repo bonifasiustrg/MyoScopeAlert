@@ -1,6 +1,7 @@
 package com.apicta.myoscopealert.network
 
 
+import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
 import com.apicta.myoscopealert.data.user.LogoutResponse
 import com.apicta.myoscopealert.data.user.ProfileResponse
 import com.apicta.myoscopealert.data.user.SignInRequest
@@ -26,4 +27,9 @@ interface UserApi {
     suspend fun profile(
         @Header("Authorization") token: String
     ): Response<ProfileResponse>
+
+    @GET("patient/diagnoses")
+    suspend fun diagnoses(
+        @Header("Authorization") token: String
+    ): Response<PatientDiagnoseResponse>
 }

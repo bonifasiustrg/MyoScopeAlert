@@ -10,7 +10,6 @@ import com.apicta.myoscopealert.data.user.SignInResponse
 import com.apicta.myoscopealert.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -35,12 +34,15 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = repository.login(email, password)
+                Log.e("status", "$response")
+
+
                 if (response.isSuccessful) {
                     val rawResponse = response.body()
                     if (rawResponse != null) {
-                        val token = rawResponse.data?.token ?: ""
+                        val token = rawResponse.data?.accessToken ?: ""
                         _loginResponse.value = rawResponse
-                        Log.e("token perform login", rawResponse.data?.token ?: "Token not available")
+                        Log.e("token perform login", rawResponse.data?.accessToken ?: "Token not available")
                         Log.e("status login", "Login Successfully")
                         isLoginSuccess.value = true
                         viewModelScope.launch {
@@ -75,7 +77,7 @@ class UserViewModel @Inject constructor(
                     if (rawResponse != null) {
 
                         Log.e("LogoutActivity", "logout nya ${rawResponse.success}")
-                        GlobalScope.launch {
+                        viewModelScope.launch {
                             dataStoreManager.clearUserToken()
                             Log.e("status", "token cleared ${dataStoreManager.getAuthToken.first()}")
                         }
@@ -93,6 +95,25 @@ class UserViewModel @Inject constructor(
     }
 
     fun performProfile(token: String) {
+//        viewModelScope.launch {
+//            try {
+//                val response = repository.profile(token)
+//                if (response.isSuccessful) {
+//                    val rawResponse = response.body()
+//                    if (rawResponse != null) {
+//                        _profileResponse.value = rawResponse
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                Log.e("UserViewModel", "Error during API call: ${e.message}", e)
+//            }
+//        }
+
+        if (token.isBlank()) {
+            // Token belum tersedia, tidak perlu melakukan request
+            return
+        }
+
         viewModelScope.launch {
             try {
                 val response = repository.profile(token)
