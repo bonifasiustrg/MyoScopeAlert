@@ -30,6 +30,9 @@ class UserViewModel @Inject constructor(
     private val _profileResponse = MutableStateFlow<ProfileResponse?>(null)
     val profileResponse: StateFlow<ProfileResponse?> = _profileResponse
 
+    private val _tokenSaved = MutableStateFlow<Boolean>(false)
+    val tokenSaved: StateFlow<Boolean> = _tokenSaved
+
     fun performLogin(email: String, password: String) {
         viewModelScope.launch {
             try {
@@ -47,6 +50,7 @@ class UserViewModel @Inject constructor(
                         isLoginSuccess.value = true
                         viewModelScope.launch {
                             dataStoreManager.setUserToken(token)
+                            _tokenSaved.value = true // Token telah disimpan
                         }
                     } else {
                         Log.e("SignInActivity", "Response body is null")

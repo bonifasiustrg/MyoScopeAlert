@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +35,10 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
+        installSplashScreen()
+
+
         setContent {
             MyoScopeAlertTheme {
                 // A surface container using the 'background' color from the theme
@@ -111,7 +117,7 @@ fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreM
         composable("login_screen", content = { LoginScreen(navController = navController, dataStoreManager) })
 //        composable("register_screen", content = { RegisterScreen(navController = navController) })
         composable("dashboard", content = { DashboardScreen(navController = navController, dataStoreManager) })
-        composable("profile_screen", content = { ProfileScreen(navController = navController, storedToken!!) })
+        composable("profile_screen", content = { ProfileScreen(navController = navController, dataStoreManager) })
         composable("history_screen", content = { HistoryScreen(navController = navController, storedToken!!) })
     })
 }

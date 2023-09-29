@@ -1,5 +1,6 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -25,12 +29,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 @Composable
-fun ProfileScreen(navController: NavHostController, storedToken: String) {
+fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreManager) {
+    var storedToken by remember { mutableStateOf<String?>(null) }
+    Log.d("ProfileScreen1", "Stored Token: $storedToken")
+
+    // Ambil token jika belum diinisialisasi
+    if (storedToken == null) {
+        runBlocking {
+            storedToken = dataStoreManager.getAuthToken.first()
+            Log.d("ProfileScreen runblocking", "Stored Token: $storedToken")
+        }
+    }
+
 
     val viewModel = hiltViewModel<UserViewModel>()
-    viewModel.performProfile(storedToken)
+    viewModel.performProfile(storedToken!!)
     val profileResponse by viewModel.profileResponse.collectAsState()
 
 
@@ -77,7 +94,7 @@ fun ProfileScreen(navController: NavHostController, storedToken: String) {
             Button(colors = ButtonDefaults.buttonColors(Color.Red),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
-                    viewModel.performLogout(storedToken)
+                    viewModel.performLogout(storedToken!!)
                     navController.navigate("login_screen")
 
                 }

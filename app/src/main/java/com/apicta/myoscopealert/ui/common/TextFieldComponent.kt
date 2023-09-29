@@ -2,7 +2,7 @@
     ExperimentalMaterial3Api::class
 )
 
-package com.apicta.myoscopealert.ui.component
+package com.apicta.myoscopealert.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

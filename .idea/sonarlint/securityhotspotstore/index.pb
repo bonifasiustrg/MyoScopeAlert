@@ -11,19 +11,9 @@ s
 Capp/src/main/java/com/apicta/myoscopealert/data/DataStoreManager.kt,3/4/34a90f6ecd16577b683d5e7664eb5ba27c351d63
 k
 ;app/src/main/java/com/apicta/myoscopealert/network/Retro.kt,b/1/b1db972314cea43a2c6a791509566266969a9698
-s
-Capp/src/main/java/com/apicta/myoscopealert/ui/TextFieldComponent.kt,f/8/f8fb8a2d59ea0e0b8932aad77ffa7c47720af29b
-S
-#.idea/sonarlint/issuestore/index.pb,9/f/9fe84ebb15faf917b7def6236dba604453cc61e0
 v
 Fapp/src/main/java/com/apicta/myoscopealert/data/user/LogoutResponse.kt,4/e/4e3fb2c83b88d83f44aed29551efe354578a4c4e
-]
--.idea/sonarlint/securityhotspotstore/index.pb,8/8/88a9255124c95bdc913197c120a8d560edc59c8e
 u
 Eapp/src/main/java/com/apicta/myoscopealert/data/user/SignInRequest.kt,4/5/450f8c079dd75e43ceb0a4feeb8da6d882a0e4b7
 w
 Gapp/src/main/java/com/apicta/myoscopealert/data/user/ProfileResponse.kt,7/b/7b3de2d3adf427e9cdb9358577a69a68bd48cfd7
-D
-app/build.gradle.kts,d/2/d2a4383452aad84a18429a5844d31330a012a9e6
-P
- app/src/main/AndroidManifest.xml,8/c/8c55c3ccc257e5907959013f99656e4c8ec3903e

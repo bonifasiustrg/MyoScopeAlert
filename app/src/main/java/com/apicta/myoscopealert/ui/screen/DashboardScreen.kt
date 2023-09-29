@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,12 +33,13 @@ import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.DiagnosesViewModel
 import com.apicta.myoscopealert.models.UserViewModel
-import com.apicta.myoscopealert.ui.component.MainTopBar
+import com.apicta.myoscopealert.ui.common.MainTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStoreManager) {
     var storedToken by remember { mutableStateOf<String?>(null) }
@@ -107,26 +106,25 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
 
 
 
-//                    Button(
-//                        onClick = {
-//                            if (storedToken != null) {
-////                                viewModelUser.performProfile(storedToken!!)
-////                            Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
-//
-//
-//                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
-//                                viewModelUser.viewModelScope.launch {
-//                                    delay(500) // Penundaan selama 1 detik (1000 ms)
-//                                    navController.navigate("profile_screen")
-//                                    Log.e("dashboard", "navigate to profile")
-//                                }
-//                            } else {
-//                                Log.e("dashboard to login", "can not to profile")
-//                            }
-//                        }
-//                    ) {
-//                        Text("Profile")
-//                    }
+                    Button(
+                        onClick = {
+                            if (storedToken != null) {
+                                viewModelUser.performProfile(storedToken!!)
+//                            Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
+
+
+                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
+                                viewModelUser.viewModelScope.launch {
+                                    navController.navigate("profile_screen")
+                                    Log.e("dashboard", "navigate to profile")
+                                }
+                            } else {
+                                Log.e("dashboard to login", "can not to profile")
+                            }
+                        }
+                    ) {
+                        Text("Profile")
+                    }
                 }
             }
         }

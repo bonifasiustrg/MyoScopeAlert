@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +38,9 @@ import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
-import com.apicta.myoscopealert.ui.component.GradientButton
-import com.apicta.myoscopealert.ui.component.SimpleOutlinedPasswordTextField
-import com.apicta.myoscopealert.ui.component.SimpleOutlinedTextFieldSample
+import com.apicta.myoscopealert.ui.common.GradientButton
+import com.apicta.myoscopealert.ui.common.SimpleOutlinedPasswordTextField
+import com.apicta.myoscopealert.ui.common.SimpleOutlinedTextFieldSample
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -49,10 +51,14 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
     // State untuk menyimpan email dan password yang dimasukkan pengguna
 //    val viewModel: LoginViewModel = viewModel()
     val viewModel = hiltViewModel<UserViewModel>()
+    val tokenSaved by viewModel.tokenSaved.collectAsState()
+
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val loginResponse by viewModel.loginResponse.collectAsState()
     val isLoginSuccess = viewModel.isLoginSuccess
+    val isLoading = remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     // ...
     Surface(
         modifier = Modifier
@@ -105,7 +111,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .padding(top = 130.dp)
-                            .fillMaxWidth( ),
+                            .fillMaxWidth(),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -127,34 +133,22 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                         roundedCornerShape = RoundedCornerShape(topStart = 30.dp,bottomEnd = 30.dp),
                         onClick = {
                             if (emailState.value.isNotEmpty() && passwordState.value.isNotEmpty()) {
+                                isLoading.value = true
                                 viewModel.performLogin(emailState.value, passwordState.value)
                                 Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
-
-
-                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
-                                viewModel.viewModelScope.launch {
-                                    delay(1000) // Penundaan selama 1 detik (1000 ms)
-                                    navController.navigate("dashboard")
-                                    Log.e("login", "navigate to dashboard")
+                                scope.launch {
+                                    viewModel.tokenSaved.collect { tokenSaved ->
+                                        if (tokenSaved) {
+                                            navController.navigate("dashboard")
+                                            // Token sudah disimpan, navigasi ke DashboardScreen
+                                            Log.e("login", "Token sudah disimpan, navigasi ke DashboardScreen")
+                                            Log.e("login", "navigate to dashboard")
+                                        } else {
+                                            Log.e("login", "Token belum disimpan, mungkin tampilkan loading atau pesan lainnya")
+                                            // Token belum disimpan, mungkin tampilkan loading atau pesan lainnya
+                                        }
+                                    }
                                 }
-//                                viewModel.viewModelScope.launch {
-//                                    val loginJob = async(Dispatchers.IO) {
-//                                        viewModel.performLogin(emailState.value, passwordState.value)
-//                                    }
-//                                    loginJob.await() // Wait for the login job to complete
-//                                    delay(4000) // Delay for 1 second (1000 ms
-//                                    val storedToken = runBlocking { dataStoreManager.getAuthToken.first()
-//                                    }
-//
-//
-//                                    if (/*loginJob.isCompleted &&*/ storedToken?.isNotBlank() == true) {
-//                                        Log.e("login tes", "token stored $storedToken")
-//                                        // Navigasi ke Dashboard hanya jika login berhasil
-//                                        navController.navigate("dashboard")
-//                                    } else {
-//                                        Log.e("login", "Login failed")
-//                                    }
-//                                }
                             } else {
                                 Log.e("login", "Try Again, email and password are empty")
                             }
@@ -168,6 +162,12 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
 
             }
 
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (isLoading.value) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
