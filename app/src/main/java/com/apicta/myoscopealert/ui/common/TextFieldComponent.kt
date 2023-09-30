@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -224,79 +225,21 @@ val VisibilityOff: ImageVector
     }
 private var _visibilityOff: ImageVector? = null
 
-@Composable
-fun TextFieldSample() {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue("example", TextRange(0, 7)))
-    }
-
-    TextField(
-        value = text,
-        onValueChange = { text = it },
-        label = { Text("Label") }
-    )
-}
-
-@Composable
-fun OutlinedTextFieldSample() {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue("example", TextRange(0, 7)))
-    }
-
-    OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
-        label = { Text("Label") }
-    )
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun TextFieldWithHideKeyboardOnImeAction() {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    var text by rememberSaveable { mutableStateOf("") }
-    TextField(
-        value = text,
-        onValueChange = { text = it },
-        label = { Text("Label") },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(
-            onDone = {
-                keyboardController?.hide()
-                // do something here
-            }
-        )
-    )
-}
-
-@Composable
-fun TextArea() {
-    var text by rememberSaveable { mutableStateOf("This is a very long input that extends beyond " +
-            "the height of the text area.") }
-    TextField(
-        value = text,
-        onValueChange = { text = it },
-        modifier = Modifier.height(100.dp),
-        label = { Text("Label") }
-    )
-}
-
 //password
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleOutlinedPasswordTextField(passwordState: MutableState<String>) {
     val keyboardController = LocalSoftwareKeyboardController.current
-//    var password by rememberSaveable { mutableStateOf("") }
     var passwordHidden by rememberSaveable { mutableStateOf(true) }
-    OutlinedTextField(
+    TextField(
         value = passwordState.value,
         onValueChange = { passwordState.value = it },
-        shape = RoundedCornerShape(topEnd =12.dp, bottomStart =12.dp),
-        label = {
-            Text("Enter Password",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelMedium,
-            ) },
+        shape = RoundedCornerShape(topEnd =18.dp, bottomStart =18.dp),
+//        label = {
+//            Text("Enter Password",
+//                color = MaterialTheme.colorScheme.primary,
+//                style = MaterialTheme.typography.labelMedium,
+//            ) },
         visualTransformation =
         if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
         //  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -304,9 +247,8 @@ fun SimpleOutlinedPasswordTextField(passwordState: MutableState<String>) {
             imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Password
         ),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.primary),
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color.White),
         trailingIcon = {
             IconButton(onClick = { passwordHidden = !passwordHidden }) {
                 val visibilityIcon =
@@ -316,7 +258,9 @@ fun SimpleOutlinedPasswordTextField(passwordState: MutableState<String>) {
                 Icon(imageVector = visibilityIcon, contentDescription = description)
             }
         },
-        modifier = Modifier.fillMaxWidth(0.8f),
+        placeholder = { Text(text = "********") },
+
+        modifier = Modifier.fillMaxWidth(),
         keyboardActions = KeyboardActions(
             onDone = {
                 keyboardController?.hide()
@@ -332,13 +276,13 @@ fun GradientButton(
     cornerRadius: Dp,
     nameButton: String,
     roundedCornerShape: RoundedCornerShape,
-    onClick : () -> Unit
+    onClick : () -> Unit,
+    isLoading:  MutableState<Boolean>
 ) {
 
     androidx.compose.material3.Button(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 32.dp, end = 32.dp),
+            .fillMaxWidth(),
         onClick = {
             //your code
                   onClick()
@@ -366,11 +310,15 @@ fun GradientButton(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = nameButton,
-                fontSize = 20.sp,
-                color = Color.White
-            )
+            if (isLoading.value) {
+                CircularProgressIndicator(color = Color.Yellow)
+            } else {
+                Text(
+                    text = nameButton,
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -383,25 +331,24 @@ fun SimpleOutlinedTextFieldSample(textState: MutableState<String>) {
     val keyboardController = LocalSoftwareKeyboardController.current
 //    var text by rememberSaveable { mutableStateOf("") }
 
-    OutlinedTextField(
+    TextField(
         value = textState.value,
         onValueChange = { textState.value = it },
-        shape = RoundedCornerShape(topEnd =12.dp, bottomStart =12.dp),
-        label = {
-            Text("Name or Email Address",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelMedium,
-            ) },
-        placeholder = { Text(text = "Name or Email Address") },
+        shape = RoundedCornerShape(topEnd =18.dp, bottomStart =18.dp),
+//        label = {
+//            Text("Name or Email Address",
+//                color = MaterialTheme.colorScheme.primary,
+//                style = MaterialTheme.typography.labelMedium,
+//            ) },
+        placeholder = { Text(text = "user@mail.com") },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Email
         ),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.primary),
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color.White),
         singleLine = true,
-        modifier = Modifier.fillMaxWidth(0.8f),
+        modifier = Modifier.fillMaxWidth().padding(0.dp),
         keyboardActions = KeyboardActions(
             onDone = {
                 keyboardController?.hide()

@@ -10,9 +10,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,15 +32,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.apicta.myoscopealert.data.BottomNavigationItem
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.DiagnosesViewModel
 import com.apicta.myoscopealert.models.UserViewModel
@@ -62,14 +76,58 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
     val diagnosesResponse by viewModel.diagnosesResponse.collectAsState()
     Log.e("diagnosesResponse", diagnosesResponse.toString())
 
+    val bottomBarItems = listOf(
+        BottomNavigationItem(
+            title = "Home",
+            selectedIcon = Icons.Filled.Home,
+            unselectedIcon = Icons.Outlined.Home
+        ),
+        BottomNavigationItem(
+            title = "Record",
+            selectedIcon = Icons.Filled.Check,
+            unselectedIcon = Icons.Outlined.Check
+        ),
+        BottomNavigationItem(
+            title = "Notification",
+            selectedIcon = Icons.Filled.Notifications,
+            unselectedIcon = Icons.Outlined.Notifications
+        ),
+
+        )
+    var selectedItemIndex by rememberSaveable {
+        mutableStateOf(0)
+    }
 
     Scaffold(
+        bottomBar = {
+            NavigationBar(
+                modifier = Modifier.clip(shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            ) {
+                bottomBarItems.forEachIndexed() { index, item ->
+                    NavigationBarItem(
+                        selected = selectedItemIndex == index,
+                        onClick = {
+                            selectedItemIndex = index
+//                                    navController.navigate("")
+                        },
+                        icon = {
+                            Icon(imageVector = if (selectedItemIndex == index) {
+                                item.selectedIcon
+                            } else {
+                                item.unselectedIcon
+                            }, contentDescription = null)
+                        })
+                }
+            }
+        },
         topBar = { MainTopBar("Dashboard", navController = navController) }
     ) {
-        Surface(modifier = Modifier
-            .fillMaxSize()
-            .padding(it)
-            .padding(16.dp)) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .padding(16.dp)
+        ) {
             Column(Modifier.fillMaxSize()) {
 //                Text(text = "Dashboard Screen", fontWeight = FontWeight.Bold)
                 if (diagnosesResponse == null) {
@@ -78,7 +136,11 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
                     }
                 } else {
                     Text(text = "Your Data", fontWeight = FontWeight.Bold)
-                    Text(text = "${diagnosesResponse!!.message}", fontWeight = FontWeight.Bold, color = Color.Green)
+                    Text(
+                        text = "${diagnosesResponse!!.message}",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Green
+                    )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -94,16 +156,16 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
                     val diagnoses = diagnosesResponse!!.data?.get(0)?.diagnoses
                     val isVerified = diagnosesResponse!!.data?.get(0)?.isVerified
                     Text(text = "Diagnoses", fontWeight = FontWeight.Bold)
-                    Text(text = "$diagnoses", modifier = Modifier.background(color = if (diagnoses == "normal") Color.Green else Color.Red))
+                    Text(
+                        text = "$diagnoses",
+                        modifier = Modifier.background(color = if (diagnoses == "normal") Color.Green else Color.Red)
+                    )
                     Text(text = "${diagnosesResponse!!.data?.get(0)?.id}")
                     Text(text = "${diagnosesResponse!!.data?.get(0)?.notes}")
                     Text(text = "${diagnosesResponse!!.data?.get(0)?.file}")
                     Text(text = if (isVerified == "0") "Not Verified" else "Verified")
                     Text(text = "${diagnosesResponse!!.data?.get(0)?.updatedAt}")
 //                    Text(text = "${diagnosesResponse!!.data?.get(0)?.patient?.condition}")
-
-
-
 
 
                     Button(
