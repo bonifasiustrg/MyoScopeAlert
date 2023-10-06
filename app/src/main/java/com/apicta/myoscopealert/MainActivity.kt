@@ -11,7 +11,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,8 +18,10 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.ui.screen.DashboardScreen
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
+import com.apicta.myoscopealert.ui.screen.HomeScreen
 import com.apicta.myoscopealert.ui.screen.LoginScreen
 import com.apicta.myoscopealert.ui.screen.ProfileScreen
+import com.apicta.myoscopealert.ui.screen.RecordScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
 
 
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             MyoScopeAlertTheme {
                 // A surface container using the 'background' color from the theme
@@ -107,7 +109,7 @@ fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreM
     val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
     Log.e("token app navigation", storedToken.toString())
     startDestination = if (!storedToken.isNullOrEmpty()) {
-        "dashboard"
+        "dashboard_screen"
     } else {
         "login_screen"
     }
@@ -116,8 +118,10 @@ fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreM
 //        composable("welcome_screen", content = { WelcomeScreen(navController = navController) })
         composable("login_screen", content = { LoginScreen(navController = navController, dataStoreManager) })
 //        composable("register_screen", content = { RegisterScreen(navController = navController) })
-        composable("dashboard", content = { DashboardScreen(navController = navController, dataStoreManager) })
+        composable("dashboard_screen", content = { DashboardScreen(navController = navController, dataStoreManager) })
         composable("profile_screen", content = { ProfileScreen(navController = navController, dataStoreManager) })
         composable("history_screen", content = { HistoryScreen(navController = navController, storedToken!!) })
+        composable("record_screen", content = { RecordScreen(navController = navController) })
+        composable("home_screen", content = { HomeScreen(navController = navController) })
     })
 }

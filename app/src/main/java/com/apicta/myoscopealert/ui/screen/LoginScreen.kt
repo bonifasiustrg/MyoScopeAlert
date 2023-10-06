@@ -159,7 +159,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                                 scope.launch {
                                     viewModel.tokenSaved.collect { tokenSaved ->
                                         if (tokenSaved) {
-                                            navController.navigate("dashboard")
+                                            navController.navigate("dashboard_screen")
                                             // Token sudah disimpan, navigasi ke DashboardScreen
                                             Log.e(
                                                 "login",
