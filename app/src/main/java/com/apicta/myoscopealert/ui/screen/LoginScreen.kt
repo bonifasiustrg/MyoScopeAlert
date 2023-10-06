@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.graphs.Graph
 import com.apicta.myoscopealert.models.UserViewModel
 import com.apicta.myoscopealert.ui.common.GradientButton
 import com.apicta.myoscopealert.ui.common.SimpleOutlinedPasswordTextField
@@ -159,7 +160,10 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                                 scope.launch {
                                     viewModel.tokenSaved.collect { tokenSaved ->
                                         if (tokenSaved) {
-                                            navController.navigate("dashboard_screen")
+//                                            navController.navigate("dashboard_screen")
+                                            navController.popBackStack()
+                                            navController.navigate(Graph.MAIN)
+
                                             // Token sudah disimpan, navigasi ke DashboardScreen
                                             Log.e(
                                                 "login",

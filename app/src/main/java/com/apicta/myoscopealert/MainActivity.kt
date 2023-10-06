@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.graphs.RootNavigationGraph
 import com.apicta.myoscopealert.ui.screen.DashboardScreen
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
@@ -96,32 +97,41 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
 
-                    AppNavigation(navController, dataStoreManager)
+//                    AppNavigation(navController, dataStoreManager)
+                    RootNavigationGraph(navController = rememberNavController(), dataStoreManager)
                 }
             }
         }
     }
 }
 
-@Composable
-fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreManager) {
-    val startDestination: String
-    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
-    Log.e("token app navigation", storedToken.toString())
-    startDestination = if (!storedToken.isNullOrEmpty()) {
-        "dashboard_screen"
-    } else {
-        "login_screen"
-    }
-//    val startDestination = "login_screen"
-    NavHost(navController = navController, startDestination = startDestination, builder = {
-//        composable("welcome_screen", content = { WelcomeScreen(navController = navController) })
-        composable("login_screen", content = { LoginScreen(navController = navController, dataStoreManager) })
-//        composable("register_screen", content = { RegisterScreen(navController = navController) })
-        composable("dashboard_screen", content = { DashboardScreen(navController = navController, dataStoreManager) })
-        composable("profile_screen", content = { ProfileScreen(navController = navController, dataStoreManager) })
-        composable("history_screen", content = { HistoryScreen(navController = navController, storedToken!!) })
-        composable("record_screen", content = { RecordScreen(navController = navController) })
-        composable("home_screen", content = { HomeScreen(navController = navController) })
-    })
-}
+//@Composable
+//fun AppNavigation(navController: NavHostController, dataStoreManager: DataStoreManager) {
+//    val startDestination: String
+//    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
+//    Log.e("token app navigation", storedToken.toString())
+//    startDestination = if (!storedToken.isNullOrEmpty()) {
+//        "dashboard_screen"
+//    } else {
+//        "login_screen"
+//    }
+////    val startDestination = "login_screen"
+//    NavHost(navController = navController, startDestination = startDestination, builder = {
+////        composable("welcome_screen", content = { WelcomeScreen(navController = navController) })
+//        composable(
+//            "login_screen",
+//            content = { LoginScreen(navController = navController, dataStoreManager) })
+////        composable("register_screen", content = { RegisterScreen(navController = navController) })
+//        composable(
+//            "dashboard_screen",
+//            content = { DashboardScreen(navController = navController, dataStoreManager) })
+//        composable(
+//            "profile_screen",
+//            content = { ProfileScreen(navController = navController, dataStoreManager) })
+//        composable(
+//            "history_screen",
+//            content = { HistoryScreen(navController = navController, storedToken!!) })
+//        composable("record_screen", content = { RecordScreen(navController = navController) })
+//        composable("home_screen", content = { HomeScreen(navController = navController) })
+//    })
+//}

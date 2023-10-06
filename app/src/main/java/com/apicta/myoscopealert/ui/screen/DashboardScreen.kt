@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +50,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,11 +73,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.BottomNavigationItem
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.graphs.HomeNavGraph
 import com.apicta.myoscopealert.models.DiagnosesViewModel
 import com.apicta.myoscopealert.models.UserViewModel
 import com.apicta.myoscopealert.ui.common.MainTopBar
@@ -90,7 +98,7 @@ import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStoreManager) {
+fun DashboardScreen(dataStoreManager: DataStoreManager, navController: NavHostController = rememberNavController()) {
     var storedToken by remember { mutableStateOf<String?>(null) }
     Log.d("DashboardScreen1", "Stored Token: $storedToken")
 
@@ -111,139 +119,225 @@ fun DashboardScreen(navController: NavHostController, dataStoreManager: DataStor
     val diagnosesResponse by viewModel.diagnosesResponse.collectAsState()
     Log.e("diagnosesResponse", diagnosesResponse.toString())
 
-    val bottomBarItems = listOf(
-        BottomNavigationItem(
-            title = "Home",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home
-        ),
-        BottomNavigationItem(
-            title = "Record",
-            selectedIcon = Icons.Filled.Add,
-            unselectedIcon = Icons.Outlined.Add
-        ),
-        BottomNavigationItem(
-            title = "History",
-            selectedIcon = Icons.Filled.List,
-            unselectedIcon = Icons.Outlined.List
-        ),
-        BottomNavigationItem(
-            title = "Profile",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person
-        ),
+//    val bottomBarItems = listOf(
+//        BottomNavigationItem(
+//            title = "Home",
+//            selectedIcon = Icons.Filled.Home,
+//            unselectedIcon = Icons.Outlined.Home
+//        ),
+//        BottomNavigationItem(
+//            title = "Record",
+//            selectedIcon = Icons.Filled.Add,
+//            unselectedIcon = Icons.Outlined.Add
+//        ),
+//        BottomNavigationItem(
+//            title = "History",
+//            selectedIcon = Icons.Filled.List,
+//            unselectedIcon = Icons.Outlined.List
+//        ),
+//        BottomNavigationItem(
+//            title = "Profile",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person
+//        ),
+//
+//        )
+//    var selectedItemIndex by rememberSaveable {
+//        mutableStateOf(0)
+//    }
 
-        )
-    var selectedItemIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
-    
     Scaffold(
-        bottomBar = {
-            NavigationBar(
-                modifier = Modifier.clip(
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp
-                    )
-                ),
-                containerColor = primary
-            ) {
-                bottomBarItems.forEachIndexed() { index, item ->
-                    NavigationBarItem(
-                        selected = index == selectedItemIndex,
-                        onClick = {
-                            selectedItemIndex = index
-                            navController.navigate("${item.title.lowercase()}_screen")
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            indicatorColor = primary,
-                            unselectedIconColor = secondary
-                        ),
-                        icon = {
-                            Icon(
-                                imageVector = if (selectedItemIndex == index) {
-                                    item.selectedIcon
-                                } else {
-                                    item.unselectedIcon
-                                }, contentDescription = null
-                            )
-                        })
-                }
-            }
-        },
-//        topBar = { MainTopBar("Dashboard", navController = navController) }
+        bottomBar = { BottomBar(navController = navController) }
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-        ) {
-//            Column(Modifier.fillMaxSize()) {
-////                Text(text = "Dashboard Screen", fontWeight = FontWeight.Bold)
-//                if (diagnosesResponse == null) {
-//                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//                        CircularProgressIndicator()
-//                    }
-//                } else {
-//                    Text(text = "Your Data", fontWeight = FontWeight.Bold)
-//                    Text(
-//                        text = "${diagnosesResponse!!.message}",
-//                        fontWeight = FontWeight.Bold,
-//                        color = Color.Green
-//                    )
-//
-//                    Spacer(modifier = Modifier.height(32.dp))
-//
-//                    Text(text = "Doctor Profile", fontWeight = FontWeight.Bold)
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.fullname}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.id}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.age}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.address}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.emergencyPhone}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.gender}")
-//
-//
-//                    val diagnoses = diagnosesResponse!!.data?.get(0)?.diagnoses
-//                    val isVerified = diagnosesResponse!!.data?.get(0)?.isVerified
-//                    Text(text = "Diagnoses", fontWeight = FontWeight.Bold)
-//                    Text(
-//                        text = "$diagnoses",
-//                        modifier = Modifier.background(color = if (diagnoses == "normal") Color.Green else Color.Red)
-//                    )
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.id}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.notes}")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.file}")
-//                    Text(text = if (isVerified == "0") "Not Verified" else "Verified")
-//                    Text(text = "${diagnosesResponse!!.data?.get(0)?.updatedAt}")
-////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.patient?.condition}")
-//
-//
-//                    Button(
-//                        onClick = {
-//                            if (storedToken != null) {
-//                                viewModelUser.performProfile(storedToken!!)
-////                            Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
-//
-//
-//                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
-//                                viewModelUser.viewModelScope.launch {
-//                                    navController.navigate("profile_screen")
-//                                    Log.e("dashboard", "navigate to profile")
-//                                }
-//                            } else {
-//                                Log.e("dashboard to login", "can not to profile")
-//                            }
-//                        }
-//                    ) {
-//                        Text("Profile")
-//                    }
-//                }
-//            }
-            HomeScreen(navController = navController)
+        Surface(modifier = Modifier.padding(it)) {
+            HomeNavGraph(navController = navController, dataStoreManager = dataStoreManager)
         }
     }
+    
+//    Scaffold(
+//        bottomBar = {
+//            NavigationBar(
+//                modifier = Modifier.clip(
+//                    shape = RoundedCornerShape(
+//                        topStart = 16.dp,
+//                        topEnd = 16.dp
+//                    )
+//                ),
+//                containerColor = primary
+//            ) {
+//                bottomBarItems.forEachIndexed() { index, item ->
+//                    NavigationBarItem(
+//                        selected = index == selectedItemIndex,
+//                        onClick = {
+//                            selectedItemIndex = index
+//                            navController.navigate("${item.title.lowercase()}_screen")
+//                        },
+//                        colors = NavigationBarItemDefaults.colors(
+//                            selectedIconColor = Color.White,
+//                            indicatorColor = primary,
+//                            unselectedIconColor = secondary
+//                        ),
+//                        icon = {
+//                            Icon(
+//                                imageVector = if (selectedItemIndex == index) {
+//                                    item.selectedIcon
+//                                } else {
+//                                    item.unselectedIcon
+//                                }, contentDescription = null
+//                            )
+//                        })
+//                }
+//            }
+//        },
+////        topBar = { MainTopBar("Dashboard", navController = navController) }
+//    ) {
+//        Surface(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(it)
+//        ) {
+////            Column(Modifier.fillMaxSize()) {
+//////                Text(text = "Dashboard Screen", fontWeight = FontWeight.Bold)
+////                if (diagnosesResponse == null) {
+////                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+////                        CircularProgressIndicator()
+////                    }
+////                } else {
+////                    Text(text = "Your Data", fontWeight = FontWeight.Bold)
+////                    Text(
+////                        text = "${diagnosesResponse!!.message}",
+////                        fontWeight = FontWeight.Bold,
+////                        color = Color.Green
+////                    )
+////
+////                    Spacer(modifier = Modifier.height(32.dp))
+////
+////                    Text(text = "Doctor Profile", fontWeight = FontWeight.Bold)
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.fullname}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.id}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.age}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.address}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.emergencyPhone}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.doctor?.gender}")
+////
+////
+////                    val diagnoses = diagnosesResponse!!.data?.get(0)?.diagnoses
+////                    val isVerified = diagnosesResponse!!.data?.get(0)?.isVerified
+////                    Text(text = "Diagnoses", fontWeight = FontWeight.Bold)
+////                    Text(
+////                        text = "$diagnoses",
+////                        modifier = Modifier.background(color = if (diagnoses == "normal") Color.Green else Color.Red)
+////                    )
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.id}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.notes}")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.file}")
+////                    Text(text = if (isVerified == "0") "Not Verified" else "Verified")
+////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.updatedAt}")
+//////                    Text(text = "${diagnosesResponse!!.data?.get(0)?.patient?.condition}")
+////
+////
+////                    Button(
+////                        onClick = {
+////                            if (storedToken != null) {
+////                                viewModelUser.performProfile(storedToken!!)
+//////                            Log.e("login", "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}")
+////
+////
+////                                // Tambahkan penundaan selama misalnya 1 detik sebelum navigasi
+////                                viewModelUser.viewModelScope.launch {
+////                                    navController.navigate("profile_screen")
+////                                    Log.e("dashboard", "navigate to profile")
+////                                }
+////                            } else {
+////                                Log.e("dashboard to login", "can not to profile")
+////                            }
+////                        }
+////                    ) {
+////                        Text("Profile")
+////                    }
+////                }
+////            }
+//            HomeScreen(navController = navController)
+//        }
+//    }
+}
+
+@Composable
+fun BottomBar(navController: NavHostController) {
+    val screens = listOf(
+        BottomBarScreen.Home,
+        BottomBarScreen.Record,
+        BottomBarScreen.History,
+        BottomBarScreen.Profile,
+    )
+    val selectedItemIndex = rememberSaveable {
+        mutableStateOf(0)
+    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    val bottomBarDestination = screens.any { it.route == currentDestination?.route }
+    if (bottomBarDestination) {
+        NavigationBar(
+            modifier = Modifier.clip(
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp
+                )
+            ),
+            containerColor = primary
+        ) {
+            screens.forEach { screen ->
+                AddItem(
+                    screen = screen,
+                    currentDestination = currentDestination,
+                    navController = navController,
+                    selectedItemIndex = selectedItemIndex
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RowScope.AddItem(
+    screen: BottomBarScreen,
+    currentDestination: NavDestination?,
+    navController: NavHostController,
+    selectedItemIndex: MutableState<Int>
+) {
+    NavigationBarItem(
+        label = {
+            Text(text = screen.title)
+        },
+        icon = {
+//            Icon(
+//                imageVector = if (selectedItemIndex == index) {
+//                    screen.selectedIcon
+//                } else {
+//                    screen.unselectedIcon
+//                }, contentDescription = null
+//            )
+            Icon(
+                imageVector = screen.selectedIcon,
+                contentDescription = "Navigation Icon"
+            )
+        },
+        selected = currentDestination?.hierarchy?.any {
+            it.route == screen.route
+        } == true,
+        onClick = {
+            navController.navigate(screen.route) {
+                popUpTo(navController.graph.findStartDestination().id)
+                launchSingleTop = true
+            }
+        },
+        colors = NavigationBarItemDefaults.colors(
+            selectedIconColor = Color.White,
+            indicatorColor = primary,
+            unselectedIconColor = secondary
+        )
+    )
 }
 
 @Preview
