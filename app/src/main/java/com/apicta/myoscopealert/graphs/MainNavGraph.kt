@@ -1,20 +1,17 @@
 package com.apicta.myoscopealert.graphs
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navigation
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.ui.screen.DashboardScreen
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
 import com.apicta.myoscopealert.ui.screen.ProfileScreen
 import com.apicta.myoscopealert.ui.screen.RecordScreen
 
 @Composable
-fun HomeNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
+fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
     val storedToken = "token"
     NavHost(
         navController = navController,
@@ -28,10 +25,8 @@ fun HomeNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             RecordScreen(navController = navController)
         }
         composable(route = BottomBarScreen.History.route) {
-            HistoryScreen(navController = navController, storedToken!!)
+            HistoryScreen(navController = navController, storedToken)
         }
-
-
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)
         }

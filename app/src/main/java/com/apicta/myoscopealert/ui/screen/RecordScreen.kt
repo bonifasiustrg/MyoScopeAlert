@@ -91,42 +91,6 @@ fun RecordScreen(navController: NavHostController) {
             )
 
         )
-//        BasicTextField(
-//            value = text,
-//            onValueChange = {
-//                text = it
-//            },
-//            singleLine = true,
-//            decorationBox = { innerTextField ->
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-////                        .border(
-////                            width = 2.dp,
-////                            color = Color(0XFF4c8acc),
-////                            shape = RoundedCornerShape(10.dp)
-////                        )
-//
-//                ) {
-//                    Column(
-//                        modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center
-//                    ) {
-////                        Icon(Icons.Outlined.Person, contentDescription = "")
-//                        if (text.isEmpty())
-//                            Text(
-//                                text = "Masukkan nama file",
-//                                modifier = Modifier.align(Alignment.CenterHorizontally),
-//                                fontSize = 32.sp,
-//                                fontWeight = FontWeight.ExtraBold,
-//                                fontFamily = poppins,
-//                                color = Color.Gray
-//                            )
-//                        // you have to invoke this function then cursor will focus and you will able to write something
-//                        innerTextField.invoke()
-//                    }
-//                }
-//            }
-//        )
 
         Spacer(modifier = Modifier.height(32.dp))
         Image(

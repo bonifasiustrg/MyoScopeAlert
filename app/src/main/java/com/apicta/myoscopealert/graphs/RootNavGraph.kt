@@ -24,7 +24,8 @@ fun RootNavigationGraph(navController: NavHostController, dataStoreManager: Data
             Graph.MAIN
         } else {
             Graph.AUTHENTICATION
-        }
+        },
+
     ) {
         authNavGraph(navController = navController, dataStoreManager = dataStoreManager)
         composable(route = Graph.MAIN) {
