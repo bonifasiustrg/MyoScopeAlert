@@ -1,7 +1,10 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
@@ -32,16 +37,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun HomeScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+
     ) {
         Text(text = "Hallo,")
         Text(
@@ -73,7 +82,9 @@ fun HomeScreen(navController: NavHostController) {
                 Text(text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda", fontSize = 12.sp)
 
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                              navController.navigate(BottomBarScreen.Record.route)
+                    },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -180,7 +191,9 @@ fun HomeScreen(navController: NavHostController) {
             Column(Modifier.weight(1f)) {
                 Text(text = "Lakukan Rekaman Jantung", fontWeight = FontWeight.Bold)
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                              navController.navigate("connect_bluetooth")
+                    },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()
                 ) {

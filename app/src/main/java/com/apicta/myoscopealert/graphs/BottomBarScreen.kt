@@ -2,13 +2,20 @@ package com.apicta.myoscopealert.graphs
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.ManageHistory
+import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.ManageHistory
+import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomBarScreen(
@@ -27,15 +34,15 @@ sealed class BottomBarScreen(
     object Record : BottomBarScreen(
         route = "RECORD",
         title = "RECORD",
-        selectedIcon = Icons.Filled.Add,
-        unselectedIcon = Icons.Outlined.Add
+        selectedIcon = Icons.Filled.MonitorHeart,
+        unselectedIcon = Icons.Outlined.MonitorHeart
 
     )
     object History : BottomBarScreen(
         route = "HISTORY",
         title = "HISTORY",
-        selectedIcon = Icons.Filled.List,
-        unselectedIcon = Icons.Outlined.List
+        selectedIcon = Icons.Filled.ManageHistory,
+        unselectedIcon = Icons.Outlined.ManageHistory
     )
     object Profile : BottomBarScreen(
         route = "PROFILE",

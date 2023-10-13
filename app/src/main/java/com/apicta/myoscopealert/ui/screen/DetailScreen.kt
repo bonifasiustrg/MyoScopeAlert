@@ -32,11 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.primary
 
 @Composable
-fun HistoryDetail() {
+fun HistoryDetail(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -134,7 +137,20 @@ fun HistoryDetail() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = {
+                navController.navigate(BottomBarScreen.History.route) {
+                    // Pop up to the start destination of the graph
+                    popUpTo(navController.graph.startDestinationId) {
+                        // Pop all inclusive
+                        inclusive = true
+                    }
+                    // Avoid multiple copies of the same destination when re-selecting it
+                    launchSingleTop = true
+                    // Restore state when re-selecting a previously selected item
+                    restoreState = true
+                }
+
+            },
             colors = ButtonDefaults.buttonColors(primary),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
@@ -146,5 +162,5 @@ fun HistoryDetail() {
 @Preview(showBackground = true)
 @Composable
 fun HistoryDetailPrev() {
-    HistoryDetail()
+    HistoryDetail(rememberNavController())
 }

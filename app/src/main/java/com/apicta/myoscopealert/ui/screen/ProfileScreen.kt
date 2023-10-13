@@ -2,10 +2,12 @@ package com.apicta.myoscopealert.ui.screen
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -27,24 +29,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.MainActivity
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
+import com.apicta.myoscopealert.ui.theme.primary
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreManager) {
     val context = LocalContext.current
     var storedToken by remember { mutableStateOf<String?>(null) }
     Log.d("ProfileScreen1", "Stored Token: $storedToken")
+    val scope = rememberCoroutineScope()
 
     val isLoading = remember { mutableStateOf(false) }
     // Ambil token jika belum diinisialisasi
@@ -61,67 +69,93 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
     val profileResponse by viewModel.profileResponse.collectAsState()
 
 
+//    Surface {
+//        Box(modifier = Modifier
+//            .fillMaxWidth()
+//            .background(color = primary)
+//            .height(200.dp))
+//    }
+
     Surface(modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp)) {
-        Column(Modifier.fillMaxSize()) {
-            Text(text = "Profile Screen", fontWeight = FontWeight.Bold)
-            if (profileResponse == null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Center){
-                    CircularProgressIndicator()
-                }
-            } else {
+    ) {
+        Column(Modifier.fillMaxWidth().height(200.dp).background(primary)) {}
 
-                Spacer(modifier = Modifier.height(32.dp))
+        Box(Modifier.background(Color.Transparent)) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+                    .padding(16.dp)
 
-                Text(text = "Your Data", fontWeight = FontWeight.Bold)
-                Text(text = profileResponse?.data?.user?.id.toString())
-                Text(text = profileResponse?.data?.user?.email.toString())
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = profileResponse?.data?.profile?.fullname.toString())
-                Text(text = profileResponse?.data?.profile?.address.toString())
-                Text(text = profileResponse?.data?.profile?.phone.toString())
-                Text(text = profileResponse?.data?.profile?.emergencyPhone.toString())
-                Text(text = profileResponse?.data?.profile?.age.toString())
-                Text(text = profileResponse?.data?.profile?.gender.toString())
-                Text(text = profileResponse?.data?.profile?.condition.toString())
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Relations", fontWeight = FontWeight.Bold)
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.fullname.toString())
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.address.toString())
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.phone.toString())
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.emergencyPhone.toString())
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.gender.toString())
-                Text(text = profileResponse?.data?.profile?.relations?.get(0)?.age.toString())
-
-
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-            }
-            Button(colors = ButtonDefaults.buttonColors(Color.Red),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = {
-                    isLoading.value = true
-                    viewModel.performLogout(storedToken!!)
-                    GlobalScope.launch {
-                        delay(1000)
-                        val intent = Intent(context, MainActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        context.startActivity(intent)
-                    }
-
-
-                }
             ) {
-                if (isLoading.value) {
-                    CircularProgressIndicator(color = Color.Yellow)
+
+                Text(text = "Profile Screen", fontWeight = FontWeight.Bold)
+                if (profileResponse == null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Center){
+                        CircularProgressIndicator()
+                    }
                 } else {
-                    Text("Logout")
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(text = "Your Data", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = profileResponse?.data?.user?.id.toString(), color = Color.White)
+                    Text(text = profileResponse?.data?.user?.email.toString(), color = Color.White)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = profileResponse?.data?.profile?.fullname.toString())
+                    Text(text = profileResponse?.data?.profile?.address.toString())
+                    Text(text = profileResponse?.data?.profile?.phone.toString())
+                    Text(text = profileResponse?.data?.profile?.emergencyPhone.toString())
+                    Text(text = profileResponse?.data?.profile?.age.toString())
+                    Text(text = profileResponse?.data?.profile?.gender.toString())
+                    Text(text = profileResponse?.data?.profile?.condition.toString())
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Relations", fontWeight = FontWeight.Bold)
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.fullname.toString())
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.address.toString())
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.phone.toString())
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.emergencyPhone.toString())
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.gender.toString())
+                    Text(text = profileResponse?.data?.profile?.relations?.get(0)?.age.toString())
+
+
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                }
+                Button(colors = ButtonDefaults.buttonColors(Color.Red),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = {
+                        isLoading.value = true
+                        viewModel.performLogout(storedToken!!)
+                        scope.launch {
+                            delay(1000)
+                            val intent = Intent(context, MainActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                            context.startActivity(intent)
+                        }
+
+
+                    }
+                ) {
+                    if (isLoading.value) {
+                        CircularProgressIndicator(color = Color.Yellow)
+                    } else {
+                        Text("Logout")
+                    }
                 }
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun ProfilePrev() {
+    ProfileScreen(navController = rememberNavController(), dataStoreManager = DataStoreManager(
+        LocalContext.current)
+    )
 }

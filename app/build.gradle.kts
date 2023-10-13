@@ -60,6 +60,9 @@ android {
 }
 
 dependencies {
+//    extended icon
+    implementation("androidx.compose.material:material-icons-extended:1.4.3")
+
 //    HILT
     implementation("com.google.dagger:hilt-android:2.44")
 //    implementation("androidx.wear.compose:compose-material3:1.0.0-alpha11")
@@ -85,7 +88,8 @@ dependencies {
     //Splash Api
     implementation("androidx.core:core-splashscreen:1.0.1")
 
-
+    val lottieVersion = "6.1.0"
+    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")

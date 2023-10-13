@@ -10,6 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            google()
+            url = java.net.URI("https://oss.sonatype.org/content/repositories/snapshots/")
+        }
     }
 }
 

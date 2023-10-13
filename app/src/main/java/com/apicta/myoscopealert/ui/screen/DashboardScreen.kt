@@ -2,7 +2,9 @@
 
 package com.apicta.myoscopealert.ui.screen
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +47,7 @@ import com.apicta.myoscopealert.ui.theme.secondary
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(dataStoreManager: DataStoreManager, navController: NavHostController = rememberNavController()) {
@@ -100,7 +103,8 @@ fun BottomBar(navController: NavHostController) {
                     topEnd = 16.dp
                 )
             ),
-            containerColor = primary
+            containerColor = primary,
+            contentColor = Color.White
         ) {
             screens.forEach { screen ->
                 AddItem(
@@ -149,12 +153,15 @@ fun RowScope.AddItem(
         },
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = Color.White,
+            selectedTextColor = Color.White,
             indicatorColor = primary,
-            unselectedIconColor = secondary
+            unselectedIconColor = secondary,
+            unselectedTextColor = secondary
         )
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Preview
 @Composable
 fun DashboardScreenPrev() {

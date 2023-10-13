@@ -93,7 +93,7 @@ fun HistoryScreen(navController: NavHostController, token: String) {
 
         LazyColumn() {
             items(20) {
-                HistoryItem()
+                HistoryItem(navController)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -101,7 +101,7 @@ fun HistoryScreen(navController: NavHostController, token: String) {
 }
 
 @Composable
-fun HistoryItem() {
+fun HistoryItem(navController: NavHostController) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -119,7 +119,9 @@ fun HistoryItem() {
 
 
         Button(
-            onClick = { /*TODO*/ }, colors = ButtonDefaults.buttonColors(
+            onClick = {
+                      navController.navigate("detail_history")
+            }, colors = ButtonDefaults.buttonColors(
                 containerColor = primary,
                 contentColor = Color.White
             )

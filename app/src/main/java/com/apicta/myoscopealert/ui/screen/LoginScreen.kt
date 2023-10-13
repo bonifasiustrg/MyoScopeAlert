@@ -1,6 +1,7 @@
 package com.apicta.myoscopealert.ui.screen
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.graphs.Graph
 import com.apicta.myoscopealert.models.UserViewModel
@@ -69,15 +73,15 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
         Box(
             modifier = Modifier
         ) {
-//            Image(
-//                painter = painterResource(id = R.drawable.user_sign_in),
-//                contentDescription = null,
-//                contentScale = ContentScale.Fit,
-//                modifier = Modifier
-//                    .height(180.dp)
-//                    .fillMaxWidth(),
-//
-//                )
+            Image(
+                painter = painterResource(id = R.drawable.ic_icon),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .height(180.dp)
+                    .fillMaxWidth(),
+
+                )
             Box(
                 modifier = Modifier
                     .background(

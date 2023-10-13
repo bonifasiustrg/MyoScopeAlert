@@ -1,15 +1,20 @@
 package com.apicta.myoscopealert.graphs
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.ui.screen.ConnectBluetoothScreen
+import com.apicta.myoscopealert.ui.screen.HistoryDetail
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
 import com.apicta.myoscopealert.ui.screen.ProfileScreen
 import com.apicta.myoscopealert.ui.screen.RecordScreen
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
     val storedToken = "token"
@@ -29,6 +34,13 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)
+        }
+
+        composable(route = "detail_history") {
+            HistoryDetail(navController)
+        }
+        composable(route = "connect_bluetooth") {
+            ConnectBluetoothScreen()
         }
 //        detailsNavGraph(navController = navController)
     }
