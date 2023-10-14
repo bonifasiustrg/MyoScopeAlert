@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,11 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,7 +42,7 @@ import com.apicta.myoscopealert.ui.theme.primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(navController: NavHostController, token: String) {
+fun HistoryScreen(navController: NavHostController, token: String="") {
     var query by remember {
         mutableStateOf("")
     }
@@ -77,11 +73,6 @@ fun HistoryScreen(navController: NavHostController, token: String) {
                 containerColor = Color.Transparent,
 
                 ),
-//            textStyle = TextStyle(
-//                fontSize = 14.sp,
-//                fontFamily = poppins,
-//
-//                )
 
             trailingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = null)

@@ -20,11 +20,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.graphs.RootNavigationGraph
+import com.apicta.myoscopealert.ui.screen.FileDetail
+import com.apicta.myoscopealert.ui.screen.FileListScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -45,32 +53,44 @@ class MainActivity : ComponentActivity() {
 
 
         installSplashScreen()
-        // Check to see if the Bluetooth classic feature is available.
-        val bluetoothAvailable = packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)
-
-        // Check to see if the BLE feature is available.
-        val bluetoothLEAvailable =
-            packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
-
         setContent {
             MyoScopeAlertTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    /*INSTANCE*/
-                    Log.e("bt", "$bluetoothAvailable $bluetoothLEAvailable")
-//                    Button(onClick = {
-//                        takePermission.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
-//
-//                    }) {
-//                        Text("Konek Bluetooth")
-//                    }
                     RootNavigationGraph(navController = rememberNavController(), dataStoreManager)
-
+//                    MainNavGraph(rememberNavController())
 
                 }
             }
         }
+    }
+}
+@RequiresApi(Build.VERSION_CODES.S)
+@Composable
+fun MainNavGraph(navController: NavHostController) {
+    val storedToken = "token"
+    NavHost(
+        navController = navController,
+        startDestination = "file_list"
+    ) {
+        composable(route = "file_list") {
+            FileListScreen(navController)
+        }
+
+        composable(
+            route = "detail/{fileName}",
+            arguments = listOf(navArgument("fileName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            // Dapatkan nilai fileName dari argumen navigasi
+            val fileName = backStackEntry.arguments?.getString("fileName")
+
+            // Komponen untuk menampilkan halaman detail
+            // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
+            FileDetail(fileName)
+        }
+
+//        detailsNavGraph(navController = navController)
     }
 }

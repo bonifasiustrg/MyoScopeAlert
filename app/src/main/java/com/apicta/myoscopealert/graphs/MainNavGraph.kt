@@ -4,10 +4,14 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.ui.screen.ConnectBluetoothScreen
+import com.apicta.myoscopealert.ui.screen.FileDetail
+import com.apicta.myoscopealert.ui.screen.FileListScreen
 import com.apicta.myoscopealert.ui.screen.HistoryDetail
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
@@ -30,7 +34,9 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             RecordScreen(navController = navController)
         }
         composable(route = BottomBarScreen.History.route) {
-            HistoryScreen(navController = navController, storedToken)
+//            HistoryScreen(navController = navController, storedToken)
+//            HistoryScreen(navController)
+            FileListScreen(navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)
@@ -42,6 +48,19 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         composable(route = "connect_bluetooth") {
             ConnectBluetoothScreen()
         }
+
+        composable(
+            route = "detail/{fileName}",
+            arguments = listOf(navArgument("fileName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            // Dapatkan nilai fileName dari argumen navigasi
+            val fileName = backStackEntry.arguments?.getString("fileName")
+
+            // Komponen untuk menampilkan halaman detail
+            // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
+            FileDetail(fileName)
+        }
+
 //        detailsNavGraph(navController = navController)
     }
 }

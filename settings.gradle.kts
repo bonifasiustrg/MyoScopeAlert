@@ -13,6 +13,7 @@ dependencyResolutionManagement {
         maven {
             google()
             url = java.net.URI("https://oss.sonatype.org/content/repositories/snapshots/")
+            url = java.net.URI("https://jitpack.io")
         }
     }
 }

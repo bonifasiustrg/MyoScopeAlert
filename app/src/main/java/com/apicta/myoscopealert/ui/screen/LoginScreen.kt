@@ -79,7 +79,9 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .height(180.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(top = 64.dp)
+                ,
 
                 )
             Box(
