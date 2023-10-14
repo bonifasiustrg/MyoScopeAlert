@@ -78,9 +78,9 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .height(180.dp)
+                    .height(210.dp)
                     .fillMaxWidth()
-                    .padding(top = 64.dp)
+                    .padding(top = 60.dp)
                 ,
 
                 )
@@ -104,7 +104,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                     ,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(45.dp))
 
                     Text(
                         text = "Masuk",
@@ -117,7 +117,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                         fontWeight = FontWeight.ExtraBold,
                         fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Email",
                         fontFamily = poppins,
@@ -152,7 +152,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                     Spacer(modifier = Modifier.padding(14.dp))
                     GradientButton(
                         gradientColors = gradientColor,
-                        cornerRadius = 16.dp,
+                        cornerRadius = 14.dp,
                         nameButton = "LOGIN",
                         roundedCornerShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
                         onClick = {

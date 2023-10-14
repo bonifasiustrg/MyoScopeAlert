@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun HistoryScreen(navController: NavHostController, token: String = "") {
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
     ) {
-        Text(text = "Data Rekaman", fontSize = 36.sp, fontWeight = FontWeight.ExtraBold)
+        Text(text = "Data Rekaman", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = query,
@@ -68,18 +69,19 @@ fun HistoryScreen(navController: NavHostController, token: String = "") {
                     text = "Cari rekaman",
                     color = Color.Gray,
                     fontWeight = FontWeight.ExtraBold,
-                    fontFamily = poppins
+                    fontSize = 12.sp
                 )
             },
             modifier = Modifier
                 .background(color = Color.Transparent)
                 .fillMaxWidth(0.8f)
                 .align(Alignment.CenterHorizontally)
-                .border(2.dp, Color.Gray, shape = RoundedCornerShape(50.dp)),
+                .border(2.dp, primary, shape = RoundedCornerShape(50.dp)),
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color.Transparent,
 
                 ),
+            textStyle = TextStyle(fontSize = 12.sp),
 
             trailingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = null)
@@ -96,19 +98,19 @@ fun HistoryScreen(navController: NavHostController, token: String = "") {
 //        }
 
         FileListScreen(navController)
-        Spacer(modifier = Modifier.weight(1f))
-        FloatingActionButton(modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(bottom = 16.dp),
-            onClick = {
-                navController.navigate(BottomBarScreen.Record.route)
-        }) {
-            Icon(
-                imageVector = Icons.Filled.Mic,
-                contentDescription = null,
-                modifier = Modifier.size(36.dp)
-            )
-        }
+//        Spacer(modifier = Modifier.weight(1f))
+//        FloatingActionButton(modifier = Modifier
+//            .align(Alignment.CenterHorizontally)
+//            .padding(bottom = 16.dp),
+//            onClick = {
+//                navController.navigate(BottomBarScreen.Record.route)
+//        }) {
+//            Icon(
+//                imageVector = Icons.Filled.Mic,
+//                contentDescription = null,
+//                modifier = Modifier.size(36.dp)
+//            )
+//        }
     }
 }
 

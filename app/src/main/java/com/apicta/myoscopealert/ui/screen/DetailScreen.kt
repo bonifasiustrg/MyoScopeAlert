@@ -1,8 +1,16 @@
 package com.apicta.myoscopealert.ui.screen
 
 
+import android.content.Context
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaPlayer
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,58 +20,433 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.theme.secondary
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.io.DataInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+
+
+@Composable
+fun FileDetail(filename: String?, navController: NavHostController) {
+//    val ctx = LocalContext.current
+    var isBack by remember {
+        mutableStateOf(false)
+    }
+    val context = LocalContext.current
+
+    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val isPlaying = remember {
+        mutableStateOf(false)
+    }
+    val mediaPlayer = remember {
+        MediaPlayer().apply {
+            setDataSource(filePath)
+            prepare()
+        }
+    }
+    var progress by remember { mutableFloatStateOf(0f) }
+    val animatedProgress = animateFloatAsState(
+        targetValue = progress,
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+    ).value
+
+
+    // Set tombol play dan stop
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+//            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+
+
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(primary)
+                .padding(16.dp)) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "recordwave3.wav", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = "Dokter     : Saparudin ", color = Color.White)
+            Text(text = "Tanggal    : 9 September 2023", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // SetUpChart(context)
+        ProcessWavFileData(filePath, context)
+        // Menampilkan progress bar
+        LinearProgressIndicator(
+            progress = animatedProgress,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
+                .padding(horizontal = 16.dp),
+            color = Color.Blue.copy(alpha = 0.2f)
+        )
+        Button(
+            shape = CircleShape,
+            onClick = {
+                // Mulai atau berhenti memutar audio
+                if (isPlaying.value) {
+                    if (mediaPlayer.isPlaying) {
+                        mediaPlayer.pause()
+                    }
+                } else {
+                    mediaPlayer.start()
+                    // Memantau progress audio
+                    CoroutineScope(Dispatchers.IO).launch {
+                        while (isPlaying.value) {
+                            var currentPosition = mediaPlayer.currentPosition.toFloat()
+                            val totalDuration = mediaPlayer.duration.toFloat()
+                            Log.e("progress", "$currentPosition | $totalDuration")
+                            val progressPercentage = currentPosition / totalDuration
+                            progress = progressPercentage
+                            if (progress == 1.0f) {
+                                isPlaying.value = false
+                            }
+                            delay(500)
+
+                        }
+                    }
+                }
+                isPlaying.value = !isPlaying.value
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Icon(imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(32.dp))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "Prediksi Status Kesehatan Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+        var isPredicting by remember { mutableStateOf(false) }
+        if (isPredicting) {
+
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFFFF6F6F))
+                    .padding(vertical = 14.dp, horizontal = 64.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "MyoaCardial Infarction",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    )
+
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFF72D99D))
+                    .padding(vertical = 14.dp, horizontal = 64.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "Jantung Normal",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    )
+
+                    Icon(
+                        imageVector = Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        Button(
+            onClick = {
+//                isPredicting = true
+                if (isBack) {
+                    navController.navigate(BottomBarScreen.History.route) {
+                        // Pop up to the start destination of the graph
+                        popUpTo(navController.graph.startDestinationId) {
+                            // Pop all inclusive
+                            inclusive = true
+                        }
+                        // Avoid multiple copies of the same destination when re-selecting it
+                        launchSingleTop = true
+                        // Restore state when re-selecting a previously selected item
+                        restoreState = true
+                    }
+                } else if (isPredicting == false) {
+                    isPredicting = true
+                    Toast.makeText(context, "Your data is processing...", Toast.LENGTH_SHORT).show()
+                    isBack = true
+                }
+
+            },
+            colors = ButtonDefaults.buttonColors(primary),
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            if (!isPredicting) {
+                Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
+                Text(text = "Prediksi")
+            } else if (isPredicting && isBack) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                Text(text = "Kembali")
+            }
+        }
+
+
+    }
+
+
+    // Tracking progress audio
+    LaunchedEffect(key1 = isPlaying.value) {
+        while (isPlaying.value) {
+            // Ambil progress audio saat ini
+            val currentPosition = mediaPlayer.currentPosition / 1000
+
+            // Log progress audio
+            Log.e("AudioPlayer", "Progress: $currentPosition")
+            Log.e("AudioPlayer", "Progressbar: ${progress}")
+
+            // Tunggu 1 detik
+            delay(1000)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        // Ketika komponen dihancurkan, hentikan pemutaran audio
+        onDispose {
+            mediaPlayer.stop()
+            mediaPlayer.release()
+        }
+    }
+}
+
+@Composable
+fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
+    val SAMPLE_RATE = 8000
+    val SHRT_MAX = 32767
+
+    AndroidViewBinding(SignalChartBinding::inflate) {
+        signalView.description?.isEnabled = false
+        signalView.setTouchEnabled(true)
+        signalView.setPinchZoom(true)
+        signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
+        signalView.setDrawGridBackground(false)
+
+        // Customize X-axis properties if needed
+        val xAxis = signalView?.xAxis
+        xAxis?.setDrawGridLines(false)
+
+        // Customize Y-axis properties if needed
+        val yAxis = signalView?.axisLeft
+        yAxis?.setDrawGridLines(false)
+
+        val wavFile = File(wavFilePath)
+        val audioData = ArrayList<Entry>()
+
+        // Read the WAV file using AudioRecord
+        val bufferSize = AudioRecord.getMinBufferSize(
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+
+        val wavData = ByteArray(bufferSize)
+        val dataPoints = ArrayList<Float>()
+
+        val inputStream = FileInputStream(wavFile)
+        val bufferedInputStream = BufferedInputStream(inputStream)
+        val dataInputStream = DataInputStream(bufferedInputStream)
+
+
+        try {
+            var bytesRead = dataInputStream.read(wavData, 0, bufferSize)
+
+            while (bytesRead != -1) {
+                // Process the WAV data and convert it to data points suitable for the chart
+                for (i in 0 until bytesRead / 2) { // Assuming 16-bit PCM
+                    val sample =
+                        wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
+                    val amplitude = sample.toFloat() / SHRT_MAX.toFloat() // Normalize amplitude
+                    dataPoints.add(amplitude)
+                }
+
+                bytesRead = dataInputStream.read(wavData, 0, bufferSize)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            dataInputStream.close()
+        }
+        Log.e("processwav", "try n catch bytes read")
+
+        // Convert data points to Entry objects for the chart
+        for (i in dataPoints.indices) {
+            val entry = Entry(i.toFloat(), dataPoints[i])
+            audioData.add(entry)
+        }
+        Log.e("processwav", "Convert data points to Entry objects for the chart")
+
+        // Create a LineDataSet with the audio data
+        val dataSet = LineDataSet(audioData, "Heart Beat Signal")
+        dataSet.color = R.color.green
+        dataSet.setDrawCircles(false)
+        Log.e("processwav", "Create a LineDataSet with the audio data")
+
+        // Create a LineData object and set the LineDataSet
+        val lineData = LineData(dataSet)
+        Log.e("processwav", "Create a LineData object and set the LineDataSet")
+
+        // Set the LineData object to the chart
+        signalView?.data = lineData
+        Log.e("processwav", "Set the LineData object to the chart")
+
+        // Refresh the chart
+        signalView?.invalidate()
+        Log.e("processwav", "Refresh signalview")
+    }
+}
+
+@Composable
+fun SetUpChart(ctx: Context) {
+    AndroidViewBinding(
+        SignalChartBinding::inflate,
+        modifier = Modifier.border(width = 2.dp, color = secondary, shape = RoundedCornerShape(16.dp))
+    ) {
+        // Configure chart properties
+        signalView.description?.isEnabled = false
+        signalView.setTouchEnabled(true)
+        signalView.setPinchZoom(true)
+        signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
+        signalView.setDrawGridBackground(false)
+
+        // Customize X-axis properties if needed
+        val xAxis = signalView?.xAxis
+        xAxis?.setDrawGridLines(false)
+
+        // Customize Y-axis properties if needed
+        val yAxis = signalView?.axisLeft
+        yAxis?.setDrawGridLines(false)
+    }
+}
+
 
 @Composable
 fun HistoryDetail(navController: NavHostController) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp)
-            .background(
-                color = primary,
-                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
-            )
-    )
+    val ctx = LocalContext.current
+    val isBack by remember {
+        mutableStateOf(false)
+    }
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(140.dp)
+//            .background(
+//                color = primary,
+//                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
+//            )
+//    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+//            .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Ceritanya ini nama file", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
-        Text(text = "Dokter : Saparudin ", color = Color.White)
-        Text(text = "Tanggal : 9 September 2023", color = Color.White)
+        Column(Modifier.background(primary)) {
+            Text(text = "recordwave3.wav", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = "Dokter     : Saparudin ", color = Color.White)
+            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
 
-        Spacer(modifier = Modifier.height(48.dp))
+        }
 
-        Text(text = "Hasil Rekaman")
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(text = "Hasil Rekaman", fontSize = 14.sp, fontWeight = FontWeight.Bold)
 
         Image(
             painter = painterResource(id = R.drawable.chart),
@@ -77,84 +460,98 @@ fun HistoryDetail(navController: NavHostController) {
         )
 
         Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "Status")
+        Text(text = "Prediksi Status Kesehatan Jantung", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        var isPredicting by remember { mutableStateOf(false) }
+        if (isPredicting) {
 
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .clip(RoundedCornerShape(50.dp))
-                .background(Color(0xFFFF6F6F))
-                .padding(vertical = 14.dp, horizontal = 64.dp)
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.8f)
-        ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    text = "MI",
-                    style = TextStyle(
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFFFF6F6F))
+                    .padding(vertical = 14.dp, horizontal = 64.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "MyoaCardial Infarction",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
                     )
-                )
 
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .clip(RoundedCornerShape(50.dp))
-                .background(Color(0xFF72D99D))
-                .padding(vertical = 14.dp, horizontal = 64.dp)
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.8f)
-
-        ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    text = "MI",
-                    style = TextStyle(
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = null,
+                        tint = Color.White
                     )
-                )
-
-                Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFF72D99D))
+                    .padding(vertical = 14.dp, horizontal = 64.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "Jantung Normal",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    )
+
+                    Icon(
+                        imageVector = Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                navController.navigate(BottomBarScreen.History.route) {
-                    // Pop up to the start destination of the graph
-                    popUpTo(navController.graph.startDestinationId) {
-                        // Pop all inclusive
-                        inclusive = true
+                !isPredicting
+                if (isBack) {
+                    navController.navigate(BottomBarScreen.History.route) {
+                        // Pop up to the start destination of the graph
+                        popUpTo(navController.graph.startDestinationId) {
+                            // Pop all inclusive
+                            inclusive = true
+                        }
+                        // Avoid multiple copies of the same destination when re-selecting it
+                        launchSingleTop = true
+                        // Restore state when re-selecting a previously selected item
+                        restoreState = true
                     }
-                    // Avoid multiple copies of the same destination when re-selecting it
-                    launchSingleTop = true
-                    // Restore state when re-selecting a previously selected item
-                    restoreState = true
+                } else if (isPredicting) {
+                        isPredicting = true
+                        Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
+                        !isBack
                 }
 
             },
             colors = ButtonDefaults.buttonColors(primary),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "Selesai")
+            Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
+            if (!isPredicting) Text(text = "Prediksi") else if (isPredicting && isBack) {
+                Text(text = "Kembali")
+            }
         }
     }
 }

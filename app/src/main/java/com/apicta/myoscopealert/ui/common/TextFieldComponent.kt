@@ -8,6 +8,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
 import androidx.compose.material3.ButtonDefaults
@@ -311,13 +314,16 @@ fun GradientButton(
             contentAlignment = Alignment.Center
         ) {
             if (isLoading.value) {
-                CircularProgressIndicator(color = Color.Yellow)
+                CircularProgressIndicator(color = Color.Yellow, modifier = Modifier.fillMaxHeight())
             } else {
-                Text(
-                    text = nameButton,
-                    fontSize = 20.sp,
-                    color = Color.White
-                )
+                Row {
+                    Icon(imageVector = Icons.Default.Login, contentDescription = null)
+                    Text(
+                        text = nameButton,
+                        fontSize = 20.sp,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -348,7 +354,9 @@ fun SimpleOutlinedTextFieldSample(textState: MutableState<String>) {
         colors = TextFieldDefaults.textFieldColors(
             containerColor = Color.White),
         singleLine = true,
-        modifier = Modifier.fillMaxWidth().padding(0.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp),
         keyboardActions = KeyboardActions(
             onDone = {
                 keyboardController?.hide()

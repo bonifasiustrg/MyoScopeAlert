@@ -85,7 +85,7 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
 
             // Komponen untuk menampilkan halaman detail
             // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
-            FileDetail(fileName)
+            FileDetail(fileName, navController)
         }
 
 //        detailsNavGraph(navController = navController)

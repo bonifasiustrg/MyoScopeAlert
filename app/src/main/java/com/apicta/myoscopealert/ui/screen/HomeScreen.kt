@@ -61,13 +61,11 @@ fun HomeScreen(navController: NavHostController) {
         Text(text = "Hallo,")
         Text(
             text = "Sutejo Goodman,",
-            fontStyle = MaterialTheme.typography.displayLarge.fontStyle,
-            fontFamily = poppins,
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp
+            fontSize = 32.sp
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             Modifier
@@ -78,9 +76,9 @@ fun HomeScreen(navController: NavHostController) {
                 painter = painterResource(id = R.drawable.welcome),
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 16.dp, end = 4.dp, bottom = 0.dp)
-                    .size(120.dp)
-                    .align(Alignment.CenterVertically),
+//                    .padding(start = 16.dp, top = 16.dp, end = 4.dp, bottom = 0.dp)
+                    .size(180.dp)
+                    .align(Alignment.Bottom),
                 contentScale = ContentScale.FillHeight
             )
 
@@ -99,12 +97,12 @@ fun HomeScreen(navController: NavHostController) {
                 }
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "Hasil Rekaman Terakhir",
-            fontStyle = MaterialTheme.typography.labelLarge.fontStyle,
-            fontWeight = FontWeight.Bold
+            fontSize = 18.sp,
+            fontWeight = FontWeight.ExtraBold
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -134,7 +132,7 @@ fun HomeScreen(navController: NavHostController) {
                             .padding(end = 4.dp),
                         tint = Color.Yellow
                     )
-                    Text(text = "28 September 2023")
+                    Text(text = "15 Oktober 2023")
                 }
                 Row {
                     Text(text = "oleh ")
@@ -149,7 +147,8 @@ fun HomeScreen(navController: NavHostController) {
 //                        .fillMaxWidth(),
 //                    contentScale = ContentScale.FillWidth
 //                )
-                SetUpChart(ctx = context)
+//                SetUpChart(ctx = context)
+                ProcessWavFileData(filePath, context)
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -169,7 +168,7 @@ fun HomeScreen(navController: NavHostController) {
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Negatif")
+                    Text(text = "Normal")
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = null,

@@ -48,6 +48,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.ui.common.AnimatedPreloader
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
@@ -60,14 +61,12 @@ import java.util.Locale
 fun RecordScreen(navController: NavHostController) {
 //    Text(text = "Record Screen")
     var title by remember {
-        mutableStateOf("recordwave3")
-    }
-    var duration by remember {
-        mutableStateOf(0)
+        mutableStateOf("RecordingName")
     }
     val ctx = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
     var showResult by remember { mutableStateOf(false) }
+    var isBTConnected by remember { mutableStateOf(false) }
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
     val context = LocalContext.current
     val filePath =
@@ -117,7 +116,9 @@ fun RecordScreen(navController: NavHostController) {
             }
         } else {
             LottieAnimation(
-                modifier = Modifier.fillMaxHeight(0.4f).fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxHeight(0.4f)
+                    .fillMaxWidth(),
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
             )
@@ -165,16 +166,22 @@ fun RecordScreen(navController: NavHostController) {
                         containerColor = Color(0xFF72D99D)
                     )
                 ) {
+
+
+
                     Icon(
                         imageVector = if (isRecording) Icons.Filled.StopCircle else Icons.Filled.Mic,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp)
                     )
                 }
-            } else {
+            } else if (isBTConnected == false) {
                 Button(
                     onClick = {
                         blStatus.value = true
+                        if (isBTConnected) {
+                            navController.navigate("connect_bluetooth")
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -184,7 +191,12 @@ fun RecordScreen(navController: NavHostController) {
                     )
                 ) {
                     Icon(
-                        imageVector = if (isRecording) Icons.Filled.BluetoothDisabled else Icons.Filled.BluetoothConnected,
+                        imageVector = if (isRecording) {
+                            Icons.Filled.BluetoothDisabled
+
+                        } else {
+                            Icons.Filled.BluetoothConnected
+                        },
                         contentDescription = null,
                         modifier = Modifier.size(32.dp)
                     )

@@ -5,6 +5,7 @@ package com.apicta.myoscopealert.ui.screen
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,7 +51,10 @@ import kotlinx.coroutines.runBlocking
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(dataStoreManager: DataStoreManager, navController: NavHostController = rememberNavController()) {
+fun DashboardScreen(
+    dataStoreManager: DataStoreManager,
+    navController: NavHostController = rememberNavController()
+) {
     var storedToken by remember { mutableStateOf<String?>(null) }
     Log.d("DashboardScreen1", "Stored Token: $storedToken")
 
@@ -101,9 +105,7 @@ fun BottomBar(navController: NavHostController) {
                 shape = RoundedCornerShape(
                     topStart = 16.dp,
                     topEnd = 16.dp
-                ),
-
-            ),
+                )),
             containerColor = primary,
             contentColor = Color.White
         ) {
