@@ -67,30 +67,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-@RequiresApi(Build.VERSION_CODES.S)
-@Composable
-fun MainNavGraph(navController: NavHostController) {
-    val storedToken = "token"
-    NavHost(
-        navController = navController,
-        startDestination = "file_list"
-    ) {
-        composable(route = "file_list") {
-            FileListScreen(navController)
-        }
-
-        composable(
-            route = "detail/{fileName}",
-            arguments = listOf(navArgument("fileName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            // Dapatkan nilai fileName dari argumen navigasi
-            val fileName = backStackEntry.arguments?.getString("fileName")
-
-            // Komponen untuk menampilkan halaman detail
-            // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
-            FileDetail(fileName)
-        }
-
-//        detailsNavGraph(navController = navController)
-    }
-}

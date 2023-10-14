@@ -2,6 +2,8 @@ package com.apicta.myoscopealert.graphs
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -34,9 +36,9 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             RecordScreen(navController = navController)
         }
         composable(route = BottomBarScreen.History.route) {
-//            HistoryScreen(navController = navController, storedToken)
+            HistoryScreen(navController = navController, storedToken)
 //            HistoryScreen(navController)
-            FileListScreen(navController)
+//            FileListScreen(navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)
@@ -51,7 +53,32 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
 
         composable(
             route = "detail/{fileName}",
-            arguments = listOf(navArgument("fileName") { type = NavType.StringType })
+            arguments = listOf(navArgument("fileName") { type = NavType.StringType }),
+
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                    animationSpec = tween(700)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                    animationSpec = tween(700)
+                )
+            }
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")

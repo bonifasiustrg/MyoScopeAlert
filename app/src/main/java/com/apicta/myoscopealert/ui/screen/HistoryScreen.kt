@@ -1,5 +1,7 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -13,10 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -37,12 +41,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(navController: NavHostController, token: String="") {
+fun HistoryScreen(navController: NavHostController, token: String = "") {
     var query by remember {
         mutableStateOf("")
     }
@@ -57,18 +63,19 @@ fun HistoryScreen(navController: NavHostController, token: String="") {
         TextField(
             value = query,
             onValueChange = { query = it },
-            placeholder = { Text(
-                text = "Cari rekaman",
-                color = Color.Gray,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = poppins)
+            placeholder = {
+                Text(
+                    text = "Cari rekaman",
+                    color = Color.Gray,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = poppins
+                )
             },
             modifier = Modifier
                 .background(color = Color.Transparent)
                 .fillMaxWidth(0.8f)
                 .align(Alignment.CenterHorizontally)
-                .border(2.dp, Color.Gray, shape = RoundedCornerShape(50.dp))
-            ,
+                .border(2.dp, Color.Gray, shape = RoundedCornerShape(50.dp)),
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color.Transparent,
 
@@ -81,12 +88,26 @@ fun HistoryScreen(navController: NavHostController, token: String="") {
         Spacer(modifier = Modifier.height(16.dp))
 
 
+//        LazyColumn() {
+//            items(20) {
+//                HistoryItem(navController)
+//                Spacer(modifier = Modifier.height(8.dp))
+//            }
+//        }
 
-        LazyColumn() {
-            items(20) {
-                HistoryItem(navController)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+        FileListScreen(navController)
+        Spacer(modifier = Modifier.weight(1f))
+        FloatingActionButton(modifier = Modifier
+            .align(Alignment.CenterHorizontally)
+            .padding(bottom = 16.dp),
+            onClick = {
+                navController.navigate(BottomBarScreen.Record.route)
+        }) {
+            Icon(
+                imageVector = Icons.Filled.Mic,
+                contentDescription = null,
+                modifier = Modifier.size(36.dp)
+            )
         }
     }
 }
@@ -111,7 +132,7 @@ fun HistoryItem(navController: NavHostController) {
 
         Button(
             onClick = {
-                      navController.navigate("detail_history")
+                navController.navigate("detail_history")
             }, colors = ButtonDefaults.buttonColors(
                 containerColor = primary,
                 contentColor = Color.White
@@ -130,5 +151,5 @@ fun HistoryItem(navController: NavHostController) {
 @Preview(showBackground = true)
 @Composable
 fun HistoryScreenPrev() {
-    HistoryScreen(navController = rememberNavController(), token = "tes")
+//    HistoryScreen(navController = rememberNavController(), token = "tes")
 }

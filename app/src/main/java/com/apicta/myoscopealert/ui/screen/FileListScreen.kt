@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,9 +23,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
@@ -37,8 +42,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -48,6 +56,8 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.models.FileModel
+import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.theme.secondary
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -60,25 +70,30 @@ import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun FileListScreen(navController: NavHostController) {
     val fileList = ArrayList<FileModel>()
 
-    val directory = File("/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings")
+    val directory =
+        File("/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings")
     val wavFiles = directory.listFiles { _, name -> name.endsWith(".wav") }
     val context = LocalContext.current
 // Konversi array File menjadi daftar nama file .wav
     val wavFileNames = wavFiles?.map { it.name } ?: emptyList()
 
     val contextWrapper = ContextWrapper(context)
-    val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+    val externalStorage: File =
+        contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
 
     val audioDirPath = externalStorage.absolutePath
 
     File(audioDirPath).walk().forEach {
-        if(it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
+        if (it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
     }
     Log.e("filelist", "$fileList")
     Log.e("filelist", "$wavFileNames")
@@ -86,23 +101,48 @@ fun FileListScreen(navController: NavHostController) {
 
     LazyColumn {
         items(/*wavFileNames*/fileList) { file ->
-//            // Tampilkan item daftar .wav di sini
-//            Text(text = fileName, modifier = Modifier.clickable {
-//                // Navigasi ke halaman detail saat item diklik
-//                // Implementasikan logika navigasi di sini\
-//                navController.navigate("detail/${fileName}")
-//            })
-            Column(Modifier.clickable {
-                // Navigasi ke halaman detail saat item diklik
-                // Implementasikan logika navigasi di sini\
-                navController.navigate("detail/${file.name}")
-            }) {
-                Text(text = /*fileName*/file.name!!)
-                Text(text = /*fileName*/file.date.toString())
+            Row(
+                Modifier
+                    .fillMaxWidth()
+//            .shadow(elevation = 4.dp, spotColor = Color.Gray, shape = RoundedCornerShape(16.dp))
+                    .border(2.dp, secondary, shape = RoundedCornerShape(16.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+
+//            .padding(8.dp)
+            ) {
+                Column(Modifier.weight(2f)) {
+                    Text(text = file.name.toString(), fontWeight = FontWeight.SemiBold)
+                    val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+
+                    val formattedDate = file.date?.let { Date(it) }?.let { dateFormat.format(it) }
+                    if (formattedDate != null) {
+                        Text(text = formattedDate)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+
+                Button(
+                    onClick = {
+                        navController.navigate("detail/${file.name}")
+
+                    }, colors = ButtonDefaults.buttonColors(
+                        containerColor = primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(text = "Lihat Hasil", fontWeight = FontWeight.Bold)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_next_arrow),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
+
 
 }
 
@@ -110,7 +150,8 @@ fun FileListScreen(navController: NavHostController) {
 fun FileDetail(filename: String?) {
     val context = LocalContext.current
 
-    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember {
         mutableStateOf(false)
     }
@@ -134,6 +175,16 @@ fun FileDetail(filename: String?) {
 //        SetUpChart(context)
 
         ProcessWavFileData(filePath, context)
+        // Menampilkan progress bar
+        LinearProgressIndicator(
+            progress = animatedProgress,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
+                .padding(horizontal = 16.dp),
+            color = Color.Blue.copy(alpha = 0.2f)
+
+        )
         Button(
             onClick = {
                 // Mulai atau berhenti memutar audio
@@ -146,12 +197,14 @@ fun FileDetail(filename: String?) {
                     // Memantau progress audio
                     CoroutineScope(Dispatchers.IO).launch {
                         while (isPlaying.value) {
-                            val currentPosition = mediaPlayer.currentPosition.toFloat()
+                            var currentPosition = mediaPlayer.currentPosition.toFloat()
                             val totalDuration = mediaPlayer.duration.toFloat()
                             Log.e("progress", "$currentPosition | $totalDuration")
                             val progressPercentage = currentPosition / totalDuration
                             progress = progressPercentage
-                            if (progress == 1.0f) isPlaying.value = false
+                            if (progress == 1.0f) {
+                                isPlaying.value = false
+                            }
                             delay(500)
 
                         }
@@ -161,19 +214,13 @@ fun FileDetail(filename: String?) {
             },
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(if (isPlaying.value) "Stop" else "Play")
+            if (isPlaying.value) Text("Stop") else {
+                Text("Play")
+//                progress =0f
+            }
+
         }
 
-        // Menampilkan progress bar
-        LinearProgressIndicator(
-            progress = animatedProgress,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .padding(horizontal = 16.dp),
-            color = Color.Blue.copy(alpha = 0.2f)
-
-        )
 
     }
 
@@ -246,7 +293,8 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
             while (bytesRead != -1) {
                 // Process the WAV data and convert it to data points suitable for the chart
                 for (i in 0 until bytesRead / 2) { // Assuming 16-bit PCM
-                    val sample = wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
+                    val sample =
+                        wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
                     val amplitude = sample.toFloat() / SHRT_MAX.toFloat() // Normalize amplitude
                     dataPoints.add(amplitude)
                 }
@@ -286,22 +334,34 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
         Log.e("processwav", "Refresh signalview")
     }
 }
-//@Composable
-//fun SetUpChart(ctx: Context) {
-//    AndroidViewBinding(SignalChartBinding::inflate) {
-//        // Configure chart properties
-//        signalView.description?.isEnabled = false
-//        signalView.setTouchEnabled(true)
-//        signalView.setPinchZoom(true)
-//        signalView.setBackgroundColor(getColor(ctx, R.color.white))
-//        signalView.setDrawGridBackground(false)
-//
-//        // Customize X-axis properties if needed
-//        val xAxis = signalView?.xAxis
-//        xAxis?.setDrawGridLines(false)
-//
-//        // Customize Y-axis properties if needed
-//        val yAxis = signalView?.axisLeft
-//        yAxis?.setDrawGridLines(false)
-//    }
-//}
+
+@Composable
+fun SetUpChart(ctx: Context) {
+    AndroidViewBinding(
+        SignalChartBinding::inflate,
+        modifier = Modifier.border(width = 2.dp, color = secondary, shape = RoundedCornerShape(16.dp))
+    ) {
+        // Configure chart properties
+        signalView.description?.isEnabled = false
+        signalView.setTouchEnabled(true)
+        signalView.setPinchZoom(true)
+        signalView.setBackgroundColor(getColor(ctx, R.color.white))
+        signalView.setDrawGridBackground(false)
+
+        // Customize X-axis properties if needed
+        val xAxis = signalView?.xAxis
+        xAxis?.setDrawGridLines(false)
+
+        // Customize Y-axis properties if needed
+        val yAxis = signalView?.axisLeft
+        yAxis?.setDrawGridLines(false)
+    }
+}
+
+private fun formatDate(inputDate: String): String {
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
+    val outputFormat = SimpleDateFormat("d MMMM yyyy HH:mm", Locale.US)
+
+    val date = inputFormat.parse(inputDate)
+    return outputFormat.format(date)
+}
