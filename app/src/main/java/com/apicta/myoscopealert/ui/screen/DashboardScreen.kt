@@ -101,7 +101,8 @@ fun BottomBar(navController: NavHostController) {
                 shape = RoundedCornerShape(
                     topStart = 16.dp,
                     topEnd = 16.dp
-                )
+                ),
+
             ),
             containerColor = primary,
             contentColor = Color.White

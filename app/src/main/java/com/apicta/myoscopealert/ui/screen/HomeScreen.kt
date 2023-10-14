@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,10 +47,14 @@ import com.apicta.myoscopealert.ui.theme.secondary
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/recordwave3.wav"
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
             .verticalScroll(rememberScrollState())
 
     ) {
@@ -77,13 +83,14 @@ fun HomeScreen(navController: NavHostController) {
                     .align(Alignment.CenterVertically),
                 contentScale = ContentScale.FillHeight
             )
+
             Column(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp)) {
                 Text(text = "Bagaimana perasaan Anda?", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
                 Text(text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda", fontSize = 12.sp)
 
                 Button(
                     onClick = {
-                              navController.navigate(BottomBarScreen.Record.route)
+                        navController.navigate(BottomBarScreen.Record.route)
                     },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()
@@ -135,13 +142,15 @@ fun HomeScreen(navController: NavHostController) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.chart),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentScale = ContentScale.FillWidth
-                )
+//                Image(
+//                    painter = painterResource(id = R.drawable.chart),
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    contentScale = ContentScale.FillWidth
+//                )
+                SetUpChart(ctx = context)
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     Modifier.fillMaxWidth(),

@@ -60,7 +60,7 @@ import java.util.Locale
 fun RecordScreen(navController: NavHostController) {
 //    Text(text = "Record Screen")
     var title by remember {
-        mutableStateOf("")
+        mutableStateOf("recordwave3")
     }
     var duration by remember {
         mutableStateOf(0)
@@ -69,6 +69,9 @@ fun RecordScreen(navController: NavHostController) {
     var isRecording by remember { mutableStateOf(false) }
     var showResult by remember { mutableStateOf(false) }
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
+    val context = LocalContext.current
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/recordwave3.wav"
     Column(
         Modifier
             .fillMaxSize()
@@ -106,7 +109,12 @@ fun RecordScreen(navController: NavHostController) {
 
 
         if (!isRecording) {
-            SetUpChart(ctx)
+            if (showResult) {
+                ProcessWavFileData(filePath, context)
+
+            } else {
+                SetUpChart(ctx)
+            }
         } else {
             LottieAnimation(
                 modifier = Modifier.fillMaxHeight(0.4f).fillMaxWidth(),
@@ -195,6 +203,9 @@ fun RecordScreen(navController: NavHostController) {
             Text(text = "Filename       : $title")
             Text(text = "Last modified  : ${currentTime.value}")
             Spacer(modifier = Modifier.height(16.dp))
+
+
+
 
             val fm = "recordwave3.wav"
             Button(
