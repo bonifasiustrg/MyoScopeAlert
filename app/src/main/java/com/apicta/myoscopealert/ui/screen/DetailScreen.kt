@@ -197,7 +197,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
                 modifier = Modifier.size(32.dp)
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = terniary
@@ -207,7 +207,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             CardContent("Hasil verifikasi Dokter")
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "Prediksi Status Kesehatan Jantung",
             fontSize = 16.sp,
@@ -624,7 +624,7 @@ private fun CardContent(name: String) {
         ) {
 //            Text(text = "Hello, ")
             Text(
-                text = name, style = MaterialTheme.typography.titleSmall.copy(
+                text = name, style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 )
             )

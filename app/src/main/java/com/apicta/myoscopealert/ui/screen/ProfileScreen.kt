@@ -240,8 +240,8 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
             }
         ) {
             if (isLoading.value) {
-//                CircularProgressIndicator(color = Color.Yellow)
-                AnimatedPreloader()
+                CircularProgressIndicator(color = Color.Yellow)
+//                AnimatedPreloader()
             } else {
                 Text("Logout")
                 Icon(imageVector = Icons.Default.Logout, contentDescription = null)
