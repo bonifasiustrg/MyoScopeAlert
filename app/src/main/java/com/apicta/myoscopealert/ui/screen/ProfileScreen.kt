@@ -6,16 +6,25 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Male
+import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,10 +44,12 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +62,9 @@ import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
 import com.apicta.myoscopealert.ui.common.AnimatedPreloader
+import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.theme.terniary
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -89,15 +102,15 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
 //            .height(200.dp))
 //    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp)
-            .background(
-                color = primary,
-                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
-            )
-    )
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(140.dp)
+//            .background(
+//                color = primary,
+//                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
+//            )
+//    )
 
 
     Column(
@@ -108,19 +121,16 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
 
     ) {
 
-        Text(text = "Profile Screen", fontWeight = FontWeight.Bold)
+//        Text(text = "Profile Screen", fontWeight = FontWeight.Bold)
         if (profileResponse == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Center) {
-//                CircularProgressIndicator()
-                Box(modifier = Modifier.size(32.dp)) {
-                    AnimatedPreloader()
-                }
+                CircularProgressIndicator()
+//                Box(modifier = Modifier.size(32.dp)) {
+//                    AnimatedPreloader()
+//                }
             }
         } else {
 
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(text = profileResponse?.data?.profile?.fullname.toString(), fontWeight = FontWeight.Bold, fontSize = 36.sp)
-            Text(text = profileResponse?.data?.user?.email.toString(), color = Color.White)
 
             Image(
                 painter = painterResource(id = R.drawable.profile),
@@ -128,37 +138,74 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
                 modifier = Modifier
                     .clip(shape = CircleShape)
                     .align(CenterHorizontally)
-                    .size(88.dp),
+                    .size(130.dp),
                 contentDescription = null
+            )
+            Text(
+                text = profileResponse?.data?.profile?.fullname.toString(),
+                fontFamily = poppins,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 28.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Address", fontWeight = FontWeight.Bold)
-            Text(text = profileResponse?.data?.profile?.address.toString())
+//            Text(text = "Address", fontWeight = FontWeight.Bold)
+//            Text(text = profileResponse?.data?.profile?.address.toString())
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Phones", fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = profileResponse?.data?.profile?.phone.toString())
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Age", fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = profileResponse?.data?.profile?.age.toString())
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Gender", fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = profileResponse?.data?.profile?.gender.toString())
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Condition", fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = profileResponse?.data?.profile?.condition.toString())
+            ProfileItem(
+                icon = Icons.Default.House,
+                label = "Alamat",
+                value = profileResponse?.data?.profile?.address.toString()
+            )
+            ProfileItem(
+                icon = Icons.Default.Call,
+                label = "No Telp",
+                value = profileResponse?.data?.profile?.phone.toString()
+            )
+            ProfileItem(
+                icon = Icons.Default.Face,
+                label = "Umur",
+                value = profileResponse?.data?.profile?.age.toString()
+            )
+            ProfileItem(
+                icon = Icons.Default.Male,
+                label = "Jenis Kelamin",
+                value = profileResponse?.data?.profile?.gender.toString()
+            )
+            ProfileItem(
+                icon = Icons.Default.MonitorHeart,
+                label = "Pemeriksaan Terakhir",
+                value = profileResponse?.data?.profile?.condition.toString()
+            )
+            ProfileItem(
+                icon = Icons.Default.Email,
+                label = "Email",
+                value = profileResponse?.data?.user?.email.toString()
+            )
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Phones", fontWeight = FontWeight.Bold)
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = profileResponse?.data?.profile?.phone.toString())
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Age", fontWeight = FontWeight.Bold)
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = profileResponse?.data?.profile?.age.toString())
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Gender", fontWeight = FontWeight.Bold)
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = profileResponse?.data?.profile?.gender.toString())
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Condition", fontWeight = FontWeight.Bold)
+//
+//            Text(text = profileResponse?.data?.profile?.condition.toString())
 
 //            Text(text = profileResponse?.data?.user?.id.toString(), color = Color.White)
 //            Text(text = profileResponse?.data?.profile?.emergencyPhone.toString())
@@ -171,7 +218,6 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
 //            Text(text = profileResponse?.data?.profile?.relations?.get(0)?.emergencyPhone.toString())
 //            Text(text = profileResponse?.data?.profile?.relations?.get(0)?.gender.toString())
 //            Text(text = profileResponse?.data?.profile?.relations?.get(0)?.age.toString())
-
 
 
 //            Spacer(modifier = Modifier.height(16.dp))
@@ -202,6 +248,40 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
             }
         }
     }
+
+}
+
+@Composable
+fun ProfileItem(icon: ImageVector, label: String, value: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(color = terniary, shape = RoundedCornerShape(16.dp))
+            .padding(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(32.dp)
+                .align(Alignment.CenterVertically)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = label,
+                color = Color.Gray,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(text = value, color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        }
+
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+
 
 }
 

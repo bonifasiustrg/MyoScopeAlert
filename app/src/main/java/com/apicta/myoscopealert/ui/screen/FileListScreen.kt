@@ -125,7 +125,7 @@ fun FileListScreen(navController: NavHostController) {
 //            .shadow(elevation = 4.dp, spotColor = Color.Gray, shape = RoundedCornerShape(16.dp))
                     .clip(shape = RoundedCornerShape(16.dp))
                     .background(color = secondary)
-                    .padding(start = 16.dp)
+                    .padding(start = 16.dp , end = 16.dp)
 //            .padding(8.dp)
             ) {
                 Column(Modifier.weight(2f)) {
@@ -173,13 +173,15 @@ fun FileListScreen(navController: NavHostController) {
                     ),
                     modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Text(text = "Lihat Hasil", fontWeight = FontWeight.Bold)
+                    Text(text = "Detail", fontWeight = FontWeight.Bold)
                     Icon(
                         painter = painterResource(id = R.drawable.ic_next_arrow),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(28.dp),
+                        tint = Color.White
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
             Spacer(modifier = Modifier.height(16.dp))
         }

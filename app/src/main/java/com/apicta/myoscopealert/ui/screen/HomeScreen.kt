@@ -54,13 +54,12 @@ fun HomeScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
             .verticalScroll(rememberScrollState())
 
     ) {
-        Text(text = "Hallo,")
+        Text(text = "Hallo,", modifier = Modifier.padding(top = 16.dp))
         Text(
-            text = "Sutejo Goodman,",
+            text = "Oorlo Moore,",
             fontWeight = FontWeight.ExtraBold,
             fontSize = 32.sp
         )
@@ -77,15 +76,15 @@ fun HomeScreen(navController: NavHostController) {
                 contentDescription = null,
                 modifier = Modifier
 //                    .padding(start = 16.dp, top = 16.dp, end = 4.dp, bottom = 0.dp)
-                    .size(180.dp)
+                    .size(160.dp)
                     .align(Alignment.Bottom),
                 contentScale = ContentScale.FillHeight
             )
 
             Column(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp)) {
                 Text(text = "Bagaimana perasaan Anda?", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
-                Text(text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda", fontSize = 12.sp)
-
+                Text(text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda", fontSize = 12.sp, lineHeight = 20.sp)
+                Spacer(modifier = Modifier.height(4.dp))
                 Button(
                     onClick = {
                         navController.navigate(BottomBarScreen.Record.route)

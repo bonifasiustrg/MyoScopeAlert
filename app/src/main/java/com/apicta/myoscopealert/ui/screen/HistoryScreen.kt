@@ -75,6 +75,7 @@ fun HistoryScreen(navController: NavHostController, token: String = "") {
             modifier = Modifier
                 .background(color = Color.Transparent)
                 .fillMaxWidth(0.8f)
+                .height(54.dp)
                 .align(Alignment.CenterHorizontally)
                 .border(2.dp, primary, shape = RoundedCornerShape(50.dp)),
             colors = TextFieldDefaults.textFieldColors(

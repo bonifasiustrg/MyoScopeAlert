@@ -7,7 +7,10 @@ import android.media.AudioRecord
 import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,14 +31,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,6 +76,7 @@ import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
+import com.apicta.myoscopealert.ui.theme.terniary
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -89,7 +99,8 @@ fun FileDetail(filename: String?, navController: NavHostController) {
     }
     val context = LocalContext.current
 
-    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember {
         mutableStateOf(false)
     }
@@ -117,17 +128,22 @@ fun FileDetail(filename: String?, navController: NavHostController) {
     ) {
 
 
-
         Column(
             Modifier
                 .fillMaxWidth()
                 .background(primary)
-                .padding(16.dp)) {
+                .padding(16.dp)
+        ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "recordwave3.wav", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(text = "Dokter     : Saparudin ", color = Color.White)
-            Text(text = "Tanggal    : 9 September 2023", color = Color.White)
+            Text(
+                text = "recordwave3.wav",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(text = "Dokter      : Saparudin ", color = Color.White)
+            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -166,7 +182,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
                             if (progress == 1.0f) {
                                 isPlaying.value = false
                             }
-                            delay(500)
+                            delay(200)
 
                         }
                     }
@@ -175,11 +191,28 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             },
             modifier = Modifier.padding(top = 16.dp)
         ) {
-            Icon(imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(32.dp))
+            Icon(
+                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = terniary
+            ),
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+        ) {
+            CardContent("Hasil verifikasi Dokter")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Prediksi Status Kesehatan Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = "Prediksi Status Kesehatan Jantung",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
         var isPredicting by remember { mutableStateOf(false) }
         if (isPredicting) {
 
@@ -210,7 +243,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Box(
                 modifier = Modifier
@@ -241,6 +274,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+
 
         Button(
             onClick = {
@@ -394,7 +428,11 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
 fun SetUpChart(ctx: Context) {
     AndroidViewBinding(
         SignalChartBinding::inflate,
-        modifier = Modifier.border(width = 2.dp, color = secondary, shape = RoundedCornerShape(16.dp))
+        modifier = Modifier.border(
+            width = 2.dp,
+            color = secondary,
+            shape = RoundedCornerShape(16.dp)
+        )
     ) {
         // Configure chart properties
         signalView.description?.isEnabled = false
@@ -438,7 +476,12 @@ fun HistoryDetail(navController: NavHostController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(Modifier.background(primary)) {
-            Text(text = "recordwave3.wav", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = "recordwave3.wav",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
             Text(text = "Dokter     : Saparudin ", color = Color.White)
             Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
 
@@ -460,7 +503,11 @@ fun HistoryDetail(navController: NavHostController) {
         )
 
         Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "Prediksi Status Kesehatan Jantung", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Prediksi Status Kesehatan Jantung",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
         var isPredicting by remember { mutableStateOf(false) }
         if (isPredicting) {
 
@@ -539,9 +586,9 @@ fun HistoryDetail(navController: NavHostController) {
                         restoreState = true
                     }
                 } else if (isPredicting) {
-                        isPredicting = true
-                        Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
-                        !isBack
+                    isPredicting = true
+                    Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
+                    !isBack
                 }
 
             },
@@ -552,6 +599,50 @@ fun HistoryDetail(navController: NavHostController) {
             if (!isPredicting) Text(text = "Prediksi") else if (isPredicting && isBack) {
                 Text(text = "Kembali")
             }
+        }
+    }
+}
+
+@Composable
+private fun CardContent(name: String) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .padding(12.dp)
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(12.dp)
+        ) {
+//            Text(text = "Hello, ")
+            Text(
+                text = name, style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+            if (expanded) {
+                Text(
+                    text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi."
+                )
+            }
+        }
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(
+                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = null/*if (expanded) {
+                    stringResource(R.string.show_less)
+                } else {
+                    stringResource(R.string.show_more)
+                }*/
+            )
         }
     }
 }

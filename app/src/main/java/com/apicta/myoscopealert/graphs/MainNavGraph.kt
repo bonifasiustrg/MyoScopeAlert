@@ -55,30 +55,30 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             route = "detail/{fileName}",
             arguments = listOf(navArgument("fileName") { type = NavType.StringType }),
 
-            enterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                    animationSpec = tween(700)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                    animationSpec = tween(700)
-                )
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-                    animationSpec = tween(700)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-                    animationSpec = tween(700)
-                )
-            }
+//            enterTransition = {
+//                slideIntoContainer(
+//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+//                    animationSpec = tween(700)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+//                    animationSpec = tween(700)
+//                )
+//            },
+//            popEnterTransition = {
+//                slideIntoContainer(
+//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+//                    animationSpec = tween(700)
+//                )
+//            },
+//            popExitTransition = {
+//                slideOutOfContainer(
+//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+//                    animationSpec = tween(700)
+//                )
+//            }
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")

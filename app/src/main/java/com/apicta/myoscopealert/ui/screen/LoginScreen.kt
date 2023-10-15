@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -48,6 +49,7 @@ import com.apicta.myoscopealert.ui.common.GradientButton
 import com.apicta.myoscopealert.ui.common.SimpleOutlinedPasswordTextField
 import com.apicta.myoscopealert.ui.common.SimpleOutlinedTextFieldSample
 import com.apicta.myoscopealert.ui.theme.poppins
+import com.apicta.myoscopealert.ui.theme.primary
 import kotlinx.coroutines.launch
 
 
@@ -73,17 +75,29 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
         Box(
             modifier = Modifier
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_icon),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .height(210.dp)
-                    .fillMaxWidth()
-                    .padding(top = 60.dp)
-                ,
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 
+                Image(
+                    painter = painterResource(id = R.drawable.ic_icon),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .height(210.dp)
+                        .fillMaxWidth()
+                        .padding(top = 44.dp)
                 )
+//                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "MyoScope",
+                    color = primary,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = poppins,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Box(
                 modifier = Modifier
                     .background(
@@ -96,7 +110,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
 
                 Column(
                     modifier = Modifier
-                        .padding(24.dp)
+                        .padding(32.dp)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
 //                        .background(color = Color(0xFF293077))
@@ -104,7 +118,6 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                     ,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(45.dp))
 
                     Text(
                         text = "Masuk",

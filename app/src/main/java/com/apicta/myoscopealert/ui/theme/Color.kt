@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val primary = Color(0xFF293077)
 val secondary = Color(0xFFA3AAED)
+val terniary = Color(0xC1FFFFFF)
