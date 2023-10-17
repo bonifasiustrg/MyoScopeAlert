@@ -138,7 +138,6 @@ fun HomeScreen(navController: NavHostController) {
                     Text(text = "Dokter Saparudin", fontWeight = FontWeight.ExtraBold)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 //                Image(
 //                    painter = painterResource(id = R.drawable.chart),
 //                    contentDescription = null,
@@ -149,7 +148,6 @@ fun HomeScreen(navController: NavHostController) {
 //                SetUpChart(ctx = context)
                 ProcessWavFileData(filePath, context)
 
-                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween

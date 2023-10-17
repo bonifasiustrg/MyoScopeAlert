@@ -239,7 +239,7 @@ fun RecordScreen(navController: NavHostController) {
 
 
 
-            val fm = "recordwave3.wav"
+            val fm = "Record17Oct.wav"
             Button(
                 onClick = {
                     navController.navigate("detail/$fm")
