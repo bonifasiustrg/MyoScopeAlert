@@ -50,8 +50,11 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         }
 
         composable(
-            route = "detail/{fileName}",
-            arguments = listOf(navArgument("fileName") { type = NavType.StringType }),
+            route = "detail/{fileName}/{date}",
+            arguments = listOf(
+                navArgument("fileName") { type = NavType.StringType },
+                navArgument("date") { type = NavType.StringType }
+            ),
 
 //            enterTransition = {
 //                slideIntoContainer(
@@ -80,10 +83,11 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")
+            val fileDate = backStackEntry.arguments?.getString("fileName")
 
             // Komponen untuk menampilkan halaman detail
             // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
-            FileDetail(fileName, navController)
+            FileDetail(fileName, fileDate ,navController)
         }
 
 //        detailsNavGraph(navController = navController)

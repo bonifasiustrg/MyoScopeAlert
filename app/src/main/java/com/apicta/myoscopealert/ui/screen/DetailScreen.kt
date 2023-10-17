@@ -99,7 +99,7 @@ import java.io.IOException
 
 
 @Composable
-fun FileDetail(filename: String?, navController: NavHostController) {
+fun FileDetail(filename: String?,fileDate: String?, navController: NavHostController) {
     val viewModel: PredictViewModel = hiltViewModel()
 //    val ctx = LocalContext.current
     var isBack by remember { mutableStateOf(false)  }
@@ -119,7 +119,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
     }
     val animatedProgress = animateFloatAsState(
         targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
     ).value
 
 
@@ -143,30 +143,44 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "recordwave3.wav",
-                fontSize = 32.sp,
+                text = "$filename",
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(text = "Dokter      : Saparudin ", color = Color.White)
-            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
+            Text(text = "Tanggal    : $fileDate", color = Color.White)
         }
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(modifier = Modifier.height(8.dp))
 
-
+        var isZooming by remember {
+            mutableStateOf(false)
+        }
 //         SetUpChart(context)
-        ProcessWavFileData(filePath, context)
+        ProcessWavFileData(filePath, context, isZooming)
         // Menampilkan progress bar
-
+        IconButton(
+//            shape = CircleShape,
+            onClick = {
+                isZooming = !isZooming
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Icon(
+                imageVector = if (isZooming) Icons.Default.ZoomOut else Icons.Default.ZoomIn,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+        }
         LinearProgressIndicator(
             progress = animatedProgress,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(24.dp)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 28.dp),
             color = Color.Blue.copy(alpha = 0.2f)
         )
         Button(
@@ -368,12 +382,10 @@ fun FileDetail(filename: String?, navController: NavHostController) {
 }
 
 @Composable
-fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
+fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming:Boolean = false) {
     val SAMPLE_RATE = 8000
     val SHRT_MAX = 32767
-    var isZooming by remember {
-        mutableStateOf(false)
-    }
+
     Column(Modifier.fillMaxWidth()) {
 
         AndroidViewBinding(SignalChartBinding::inflate) {
@@ -470,19 +482,7 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
             Log.e("processwav", "Refresh signalview")
         }
 
-        IconButton(
-//            shape = CircleShape,
-            onClick = {
-                isZooming = !isZooming
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Icon(
-                imageVector = if (isZooming) Icons.Default.ZoomOut else Icons.Default.ZoomIn,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+
     }
 }
 

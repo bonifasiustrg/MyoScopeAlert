@@ -128,11 +128,11 @@ fun FileListScreen(navController: NavHostController) {
                     .padding(start = 16.dp , end = 16.dp)
 //            .padding(8.dp)
             ) {
+                val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+
+                val formattedDate = file.date?.let { Date(it) }?.let { dateFormat.format(it) }
                 Column(Modifier.weight(2f)) {
                     Text(text = file.name.toString(), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
-                    val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
-
-                    val formattedDate = file.date?.let { Date(it) }?.let { dateFormat.format(it) }
                     if (formattedDate != null) {
                         Text(text = formattedDate, modifier = Modifier.padding(bottom = 8.dp))
                     }
@@ -166,7 +166,7 @@ fun FileListScreen(navController: NavHostController) {
 //                }
                 Button(
                     onClick = {
-                        navController.navigate("detail/${file.name}")
+                        navController.navigate("detail/${file.name}/${formattedDate}")
                     }, colors = ButtonDefaults.buttonColors(
                         containerColor = primary,
                         contentColor = Color.White
