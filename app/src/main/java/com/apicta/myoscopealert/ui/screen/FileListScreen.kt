@@ -113,9 +113,9 @@ fun FileListScreen(navController: NavHostController) {
     File(audioDirPath).walk().forEach {
         if (it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
     }
-    Log.e("filelist", "$fileList")
-    Log.e("filelist", "$wavFileNames")
-    Log.e("filelist", audioDirPath)
+//    Log.e("filelist", "$fileList")
+//    Log.e("filelist", "$wavFileNames")
+//    Log.e("filelist", audioDirPath)
 
     LazyColumn {
         items(/*wavFileNames*/fileList) { file ->

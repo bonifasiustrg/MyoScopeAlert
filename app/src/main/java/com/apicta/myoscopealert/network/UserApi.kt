@@ -1,16 +1,21 @@
 package com.apicta.myoscopealert.network
 
 
+import com.apicta.myoscopealert.data.PredictResponse
 import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
 import com.apicta.myoscopealert.data.user.LogoutResponse
 import com.apicta.myoscopealert.data.user.ProfileResponse
 import com.apicta.myoscopealert.data.user.SignInRequest
 import com.apicta.myoscopealert.data.user.SignInResponse
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 
 interface UserApi {
     @POST("account/login")
@@ -32,4 +37,22 @@ interface UserApi {
     suspend fun diagnoses(
         @Header("Authorization") token: String
     ): Response<PatientDiagnoseResponse>
+
+//    @Headers("Content-Type: multipart/form-data")
+//    @POST("predict")
+//    @Multipart
+//    suspend fun predict(
+////        @Header("Authorization") authorization: String,
+//        @Part file: MultipartBody.Part
+//    ): Response<PredictResponse>
+
+}
+
+interface MLApi {
+
+    @Multipart
+    @POST("predict")
+    suspend fun uploadFile(
+        @Part file: MultipartBody.Part
+    ): PredictResponse
 }

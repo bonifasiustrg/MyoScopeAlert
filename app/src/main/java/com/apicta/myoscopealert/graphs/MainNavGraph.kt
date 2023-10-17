@@ -13,8 +13,6 @@ import androidx.navigation.navArgument
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.ui.screen.ConnectBluetoothScreen
 import com.apicta.myoscopealert.ui.screen.FileDetail
-import com.apicta.myoscopealert.ui.screen.FileListScreen
-import com.apicta.myoscopealert.ui.screen.HistoryDetail
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
 import com.apicta.myoscopealert.ui.screen.ProfileScreen
@@ -44,9 +42,9 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             ProfileScreen(navController = navController, dataStoreManager)
         }
 
-        composable(route = "detail_history") {
-            HistoryDetail(navController)
-        }
+//        composable(route = "detail_history") {
+//            HistoryDetail(navController)
+//        }
         composable(route = "connect_bluetooth") {
             ConnectBluetoothScreen()
         }

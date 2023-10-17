@@ -82,7 +82,7 @@ fun RecordScreen(navController: NavHostController) {
         mutableStateOf(false)
     }
     val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/recordwave3.wav"
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Copy of Apex.wav"
     Column(
         Modifier
             .fillMaxSize()
@@ -121,7 +121,7 @@ fun RecordScreen(navController: NavHostController) {
         if (!isRecording) {
             if (showResult) {
                 ProcessWavFileData(filePath, context)
-
+//                SetUpChart(ctx = context)
             } else {
                 SetUpChart(ctx)
             }

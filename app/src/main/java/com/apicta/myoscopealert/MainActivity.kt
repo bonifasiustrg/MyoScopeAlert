@@ -42,15 +42,10 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
-
-
-
     @RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
 
         installSplashScreen()
         setContent {

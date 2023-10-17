@@ -70,10 +70,10 @@ fun DashboardScreen(
     val viewModel = hiltViewModel<DiagnosesViewModel>()
     val viewModelUser = hiltViewModel<UserViewModel>()
     Log.e("dashboard", "viewmodel init")
-    viewModel.performDiagnoses(storedToken!!)
-
-    val diagnosesResponse by viewModel.diagnosesResponse.collectAsState()
-    Log.e("diagnosesResponse", diagnosesResponse.toString())
+//    viewModel.performDiagnoses(storedToken!!)
+//
+//    val diagnosesResponse by viewModel.diagnosesResponse.collectAsState()
+//    Log.e("diagnosesResponse", diagnosesResponse.toString())
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) }

@@ -24,12 +24,10 @@ import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -61,12 +58,9 @@ import com.apicta.myoscopealert.MainActivity
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.UserViewModel
-import com.apicta.myoscopealert.ui.common.AnimatedPreloader
 import com.apicta.myoscopealert.ui.theme.poppins
-import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.terniary
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

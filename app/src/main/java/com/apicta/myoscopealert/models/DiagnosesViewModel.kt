@@ -1,9 +1,11 @@
 package com.apicta.myoscopealert.models
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.data.PredictResponse
 import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
 import com.apicta.myoscopealert.data.user.ProfileResponse
 import com.apicta.myoscopealert.repository.DiagnosesRepository
@@ -12,12 +14,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.Response
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class DiagnosesViewModel @Inject constructor(
-    private val repository: DiagnosesRepository,
-    private val dataStoreManager: DataStoreManager
+    private val repository: DiagnosesRepository
 
 ) : ViewModel() {
     private val _diagnosesResponse = MutableStateFlow<PatientDiagnoseResponse?>(null)
@@ -54,4 +61,5 @@ class DiagnosesViewModel @Inject constructor(
             }
         }
     }
+
 }

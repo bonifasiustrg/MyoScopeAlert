@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaPlayer
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -41,6 +42,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -50,10 +52,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,11 +73,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.models.DiagnosesViewModel
+import com.apicta.myoscopealert.models.PredictViewModel
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
@@ -82,8 +89,13 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -93,24 +105,23 @@ import java.io.IOException
 
 @Composable
 fun FileDetail(filename: String?, navController: NavHostController) {
+    val viewModel: PredictViewModel = hiltViewModel()
 //    val ctx = LocalContext.current
-    var isBack by remember {
-        mutableStateOf(false)
-    }
+    var isBack by remember { mutableStateOf(false)  }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
-    val isPlaying = remember {
-        mutableStateOf(false)
-    }
+    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val isPlaying = remember { mutableStateOf(false)}
+    val isLoading = remember { mutableStateOf(false)  }
+    var progress by remember { mutableFloatStateOf(0f) }
+
     val mediaPlayer = remember {
         MediaPlayer().apply {
             setDataSource(filePath)
             prepare()
         }
     }
-    var progress by remember { mutableFloatStateOf(0f) }
     val animatedProgress = animateFloatAsState(
         targetValue = progress,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
@@ -150,7 +161,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
         Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(modifier = Modifier.height(8.dp))
 
-        // SetUpChart(context)
+//         SetUpChart(context)
         ProcessWavFileData(filePath, context)
         // Menampilkan progress bar
         LinearProgressIndicator(
@@ -214,20 +225,29 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             fontWeight = FontWeight.ExtraBold
         )
         var isPredicting by remember { mutableStateOf(false) }
-        if (isPredicting) {
+        var showResult by remember { mutableStateOf(false) }
+        val predictResponse by viewModel.predictResponse.collectAsState()
+//        LaunchedEffect(predictResponse) {
+//            // Set isPredicting menjadi false saat nilai predictResponse berubah
+//            isLoading.value == false
+//        }
+
+        if (predictResponse != null) {
+            isLoading.value = false
 
             Box(
                 modifier = Modifier
                     .padding(8.dp)
                     .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFFFF6F6F))
+                    .background(if (predictResponse!!.result == 0) Color(0xFF72D99D) else Color(0xFFFF6F6F))
                     .padding(vertical = 14.dp, horizontal = 64.dp)
                     .align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.8f)
+
             ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        text = "MyoaCardial Infarction",
+                        text = if (predictResponse!!.result == 0) "Jantung Normal" else "myocardial infarction",
                         style = TextStyle(
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold,
@@ -236,37 +256,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
                     )
 
                     Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFF72D99D))
-                    .padding(vertical = 14.dp, horizontal = 64.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-
-            ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = "Jantung Normal",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-                    )
-
-                    Icon(
-                        imageVector = Icons.Outlined.CheckCircle,
+                        imageVector = if (predictResponse!!.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
                         contentDescription = null,
                         tint = Color.White
                     )
@@ -274,9 +264,13 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+        if (isLoading.value) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
 
 
         Button(
+//            enabled = !isPredicting,
             onClick = {
 //                isPredicting = true
                 if (isBack) {
@@ -291,10 +285,44 @@ fun FileDetail(filename: String?, navController: NavHostController) {
                         // Restore state when re-selecting a previously selected item
                         restoreState = true
                     }
-                } else if (isPredicting == false) {
+                } else if (!isPredicting) {
+                    isLoading.value = true
+
                     isPredicting = true
-                    Toast.makeText(context, "Your data is processing...", Toast.LENGTH_SHORT).show()
-                    isBack = true
+                    /*FUNGSI PREDICT*/
+                    val file = File(filePath)
+
+                    val token = ""
+                    // Periksa apakah file ada
+                    if (file.exists()) {
+                        val requestFile: RequestBody = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                        val body: MultipartBody.Part = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+
+
+                        scope.launch {
+                            // Sekarang variabel 'body' adalah objek MultipartBody.Part yang dapat Anda gunakan untuk mengirim file dalam permintaan API.
+//                            viewModel.performPrediction(/*token, */body)
+                            viewModel.performPredict(filePath)
+//                            delay(1500)
+//                            delay(2000)
+
+                            Log.e(
+                                "prediksi",
+                                "Hasil Prediksi -> ${predictResponse?.result}"
+                            )
+                        }
+
+                        Log.e("DiagnosesViewModel", "File sended at path: $filePath")
+                        Toast.makeText(context, "Your data is processing...", Toast.LENGTH_SHORT).show()
+                        isBack = true
+                        isPredicting = false
+                    } else {
+                        // Handle kesalahan jika file tidak ditemukan
+                        Log.e("DiagnosesViewModel", "File not found at path: $filePath")
+                        Toast.makeText(context, "File not found at path: $filePath", Toast.LENGTH_SHORT).show()
+                    }
+
                 }
 
             },
@@ -304,7 +332,7 @@ fun FileDetail(filename: String?, navController: NavHostController) {
             if (!isPredicting) {
                 Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
                 Text(text = "Prediksi")
-            } else if (isPredicting && isBack) {
+            } else if (isBack) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                 Text(text = "Kembali")
             }
@@ -395,28 +423,28 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context) {
         } finally {
             dataInputStream.close()
         }
-        Log.e("processwav", "try n catch bytes read")
+//        Log.e("processwav", "try n catch bytes read")
 
         // Convert data points to Entry objects for the chart
         for (i in dataPoints.indices) {
             val entry = Entry(i.toFloat(), dataPoints[i])
             audioData.add(entry)
         }
-        Log.e("processwav", "Convert data points to Entry objects for the chart")
+//        Log.e("processwav", "Convert data points to Entry objects for the chart")
 
         // Create a LineDataSet with the audio data
         val dataSet = LineDataSet(audioData, "Heart Beat Signal")
         dataSet.color = R.color.green
         dataSet.setDrawCircles(false)
-        Log.e("processwav", "Create a LineDataSet with the audio data")
+//        Log.e("processwav", "Create a LineDataSet with the audio data")
 
         // Create a LineData object and set the LineDataSet
         val lineData = LineData(dataSet)
-        Log.e("processwav", "Create a LineData object and set the LineDataSet")
+//        Log.e("processwav", "Create a LineData object and set the LineDataSet")
 
         // Set the LineData object to the chart
         signalView?.data = lineData
-        Log.e("processwav", "Set the LineData object to the chart")
+//        Log.e("processwav", "Set the LineData object to the chart")
 
         // Refresh the chart
         signalView?.invalidate()
@@ -452,156 +480,156 @@ fun SetUpChart(ctx: Context) {
 }
 
 
-@Composable
-fun HistoryDetail(navController: NavHostController) {
-    val ctx = LocalContext.current
-    val isBack by remember {
-        mutableStateOf(false)
-    }
-//    Box(
+//@Composable
+//fun HistoryDetail(navController: NavHostController) {
+//    val ctx = LocalContext.current
+//    val isBack by remember {
+//        mutableStateOf(false)
+//    }
+////    Box(
+////        modifier = Modifier
+////            .fillMaxWidth()
+////            .height(140.dp)
+////            .background(
+////                color = primary,
+////                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
+////            )
+////    )
+//
+//    Column(
 //        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(140.dp)
-//            .background(
-//                color = primary,
-//                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
+//            .fillMaxSize()
+////            .padding(16.dp)
+//    ) {
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Column(Modifier.background(primary)) {
+//            Text(
+//                text = "recordwave3.wav",
+//                fontSize = 32.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = Color.White
 //            )
-//    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-//            .padding(16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(Modifier.background(primary)) {
-            Text(
-                text = "recordwave3.wav",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(text = "Dokter     : Saparudin ", color = Color.White)
-            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
-
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(text = "Hasil Rekaman", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-
-        Image(
-            painter = painterResource(id = R.drawable.chart),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .height(250.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "Prediksi Status Kesehatan Jantung",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-        var isPredicting by remember { mutableStateOf(false) }
-        if (isPredicting) {
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFFFF6F6F))
-                    .padding(vertical = 14.dp, horizontal = 64.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-            ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = "MyoaCardial Infarction",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-                    )
-
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFF72D99D))
-                    .padding(vertical = 14.dp, horizontal = 64.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-
-            ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = "Jantung Normal",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-                    )
-
-                    Icon(
-                        imageVector = Icons.Outlined.CheckCircle,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        Button(
-            onClick = {
-                !isPredicting
-                if (isBack) {
-                    navController.navigate(BottomBarScreen.History.route) {
-                        // Pop up to the start destination of the graph
-                        popUpTo(navController.graph.startDestinationId) {
-                            // Pop all inclusive
-                            inclusive = true
-                        }
-                        // Avoid multiple copies of the same destination when re-selecting it
-                        launchSingleTop = true
-                        // Restore state when re-selecting a previously selected item
-                        restoreState = true
-                    }
-                } else if (isPredicting) {
-                    isPredicting = true
-                    Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
-                    !isBack
-                }
-
-            },
-            colors = ButtonDefaults.buttonColors(primary),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
-            if (!isPredicting) Text(text = "Prediksi") else if (isPredicting && isBack) {
-                Text(text = "Kembali")
-            }
-        }
-    }
-}
+//            Text(text = "Dokter     : Saparudin ", color = Color.White)
+//            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
+//
+//        }
+//
+//        Spacer(modifier = Modifier.height(24.dp))
+//
+//        Text(text = "Hasil Rekaman", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+//
+//        Image(
+//            painter = painterResource(id = R.drawable.chart),
+//            contentDescription = null,
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .fillMaxWidth(0.75f)
+//                .height(250.dp)
+//                .clip(RoundedCornerShape(16.dp))
+//                .align(Alignment.CenterHorizontally)
+//        )
+//
+//        Spacer(modifier = Modifier.height(32.dp))
+//        Text(
+//            text = "Prediksi Status Kesehatan Jantung",
+//            fontSize = 14.sp,
+//            fontWeight = FontWeight.Bold
+//        )
+//        var isPredicting by remember { mutableStateOf(false) }
+//        if (isPredicting) {
+//
+//            Box(
+//                modifier = Modifier
+//                    .padding(8.dp)
+//                    .clip(RoundedCornerShape(50.dp))
+//                    .background(Color(0xFFFF6F6F))
+//                    .padding(vertical = 14.dp, horizontal = 64.dp)
+//                    .align(Alignment.CenterHorizontally)
+//                    .fillMaxWidth(0.8f)
+//            ) {
+//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+//                    Text(
+//                        text = "MyoaCardial Infarction",
+//                        style = TextStyle(
+//                            color = Color.White,
+//                            fontWeight = FontWeight.SemiBold,
+//                            fontSize = 16.sp
+//                        )
+//                    )
+//
+//                    Icon(
+//                        imageVector = Icons.Outlined.Close,
+//                        contentDescription = null,
+//                        tint = Color.White
+//                    )
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Box(
+//                modifier = Modifier
+//                    .padding(8.dp)
+//                    .clip(RoundedCornerShape(50.dp))
+//                    .background(Color(0xFF72D99D))
+//                    .padding(vertical = 14.dp, horizontal = 64.dp)
+//                    .align(Alignment.CenterHorizontally)
+//                    .fillMaxWidth(0.8f)
+//
+//            ) {
+//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+//                    Text(
+//                        text = "Jantung Normal",
+//                        style = TextStyle(
+//                            color = Color.White,
+//                            fontWeight = FontWeight.SemiBold,
+//                            fontSize = 16.sp
+//                        )
+//                    )
+//
+//                    Icon(
+//                        imageVector = Icons.Outlined.CheckCircle,
+//                        contentDescription = null,
+//                        tint = Color.White
+//                    )
+//                }
+//            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//        }
+//
+//        Button(
+//            onClick = {
+//                !isPredicting
+//                if (isBack) {
+//                    navController.navigate(BottomBarScreen.History.route) {
+//                        // Pop up to the start destination of the graph
+//                        popUpTo(navController.graph.startDestinationId) {
+//                            // Pop all inclusive
+//                            inclusive = true
+//                        }
+//                        // Avoid multiple copies of the same destination when re-selecting it
+//                        launchSingleTop = true
+//                        // Restore state when re-selecting a previously selected item
+//                        restoreState = true
+//                    }
+//                } else if (isPredicting) {
+//                    isPredicting = true
+//                    Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
+//                    !isBack
+//                }
+//
+//            },
+//            colors = ButtonDefaults.buttonColors(primary),
+//            modifier = Modifier.align(Alignment.CenterHorizontally)
+//        ) {
+//            Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
+//            if (!isPredicting) Text(text = "Prediksi") else if (isPredicting && isBack) {
+//                Text(text = "Kembali")
+//            }
+//        }
+//    }
+//}
 
 @Composable
 private fun CardContent(name: String) {
@@ -645,10 +673,4 @@ private fun CardContent(name: String) {
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HistoryDetailPrev() {
-    HistoryDetail(rememberNavController())
 }
