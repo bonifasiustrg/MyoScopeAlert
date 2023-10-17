@@ -62,4 +62,28 @@ class DiagnosesViewModel @Inject constructor(
         }
     }
 
+    private val _predictResponse = MutableStateFlow<PredictResponse?>(null)
+    val predictResponse: StateFlow<PredictResponse?> = _predictResponse
+
+    fun performPredict(filePath: String, token: String) {
+
+        val file = File(filePath)
+        val requestFile = RequestBody.create("multipart/form-data".toMediaTypeOrNull(), file)
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+        viewModelScope.launch {
+            try {
+                val response = repository.uploadFile(body, token)
+
+                // Handle response here
+                Log.e("PredictActivity", "diagnosis result: ${response.result}")
+                // Update UI or do something with the response
+                _predictResponse.value = response
+            } catch (e: Exception) {
+                Log.e("PredictActivity", "Error during API call: ${e.message}", e)
+                _predictResponse.value = null
+            }
+        }
+    }
+
 }

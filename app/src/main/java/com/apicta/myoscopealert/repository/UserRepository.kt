@@ -2,6 +2,7 @@ package com.apicta.myoscopealert.repository
 
 
 import android.util.Log
+import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
 import com.apicta.myoscopealert.data.user.LogoutResponse
 import com.apicta.myoscopealert.data.user.ProfileResponse
 import com.apicta.myoscopealert.data.user.SignInRequest
@@ -30,5 +31,9 @@ class UserRepository(private val userApi: UserApi) {
         val respon = userApi.profile("Bearer $token")
         Log.e("profile repo", respon.body().toString())
         return respon
+    }
+
+    suspend fun diagnoses(token: String): Response<PatientDiagnoseResponse> {
+        return userApi.diagnoses("Bearer $token")
     }
 }

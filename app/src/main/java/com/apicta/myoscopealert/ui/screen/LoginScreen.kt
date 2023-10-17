@@ -84,7 +84,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                     modifier = Modifier
                         .height(210.dp)
                         .fillMaxWidth()
-                        .padding(top = 44.dp)
+                        .padding(top = 32.dp)
                 )
 //                Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -98,126 +98,133 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Box(
+//            Box(
+//                modifier = Modifier
+//                    .background(
+//                        color = primary,
+//                        shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
+//                    )
+//                    .fillMaxHeight(0.65f)
+//                    .align(Alignment.BottomCenter),
+//            ) {
+
+            Column(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.65f)
                     .background(
-                        color = Color(0xFF293077),
+                        color = primary,
                         shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
                     )
+                    .padding(24.dp)
 
-                    .align(Alignment.BottomCenter),
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .padding(32.dp)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
+                    .align(Alignment.BottomCenter)
+                    .verticalScroll(rememberScrollState())
 //                        .background(color = Color(0xFF293077))
 //                        .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-                    ,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                ,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-                    Text(
-                        text = "Masuk",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White,
-                        fontFamily = poppins,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Email",
-                        fontFamily = poppins,
-                        fontStyle = MaterialTheme.typography.bodyLarge.fontStyle,
-                        color = Color.White,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.Start)
-                            .padding(bottom = 4.dp)
-                    )
-                    SimpleOutlinedTextFieldSample(emailState)
+                Text(
+                    text = "Masuk",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White,
+                    fontFamily = poppins,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Email",
+                    fontFamily = poppins,
+                    fontStyle = MaterialTheme.typography.bodyLarge.fontStyle,
+                    color = Color.White,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Start)
+                        .padding(bottom = 4.dp)
+                )
+                SimpleOutlinedTextFieldSample(emailState)
 
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(
-                        text = "Password",
-                        fontFamily = poppins,
-                        fontStyle = MaterialTheme.typography.bodyLarge.fontStyle,
-                        color = Color.White,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.Start)
-                            .padding(bottom = 4.dp)
-                    )
-                    SimpleOutlinedPasswordTextField(passwordState)
+                Spacer(modifier = Modifier.padding(8.dp))
+                Text(
+                    text = "Password",
+                    fontFamily = poppins,
+                    fontStyle = MaterialTheme.typography.bodyLarge.fontStyle,
+                    color = Color.White,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Start)
+                        .padding(bottom = 4.dp)
+                )
+                SimpleOutlinedPasswordTextField(passwordState)
 
 //                    val gradientColor = listOf(Color(0xFF484BF1), Color(0xFF673AB7))
-                    val gradientColor = listOf(Color(0xFF4CAF50), Color(0xFF009688))
+                val gradientColor = listOf(Color(0xFF4CAF50), Color(0xFF009688))
 
 
-                    Spacer(modifier = Modifier.padding(14.dp))
-                    GradientButton(
-                        gradientColors = gradientColor,
-                        cornerRadius = 14.dp,
-                        nameButton = "LOGIN",
-                        roundedCornerShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                        onClick = {
-                            if (emailState.value.isNotEmpty() && passwordState.value.isNotEmpty()) {
-                                isLoading.value = true
-                                viewModel.performLogin(emailState.value, passwordState.value)
-                                Log.e(
-                                    "login",
-                                    "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}"
-                                )
-                                scope.launch {
-                                    viewModel.tokenSaved.collect { tokenSaved ->
-                                        if (tokenSaved) {
+                Spacer(modifier = Modifier.padding(14.dp))
+                GradientButton(
+                    gradientColors = gradientColor,
+                    cornerRadius = 14.dp,
+                    nameButton = "LOGIN",
+                    roundedCornerShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+                    onClick = {
+                        if (emailState.value.isNotEmpty() && passwordState.value.isNotEmpty()) {
+                            isLoading.value = true
+                            viewModel.performLogin(emailState.value, passwordState.value)
+                            Log.e(
+                                "login",
+                                "${viewModel.isLoginSuccess.value}} dan ${viewModel.loginResponse.value}"
+                            )
+                            scope.launch {
+                                viewModel.tokenSaved.collect { tokenSaved ->
+                                    if (tokenSaved) {
 //                                            navController.navigate("dashboard_screen")
-                                            navController.popBackStack()
-                                            navController.navigate(Graph.MAIN)
+                                        navController.popBackStack()
+                                        navController.navigate(Graph.MAIN)
 
-                                            // Token sudah disimpan, navigasi ke DashboardScreen
-                                            Log.e(
-                                                "login",
-                                                "Token sudah disimpan, navigasi ke DashboardScreen"
-                                            )
-                                            Log.e("login", "navigate to dashboard")
-                                        } else {
-                                            Log.e(
-                                                "login",
-                                                "Token belum disimpan, mungkin tampilkan loading atau pesan lainnya"
-                                            )
-                                            // Token belum disimpan, mungkin tampilkan loading atau pesan lainnya
-                                        }
+                                        // Token sudah disimpan, navigasi ke DashboardScreen
+                                        Log.e(
+                                            "login",
+                                            "Token sudah disimpan, navigasi ke DashboardScreen"
+                                        )
+                                        Log.e("login", "navigate to dashboard")
+                                    } else {
+                                        Log.e(
+                                            "login",
+                                            "Token belum disimpan, mungkin tampilkan loading atau pesan lainnya"
+                                        )
+                                        // Token belum disimpan, mungkin tampilkan loading atau pesan lainnya
                                     }
                                 }
-                            } else {
-                                Log.e("login", "Try Again, email and password are empty")
                             }
-                            passwordState.value = ""
-                            emailState.value = ""
-                        },
-                        isLoading = isLoading
-                    )
+                        } else {
+                            Log.e("login", "Try Again, email and password are empty")
+                        }
+                        passwordState.value = ""
+                        emailState.value = ""
+                    },
+                    isLoading = isLoading
+                )
 
 //                    CircularProgressIndicator(modifier = Modifier.height(18.dp), color = Color.Yellow)
-                    Spacer(modifier = Modifier.padding(70.dp))
+                Spacer(modifier = Modifier.weight(1f))
 //                    if (isLoading.value){
 //                        CircularProgressIndicator(modifier = Modifier.height(18.dp))
 //                        Spacer(modifier = Modifier.padding(52.dp))
 //                    } else {
 //                    }
-                }
             }
         }
     }
+
 }
 
 @Preview(showBackground = true)

@@ -83,11 +83,11 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")
-            val fileDate = backStackEntry.arguments?.getString("fileName")
+            val fileDate = backStackEntry.arguments?.getString("date")
 
             // Komponen untuk menampilkan halaman detail
             // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
-            FileDetail(fileName, fileDate ,navController)
+            FileDetail(fileName, fileDate, dataStoreManager, navController)
         }
 
 //        detailsNavGraph(navController = navController)

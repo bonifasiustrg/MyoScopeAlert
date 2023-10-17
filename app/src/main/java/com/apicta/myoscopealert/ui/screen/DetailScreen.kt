@@ -74,9 +74,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
-import com.apicta.myoscopealert.models.PredictViewModel
+import com.apicta.myoscopealert.models.DiagnosesViewModel
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
@@ -86,7 +87,9 @@ import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -99,9 +102,21 @@ import java.io.IOException
 
 
 @Composable
-fun FileDetail(filename: String?,fileDate: String?, navController: NavHostController) {
-    val viewModel: PredictViewModel = hiltViewModel()
+fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStoreManager, navController: NavHostController) {
+    val viewModel: DiagnosesViewModel = hiltViewModel()
 //    val ctx = LocalContext.current
+    var storedToken by remember { mutableStateOf<String?>(null) }
+
+    // Ambil token jika belum diinisialisasi
+    if (storedToken == null) {
+        runBlocking {
+            storedToken = dataStoreManager.getAuthToken.first()
+            Log.d("DetailScreen runblocking", "Stored Token: $storedToken")
+        }
+    }
+
+    storedToken?.let { Log.e("stored token dashboard", it) }
+
     var isBack by remember { mutableStateOf(false)  }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -144,7 +159,7 @@ fun FileDetail(filename: String?,fileDate: String?, navController: NavHostContro
 
             Text(
                 text = "$filename",
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
@@ -307,7 +322,6 @@ fun FileDetail(filename: String?,fileDate: String?, navController: NavHostContro
                     /*FUNGSI PREDICT*/
                     val file = File(filePath)
 
-                    val token = ""
                     // Periksa apakah file ada
                     if (file.exists()) {
                         val requestFile: RequestBody = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
@@ -318,7 +332,7 @@ fun FileDetail(filename: String?,fileDate: String?, navController: NavHostContro
                         scope.launch {
                             // Sekarang variabel 'body' adalah objek MultipartBody.Part yang dapat Anda gunakan untuk mengirim file dalam permintaan API.
 //                            viewModel.performPrediction(/*token, */body)
-                            viewModel.performPredict(filePath)
+                            viewModel.performPredict(filePath, storedToken!!)
 //                            delay(1500)
 //                            delay(2000)
 
@@ -692,6 +706,7 @@ private fun CardContent(name: String) {
             )
             if (expanded) {
                 Text(
+                    maxLines = 3,
                     text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi."
                 )
             }

@@ -38,21 +38,10 @@ interface UserApi {
         @Header("Authorization") token: String
     ): Response<PatientDiagnoseResponse>
 
-//    @Headers("Content-Type: multipart/form-data")
-//    @POST("predict")
-//    @Multipart
-//    suspend fun predict(
-////        @Header("Authorization") authorization: String,
-//        @Part file: MultipartBody.Part
-//    ): Response<PredictResponse>
-
-}
-
-interface MLApi {
-
     @Multipart
-    @POST("predict")
+    @POST("public/predict")
     suspend fun uploadFile(
+        @Header("Authorization") token: String,
         @Part file: MultipartBody.Part
     ): PredictResponse
 }

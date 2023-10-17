@@ -105,8 +105,7 @@ fun FileListScreen(navController: NavHostController) {
     val wavFileNames = wavFiles?.map { it.name } ?: emptyList()
 
     val contextWrapper = ContextWrapper(context)
-    val externalStorage: File =
-        contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+    val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
 
     val audioDirPath = externalStorage.absolutePath
 

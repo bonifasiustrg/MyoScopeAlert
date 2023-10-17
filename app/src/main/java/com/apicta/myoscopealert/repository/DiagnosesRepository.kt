@@ -16,5 +16,7 @@ class DiagnosesRepository(private val userApi: UserApi) {
 ////        val authorizationHeader = "Bearer $token"
 //        return userApi.predict(/*authorizationHeader, */file)
 //    }
-
+    suspend fun uploadFile(file: MultipartBody.Part, token: String): PredictResponse {
+        return userApi.uploadFile("Bearer $token", file)
+    }
 }

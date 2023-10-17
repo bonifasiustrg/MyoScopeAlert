@@ -1,6 +1,7 @@
 package com.apicta.myoscopealert.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BluetoothDisabled
@@ -69,7 +72,7 @@ import java.util.Locale
 fun RecordScreen(navController: NavHostController) {
 //    Text(text = "Record Screen")
     var title by remember {
-        mutableStateOf("RecordingName")
+        mutableStateOf("Record17Oct")
     }
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -78,15 +81,16 @@ fun RecordScreen(navController: NavHostController) {
     var isBTConnected by rememberSaveable { mutableStateOf(false) }
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
     val context = LocalContext.current
-    var isStopwatch = remember {
+    val isStopwatch = remember {
         mutableStateOf(false)
     }
     val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Copy of Apex.wav"
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Record17Oct.wav"
     Column(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
 
         TextField(
@@ -242,7 +246,7 @@ fun RecordScreen(navController: NavHostController) {
             val fm = "Record17Oct.wav"
             Button(
                 onClick = {
-                    navController.navigate("detail/$fm")
+                    navController.navigate("detail/$fm/17 Oktober 2023")
 
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = primary,

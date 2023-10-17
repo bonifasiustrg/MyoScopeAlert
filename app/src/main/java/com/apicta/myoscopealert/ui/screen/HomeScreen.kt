@@ -49,7 +49,7 @@ import com.apicta.myoscopealert.ui.theme.secondary
 fun HomeScreen(navController: NavHostController) {
     val context = LocalContext.current
     val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Copy of Apex.wav"
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Record17Oct.wav"
     Column(
         modifier = Modifier
             .fillMaxSize()

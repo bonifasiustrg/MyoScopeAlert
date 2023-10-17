@@ -49,14 +49,18 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
         setContent {
+            val context = applicationContext
+
+            // Dapatkan lokasi default package untuk penyimpanan file-file eksternal
+            val packageLocation = context.getExternalFilesDir(null)
             MyoScopeAlertTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     RootNavigationGraph(navController = rememberNavController(), dataStoreManager)
-//                    MainNavGraph(rememberNavController())
-
+//                    MainNavGrap   h(rememberNavController())
+                    Log.e("dir", "$packageLocation")
                 }
             }
         }
