@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +31,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PlayArrow
@@ -67,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
@@ -78,6 +82,7 @@ import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.models.DiagnosesViewModel
+import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
@@ -102,7 +107,12 @@ import java.io.IOException
 
 
 @Composable
-fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStoreManager, navController: NavHostController) {
+fun FileDetail(
+    filename: String?,
+    fileDate: String?,
+    dataStoreManager: DataStoreManager,
+    navController: NavHostController
+) {
     val viewModel: DiagnosesViewModel = hiltViewModel()
 //    val ctx = LocalContext.current
     var storedToken by remember { mutableStateOf<String?>(null) }
@@ -117,13 +127,14 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
 
     storedToken?.let { Log.e("stored token dashboard", it) }
 
-    var isBack by remember { mutableStateOf(false)  }
+    var isBack by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
-    val isPlaying = remember { mutableStateOf(false)}
-    val isLoading = remember { mutableStateOf(false)  }
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val isPlaying = remember { mutableStateOf(false) }
+    val isLoading = remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
 
     val mediaPlayer = remember {
@@ -168,7 +179,8 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+        Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold,
+            fontFamily = poppins)
         Spacer(modifier = Modifier.height(8.dp))
 
         var isZooming by remember {
@@ -181,6 +193,7 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
 //            shape = CircleShape,
             onClick = {
                 isZooming = !isZooming
+                Log.e("zoom", isZooming.toString())
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
@@ -235,20 +248,26 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
+
+        val isVerified by remember {
+            mutableStateOf(true)
+        }
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = terniary
             ),
             modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            CardContent("Hasil verifikasi Dokter")
+            CardContent(if (filename != "Record17Oct.wav") isVerified else false)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = "Prediksi Status Kesehatan Jantung",
             fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
+            fontFamily = poppins
+
         )
         var isPredicting by remember { mutableStateOf(false) }
         var showResult by remember { mutableStateOf(false) }
@@ -324,8 +343,10 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
 
                     // Periksa apakah file ada
                     if (file.exists()) {
-                        val requestFile: RequestBody = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-                        val body: MultipartBody.Part = MultipartBody.Part.createFormData("file", file.name, requestFile)
+                        val requestFile: RequestBody =
+                            file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                        val body: MultipartBody.Part =
+                            MultipartBody.Part.createFormData("file", file.name, requestFile)
 
 
 
@@ -343,13 +364,18 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
                         }
 
                         Log.e("DiagnosesViewModel", "File sended at path: $filePath")
-                        Toast.makeText(context, "Your data is processing...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Your data is processing...", Toast.LENGTH_SHORT)
+                            .show()
                         isBack = true
                         isPredicting = false
                     } else {
                         // Handle kesalahan jika file tidak ditemukan
                         Log.e("DiagnosesViewModel", "File not found at path: $filePath")
-                        Toast.makeText(context, "File not found at path: $filePath", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "File not found at path: $filePath",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
 
                 }
@@ -358,10 +384,10 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
             colors = ButtonDefaults.buttonColors(primary),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            if (!isPredicting) {
+            if (isPredicting == false && !isBack) {
                 Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
                 Text(text = "Prediksi")
-            } else if (isBack) {
+            } else {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                 Text(text = "Kembali")
             }
@@ -396,11 +422,17 @@ fun FileDetail(filename: String?, fileDate: String?, dataStoreManager: DataStore
 }
 
 @Composable
-fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming:Boolean = false) {
+fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
     val SAMPLE_RATE = 8000
     val SHRT_MAX = 32767
 
-    Column(Modifier.fillMaxWidth()) {
+
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+    ) {
 
         AndroidViewBinding(SignalChartBinding::inflate) {
             signalView.description?.isEnabled = false
@@ -418,8 +450,9 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming:Boolean = fa
             yAxis?.setDrawGridLines(false)
 
             if (isZooming) {
-                yAxis?.setAxisMaximum(0.05f)
-                yAxis?.setAxisMinimum(-0.05f)
+                yAxis?.setAxisMaximum(0.03f)
+                yAxis?.setAxisMinimum(-0.03f)
+
             }
 
             val wavFile = File(wavFilePath)
@@ -492,6 +525,7 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming:Boolean = fa
                 // now modify viewport
                 signalView.setVisibleXRangeMaximum(10000F); // allow 20 values to be displayed at once on the x-axis, not more
                 signalView.moveViewToX(100F); // set the left edge of the chart to x-index 10
+
             }
             Log.e("processwav", "Refresh signalview")
         }
@@ -680,9 +714,8 @@ fun SetUpChart(ctx: Context) {
 //}
 
 @Composable
-private fun CardContent(name: String) {
+private fun CardContent(isVerified: Boolean) {
     var expanded by remember { mutableStateOf(false) }
-
     Row(
         modifier = Modifier
             .padding(12.dp)
@@ -691,7 +724,9 @@ private fun CardContent(name: String) {
                     dampingRatio = Spring.DampingRatioMediumBouncy,
                     stiffness = Spring.StiffnessLow
                 )
-            )
+            ),
+        verticalAlignment = Alignment.CenterVertically
+
     ) {
         Column(
             modifier = Modifier
@@ -699,27 +734,67 @@ private fun CardContent(name: String) {
                 .padding(12.dp)
         ) {
 //            Text(text = "Hello, ")
-            Text(
-                text = name, style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold
+            Row {
+
+                Text(
+                    text = "Hasil verifikasi Dokter", style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = poppins
+
+                    )
                 )
-            )
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = if (isVerified) Color.Green else Color.Red,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                ) {
+                    if (isVerified) {
+                        Text(
+                            text = "Verified",
+                            fontSize = 10.sp,
+                            textAlign = TextAlign.End,
+                            color = Color.Black,
+                            fontFamily = poppins
+                        )
+                    }  else {
+                        Text(
+                            text = "Not verified",
+                            fontSize = 10.sp,
+                            textAlign = TextAlign.End,
+                            color = Color.White,
+                            fontFamily = poppins
+
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             if (expanded) {
                 Text(
-                    maxLines = 3,
-                    text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi."
+                    text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
+                    fontFamily = poppins
+
                 )
             }
         }
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(
-                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                contentDescription = null/*if (expanded) {
+
+//        Spacer(modifier = Modifier.weight(1f))
+
+        if(isVerified) {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = null/*if (expanded) {
                     stringResource(R.string.show_less)
                 } else {
                     stringResource(R.string.show_more)
                 }*/
-            )
+                )
+            }
         }
     }
 }
