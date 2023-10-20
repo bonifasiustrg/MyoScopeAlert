@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.data.user
+package com.apicta.myoscopealert.models.user
 
 
 import com.google.gson.annotations.SerializedName

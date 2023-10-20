@@ -4,8 +4,8 @@ import android.content.Context
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.network.Retro
 import com.apicta.myoscopealert.network.UserApi
-import com.apicta.myoscopealert.repository.DiagnosesRepository
-import com.apicta.myoscopealert.repository.UserRepository
+import com.apicta.myoscopealert.data.repository.DiagnosesRepository
+import com.apicta.myoscopealert.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

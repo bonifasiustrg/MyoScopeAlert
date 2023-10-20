@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.ui.common
+package com.apicta.myoscopealert.ui.screen.common
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

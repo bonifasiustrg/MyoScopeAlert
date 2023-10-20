@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.data.diagnose
+package com.apicta.myoscopealert.models.diagnose
 
 
 import com.google.gson.annotations.SerializedName

@@ -1,12 +1,12 @@
-package com.apicta.myoscopealert.repository
+package com.apicta.myoscopealert.data.repository
 
 
 import android.util.Log
-import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
-import com.apicta.myoscopealert.data.user.LogoutResponse
-import com.apicta.myoscopealert.data.user.ProfileResponse
-import com.apicta.myoscopealert.data.user.SignInRequest
-import com.apicta.myoscopealert.data.user.SignInResponse
+import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.models.user.LogoutResponse
+import com.apicta.myoscopealert.models.user.ProfileResponse
+import com.apicta.myoscopealert.models.user.SignInRequest
+import com.apicta.myoscopealert.models.user.SignInResponse
 import com.apicta.myoscopealert.network.UserApi
 import retrofit2.Response
 

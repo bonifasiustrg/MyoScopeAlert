@@ -1,8 +1,8 @@
-package com.apicta.myoscopealert.repository
+package com.apicta.myoscopealert.data.repository
 
 import com.apicta.myoscopealert.data.PredictResponse
-import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
-import com.apicta.myoscopealert.data.user.ProfileResponse
+import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.models.user.ProfileResponse
 import com.apicta.myoscopealert.network.UserApi
 import okhttp3.MultipartBody
 import retrofit2.Response

@@ -1,24 +1,18 @@
-package com.apicta.myoscopealert.models
+package com.apicta.myoscopealert.ui.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.data.PredictResponse
-import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
-import com.apicta.myoscopealert.data.user.ProfileResponse
-import com.apicta.myoscopealert.repository.DiagnosesRepository
-import com.apicta.myoscopealert.repository.UserRepository
+import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.data.repository.DiagnosesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.Response
 import java.io.File
 import javax.inject.Inject
 

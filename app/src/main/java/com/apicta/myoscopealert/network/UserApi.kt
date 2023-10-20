@@ -2,11 +2,11 @@ package com.apicta.myoscopealert.network
 
 
 import com.apicta.myoscopealert.data.PredictResponse
-import com.apicta.myoscopealert.data.diagnose.PatientDiagnoseResponse
-import com.apicta.myoscopealert.data.user.LogoutResponse
-import com.apicta.myoscopealert.data.user.ProfileResponse
-import com.apicta.myoscopealert.data.user.SignInRequest
-import com.apicta.myoscopealert.data.user.SignInResponse
+import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.models.user.LogoutResponse
+import com.apicta.myoscopealert.models.user.ProfileResponse
+import com.apicta.myoscopealert.models.user.SignInRequest
+import com.apicta.myoscopealert.models.user.SignInResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body

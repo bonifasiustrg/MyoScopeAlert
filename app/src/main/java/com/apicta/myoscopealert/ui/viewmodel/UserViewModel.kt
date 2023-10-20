@@ -1,13 +1,13 @@
-package com.apicta.myoscopealert.models
+package com.apicta.myoscopealert.ui.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.data.user.ProfileResponse
-import com.apicta.myoscopealert.data.user.SignInResponse
-import com.apicta.myoscopealert.repository.UserRepository
+import com.apicta.myoscopealert.models.user.ProfileResponse
+import com.apicta.myoscopealert.models.user.SignInResponse
+import com.apicta.myoscopealert.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

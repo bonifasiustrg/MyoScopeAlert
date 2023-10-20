@@ -3,7 +3,6 @@ package com.apicta.myoscopealert.ui.screen
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -44,10 +41,10 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.graphs.Graph
-import com.apicta.myoscopealert.models.UserViewModel
-import com.apicta.myoscopealert.ui.common.GradientButton
-import com.apicta.myoscopealert.ui.common.SimpleOutlinedPasswordTextField
-import com.apicta.myoscopealert.ui.common.SimpleOutlinedTextFieldSample
+import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
+import com.apicta.myoscopealert.ui.screen.common.GradientButton
+import com.apicta.myoscopealert.ui.screen.common.SimpleOutlinedPasswordTextField
+import com.apicta.myoscopealert.ui.screen.common.SimpleOutlinedTextFieldSample
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import kotlinx.coroutines.launch

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.apicta.myoscopealert.ui.common
+package com.apicta.myoscopealert.ui.screen.common
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable

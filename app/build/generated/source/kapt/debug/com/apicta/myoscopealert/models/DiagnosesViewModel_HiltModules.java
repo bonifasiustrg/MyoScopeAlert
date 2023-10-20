@@ -1,0 +1,55 @@
+package com.apicta.myoscopealert.models;
+
+import androidx.lifecycle.ViewModel;
+
+import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel;
+
+import dagger.Binds;
+import dagger.Module;
+import dagger.Provides;
+import dagger.hilt.InstallIn;
+import dagger.hilt.android.components.ActivityRetainedComponent;
+import dagger.hilt.android.components.ViewModelComponent;
+import dagger.hilt.android.internal.lifecycle.HiltViewModelMap;
+import dagger.hilt.codegen.OriginatingElement;
+import dagger.multibindings.IntoMap;
+import dagger.multibindings.IntoSet;
+import dagger.multibindings.StringKey;
+import java.lang.String;
+import javax.annotation.processing.Generated;
+
+@Generated("dagger.hilt.android.processor.internal.viewmodel.ViewModelProcessor")
+@OriginatingElement(
+    topLevelClass = DiagnosesViewModel.class
+)
+public final class DiagnosesViewModel_HiltModules {
+  private DiagnosesViewModel_HiltModules() {
+  }
+
+  @Module
+  @InstallIn(ViewModelComponent.class)
+  public abstract static class BindsModule {
+    private BindsModule() {
+    }
+
+    @Binds
+    @IntoMap
+    @StringKey("com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel")
+    @HiltViewModelMap
+    public abstract ViewModel binds(DiagnosesViewModel vm);
+  }
+
+  @Module
+  @InstallIn(ActivityRetainedComponent.class)
+  public static final class KeyModule {
+    private KeyModule() {
+    }
+
+    @Provides
+    @IntoSet
+    @HiltViewModelMap.KeySet
+    public static String provide() {
+      return "com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel";
+    }
+  }
+}

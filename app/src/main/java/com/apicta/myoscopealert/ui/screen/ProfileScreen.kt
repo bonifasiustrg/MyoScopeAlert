@@ -57,7 +57,7 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.MainActivity
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.models.UserViewModel
+import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.terniary
 import kotlinx.coroutines.DelicateCoroutinesApi
