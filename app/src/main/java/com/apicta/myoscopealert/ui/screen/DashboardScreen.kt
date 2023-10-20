@@ -5,7 +5,6 @@ package com.apicta.myoscopealert.ui.screen
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +18,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -42,15 +39,12 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.graphs.MainNavGraph
-import com.apicta.myoscopealert.models.DiagnosesViewModel
-import com.apicta.myoscopealert.models.UserViewModel
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 @RequiresApi(Build.VERSION_CODES.S)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     dataStoreManager: DataStoreManager,
@@ -66,15 +60,7 @@ fun DashboardScreen(
             Log.d("DashboardScreen runblocking", "Stored Token: $storedToken")
         }
     }
-
     storedToken?.let { Log.e("stored token dashboard", it) }
-    val viewModel = hiltViewModel<DiagnosesViewModel>()
-    val viewModelUser = hiltViewModel<UserViewModel>()
-    Log.e("dashboard", "viewmodel init")
-//    viewModel.performDiagnoses(storedToken!!)
-//
-//    val diagnosesResponse by viewModel.diagnosesResponse.collectAsState()
-//    Log.e("diagnosesResponse", diagnosesResponse.toString())
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) }
@@ -134,13 +120,6 @@ fun RowScope.AddItem(
             Text(text = screen.title)
         },
         icon = {
-//            Icon(
-//                imageVector = if (selectedItemIndex == index) {
-//                    screen.selectedIcon
-//                } else {
-//                    screen.unselectedIcon
-//                }, contentDescription = null
-//            )
             Icon(
                 imageVector = screen.selectedIcon,
                 contentDescription = "Navigation Icon"

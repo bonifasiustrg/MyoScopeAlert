@@ -48,6 +48,7 @@ import com.apicta.myoscopealert.ui.theme.secondary
 @Composable
 fun HomeScreen(navController: NavHostController) {
     val context = LocalContext.current
+
     val filePath =
         "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Record17Oct.wav"
     Column(
@@ -145,8 +146,8 @@ fun HomeScreen(navController: NavHostController) {
 //                        .fillMaxWidth(),
 //                    contentScale = ContentScale.FillWidth
 //                )
-//                SetUpChart(ctx = context)
-                ProcessWavFileData(filePath, context)
+                SetUpChart(ctx = context)
+//                ProcessWavFileData(filePath, context)
 
                 Row(
                     Modifier.fillMaxWidth(),

@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object Retro {
     private const val BASE_URL = "https://myocardial.telekardiologi.com/api/v1/"
-//    private const val BASE_URL = "https://myoscope.distancing.my.id/"
+//    private const val BASE_URL = "http://127.0.0.1:8000/api/v1/"
 
     private val gson = GsonBuilder()
         .setLenient()

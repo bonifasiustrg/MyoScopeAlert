@@ -114,9 +114,8 @@ fun FileDetail(
     navController: NavHostController
 ) {
     val viewModel: DiagnosesViewModel = hiltViewModel()
-//    val ctx = LocalContext.current
+    val context = LocalContext.current
     var storedToken by remember { mutableStateOf<String?>(null) }
-
     // Ambil token jika belum diinisialisasi
     if (storedToken == null) {
         runBlocking {
@@ -124,15 +123,13 @@ fun FileDetail(
             Log.d("DetailScreen runblocking", "Stored Token: $storedToken")
         }
     }
-
     storedToken?.let { Log.e("stored token dashboard", it) }
+
 
     var isBack by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
-    val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -148,7 +145,28 @@ fun FileDetail(
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
     ).value
 
+    // Tracking progress audio
+    LaunchedEffect(key1 = isPlaying.value) {
+        while (isPlaying.value) {
+            // Ambil progress audio saat ini
+            val currentPosition = mediaPlayer.currentPosition / 1000
 
+            // Log progress audio
+            Log.e("AudioPlayer", "Progress: $currentPosition")
+            Log.e("AudioPlayer", "Progressbar: ${progress}")
+
+            // Tunggu 1 detik
+            delay(1000)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        // Ketika komponen dihancurkan, hentikan pemutaran audio
+        onDispose {
+            mediaPlayer.stop()
+            mediaPlayer.release()
+        }
+    }
     // Set tombol play dan stop
     Column(
         modifier = Modifier
@@ -458,12 +476,13 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             val wavFile = File(wavFilePath)
             val audioData = ArrayList<Entry>()
 
-            // Read the WAV file using AudioRecord
-            val bufferSize = AudioRecord.getMinBufferSize(
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT
-            )
+//            // Read the WAV file using AudioRecord
+//            val bufferSize = AudioRecord.getMinBufferSize(
+//                SAMPLE_RATE,
+//                AudioFormat.CHANNEL_IN_MONO,
+//                AudioFormat.ENCODING_PCM_16BIT
+//            )
+            val bufferSize = 4096
 
             val wavData = ByteArray(bufferSize)
             val dataPoints = ArrayList<Float>()
@@ -499,6 +518,10 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
                 val entry = Entry(i.toFloat(), dataPoints[i])
                 audioData.add(entry)
             }
+//            val audioData = dataPoints.mapIndexed { index, amplitude ->
+//                Entry(index.toFloat(), amplitude)
+//            }
+
 //        Log.e("processwav", "Convert data points to Entry objects for the chart")
 
             // Create a LineDataSet with the audio data
