@@ -2,6 +2,8 @@ package com.apicta.myoscopealert.ui.screen
 
 
 import android.content.Context
+import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
@@ -90,10 +92,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -105,24 +103,27 @@ import java.io.IOException
 fun FileDetail(
     filename: String?,
     fileDate: String?,
-    dataStoreManager: DataStoreManager,
-    navController: NavHostController
+    /*dataStoreManager: DataStoreManager,*/
+    navController: NavHostController,
 ) {
     val viewModel: DiagnosesViewModel = hiltViewModel()
+    val storedToken by viewModel.userToken.collectAsState()
+    Log.e("usertoken", "$storedToken")
+
     val context = LocalContext.current
-    var storedToken by remember { mutableStateOf<String?>(null) }
-    // Ambil token jika belum diinisialisasi
-    if (storedToken == null) {
-        runBlocking {
-            storedToken = dataStoreManager.getAuthToken.first()
-            Log.d("DetailScreen runblocking", "Stored Token: $storedToken")
-        }
-    }
-    storedToken?.let { Log.e("stored token dashboard", it) }
+    val scope = rememberCoroutineScope()
+//    var storedToken by remember { mutableStateOf<String?>(null) }
+//    // Ambil token jika belum diinisialisasi
+//    if (storedToken == null) {
+//        runBlocking {
+//            storedToken = dataStoreManager.getAuthToken.first()
+//            Log.d("DetailScreen runblocking", "Stored Token: $storedToken")
+//        }
+//    }
+//    storedToken?.let { Log.e("stored token dashboard", it) }
 
 
     var isBack by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember { mutableStateOf(false) }
@@ -140,28 +141,28 @@ fun FileDetail(
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
     ).value
 
-    // Tracking progress audio
-    LaunchedEffect(key1 = isPlaying.value) {
-        while (isPlaying.value) {
-            // Ambil progress audio saat ini
-            val currentPosition = mediaPlayer.currentPosition / 1000
-
-            // Log progress audio
-            Log.e("AudioPlayer", "Progress: $currentPosition")
-            Log.e("AudioPlayer", "Progressbar: ${progress}")
-
-            // Tunggu 1 detik
-            delay(1000)
-        }
-    }
-
-    DisposableEffect(Unit) {
-        // Ketika komponen dihancurkan, hentikan pemutaran audio
-        onDispose {
-            mediaPlayer.stop()
-            mediaPlayer.release()
-        }
-    }
+//    // Tracking progress audio
+//    LaunchedEffect(key1 = isPlaying.value) {
+//        while (isPlaying.value) {
+//            // Ambil progress audio saat ini
+//            val currentPosition = mediaPlayer.currentPosition / 1000
+//
+//            // Log progress audio
+//            Log.e("AudioPlayer", "Progress: $currentPosition")
+//            Log.e("AudioPlayer", "Progressbar: $progress")
+//
+//            // Tunggu 1 detik
+//            delay(1000)
+//        }
+//    }
+//
+//    DisposableEffect(Unit) {
+//        // Ketika komponen dihancurkan, hentikan pemutaran audio
+//        onDispose {
+//            mediaPlayer.stop()
+//            mediaPlayer.release()
+//        }
+//    }
     // Set tombol play dan stop
     Column(
         modifier = Modifier
@@ -237,13 +238,18 @@ fun FileDetail(
                     // Memantau progress audio
                     CoroutineScope(Dispatchers.IO).launch {
                         while (isPlaying.value) {
-                            var currentPosition = mediaPlayer.currentPosition.toFloat()
+                            val currentPosition = mediaPlayer.currentPosition.toFloat()
                             val totalDuration = mediaPlayer.duration.toFloat()
                             Log.e("progress", "$currentPosition | $totalDuration")
                             val progressPercentage = currentPosition / totalDuration
                             progress = progressPercentage
                             if (progress == 1.0f) {
                                 isPlaying.value = false
+                            }
+                            if (isPlaying.value && mediaPlayer.currentPosition >= mediaPlayer.duration) {
+                                // Audio telah diputar sampai selesai
+                                isPlaying.value = false
+                                // Tampilkan pesan ke pengguna jika diperlukan
                             }
                             delay(200)
 
@@ -283,7 +289,6 @@ fun FileDetail(
 
         )
         var isPredicting by remember { mutableStateOf(false) }
-        var showResult by remember { mutableStateOf(false) }
         val predictResponse by viewModel.predictResponse.collectAsState()
 //        LaunchedEffect(predictResponse) {
 //            // Set isPredicting menjadi false saat nilai predictResponse berubah
@@ -356,13 +361,6 @@ fun FileDetail(
 
                     // Periksa apakah file ada
                     if (file.exists()) {
-                        val requestFile: RequestBody =
-                            file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-                        val body: MultipartBody.Part =
-                            MultipartBody.Part.createFormData("file", file.name, requestFile)
-
-
-
                         scope.launch {
                             // Sekarang variabel 'body' adalah objek MultipartBody.Part yang dapat Anda gunakan untuk mengirim file dalam permintaan API.
 //                            viewModel.performPrediction(/*token, */body)
@@ -397,7 +395,7 @@ fun FileDetail(
             colors = ButtonDefaults.buttonColors(primary),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            if (isPredicting == false && !isBack) {
+            if (!isPredicting && !isBack) {
                 Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
                 Text(text = "Prediksi")
             } else {
@@ -418,7 +416,7 @@ fun FileDetail(
 
             // Log progress audio
             Log.e("AudioPlayer", "Progress: $currentPosition")
-            Log.e("AudioPlayer", "Progressbar: ${progress}")
+            Log.e("AudioPlayer", "Progressbar: $progress")
 
             // Tunggu 1 detik
             delay(1000)
@@ -438,9 +436,7 @@ fun FileDetail(
 fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
     val SAMPLE_RATE = 8000
     val SHRT_MAX = 32767
-
-
-
+    val audioData = ArrayList<Entry>()
     Column(
         Modifier
             .fillMaxWidth()
@@ -455,34 +451,28 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             signalView.setDrawGridBackground(false)
 
             // Customize X-axis properties if needed
-            val xAxis = signalView?.xAxis
+            val xAxis = signalView.xAxis
             xAxis?.setDrawGridLines(false)
 
             // Customize Y-axis properties if needed
-            val yAxis = signalView?.axisLeft
+            val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
 
             if (isZooming) {
                 yAxis?.setAxisMaximum(0.03f)
                 yAxis?.setAxisMinimum(-0.03f)
-
             }
 
-            val wavFile = File(wavFilePath)
-            val audioData = ArrayList<Entry>()
-
-//            // Read the WAV file using AudioRecord
-//            val bufferSize = AudioRecord.getMinBufferSize(
-//                SAMPLE_RATE,
-//                AudioFormat.CHANNEL_IN_MONO,
-//                AudioFormat.ENCODING_PCM_16BIT
-//            )
-            val bufferSize = 4096
-
+            // **Memory Efficiency Improvement:** Read the WAV file in chunks instead of loading the entire file into memory at once.
+            val bufferSize = AudioRecord.getMinBufferSize(
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT
+            )
             val wavData = ByteArray(bufferSize)
             val dataPoints = ArrayList<Float>()
 
-            val inputStream = FileInputStream(wavFile)
+            val inputStream = FileInputStream(wavFilePath)
             val bufferedInputStream = BufferedInputStream(inputStream)
             val dataInputStream = DataInputStream(bufferedInputStream)
 
@@ -506,51 +496,46 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             } finally {
                 dataInputStream.close()
             }
-//        Log.e("processwav", "try n catch bytes read")
+
+            // **Memory Leak Prevention:** Close the WAV file after processing it.
+            inputStream.close()
+
 
             // Convert data points to Entry objects for the chart
             for (i in dataPoints.indices) {
                 val entry = Entry(i.toFloat(), dataPoints[i])
                 audioData.add(entry)
             }
-//            val audioData = dataPoints.mapIndexed { index, amplitude ->
-//                Entry(index.toFloat(), amplitude)
-//            }
-
-//        Log.e("processwav", "Convert data points to Entry objects for the chart")
 
             // Create a LineDataSet with the audio data
             val dataSet = LineDataSet(audioData, "Heart Beat Wave")
             dataSet.color = R.color.green
             dataSet.setDrawCircles(false)
-//        Log.e("processwav", "Create a LineDataSet with the audio data")
 
             // Create a LineData object and set the LineDataSet
             val lineData = LineData(dataSet)
-//        Log.e("processwav", "Create a LineData object and set the LineDataSet")
 
             // Set the LineData object to the chart
-            signalView?.data = lineData
+            signalView.data = lineData
 
-//        Log.e("processwav", "Set the LineData object to the chart")
-
-// moveViewToX(...) also calls invalidate()
+            // moveViewToX(...) also calls invalidate()
 
             // Refresh the chart
-            signalView?.invalidate()
+            signalView.invalidate()
 
             if (isZooming) {
                 // now modify viewport
-                signalView.setVisibleXRangeMaximum(10000F); // allow 20 values to be displayed at once on the x-axis, not more
-                signalView.moveViewToX(100F); // set the left edge of the chart to x-index 10
-
+                signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
+                signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
             }
+
             Log.e("processwav", "Refresh signalview")
         }
 
 
     }
 }
+
 
 @Composable
 fun SetUpChart(ctx: Context) {
@@ -570,166 +555,14 @@ fun SetUpChart(ctx: Context) {
         signalView.setDrawGridBackground(false)
 
         // Customize X-axis properties if needed
-        val xAxis = signalView?.xAxis
+        val xAxis = signalView.xAxis
         xAxis?.setDrawGridLines(false)
 
         // Customize Y-axis properties if needed
-        val yAxis = signalView?.axisLeft
+        val yAxis = signalView.axisLeft
         yAxis?.setDrawGridLines(false)
     }
 }
-
-
-//@Composable
-//fun HistoryDetail(navController: NavHostController) {
-//    val ctx = LocalContext.current
-//    val isBack by remember {
-//        mutableStateOf(false)
-//    }
-////    Box(
-////        modifier = Modifier
-////            .fillMaxWidth()
-////            .height(140.dp)
-////            .background(
-////                color = primary,
-////                shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
-////            )
-////    )
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-////            .padding(16.dp)
-//    ) {
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        Column(Modifier.background(primary)) {
-//            Text(
-//                text = "recordwave3.wav",
-//                fontSize = 32.sp,
-//                fontWeight = FontWeight.Bold,
-//                color = Color.White
-//            )
-//            Text(text = "Dokter     : Saparudin ", color = Color.White)
-//            Text(text = "Tanggal    : 15 Oktober 2023", color = Color.White)
-//
-//        }
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        Text(text = "Hasil Rekaman", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-//
-//        Image(
-//            painter = painterResource(id = R.drawable.chart),
-//            contentDescription = null,
-//            contentScale = ContentScale.Crop,
-//            modifier = Modifier
-//                .fillMaxWidth(0.75f)
-//                .height(250.dp)
-//                .clip(RoundedCornerShape(16.dp))
-//                .align(Alignment.CenterHorizontally)
-//        )
-//
-//        Spacer(modifier = Modifier.height(32.dp))
-//        Text(
-//            text = "Prediksi Status Kesehatan Jantung",
-//            fontSize = 14.sp,
-//            fontWeight = FontWeight.Bold
-//        )
-//        var isPredicting by remember { mutableStateOf(false) }
-//        if (isPredicting) {
-//
-//            Box(
-//                modifier = Modifier
-//                    .padding(8.dp)
-//                    .clip(RoundedCornerShape(50.dp))
-//                    .background(Color(0xFFFF6F6F))
-//                    .padding(vertical = 14.dp, horizontal = 64.dp)
-//                    .align(Alignment.CenterHorizontally)
-//                    .fillMaxWidth(0.8f)
-//            ) {
-//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-//                    Text(
-//                        text = "MyoaCardial Infarction",
-//                        style = TextStyle(
-//                            color = Color.White,
-//                            fontWeight = FontWeight.SemiBold,
-//                            fontSize = 16.sp
-//                        )
-//                    )
-//
-//                    Icon(
-//                        imageVector = Icons.Outlined.Close,
-//                        contentDescription = null,
-//                        tint = Color.White
-//                    )
-//                }
-//            }
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Box(
-//                modifier = Modifier
-//                    .padding(8.dp)
-//                    .clip(RoundedCornerShape(50.dp))
-//                    .background(Color(0xFF72D99D))
-//                    .padding(vertical = 14.dp, horizontal = 64.dp)
-//                    .align(Alignment.CenterHorizontally)
-//                    .fillMaxWidth(0.8f)
-//
-//            ) {
-//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-//                    Text(
-//                        text = "Jantung Normal",
-//                        style = TextStyle(
-//                            color = Color.White,
-//                            fontWeight = FontWeight.SemiBold,
-//                            fontSize = 16.sp
-//                        )
-//                    )
-//
-//                    Icon(
-//                        imageVector = Icons.Outlined.CheckCircle,
-//                        contentDescription = null,
-//                        tint = Color.White
-//                    )
-//                }
-//            }
-//            Spacer(modifier = Modifier.height(16.dp))
-//        }
-//
-//        Button(
-//            onClick = {
-//                !isPredicting
-//                if (isBack) {
-//                    navController.navigate(BottomBarScreen.History.route) {
-//                        // Pop up to the start destination of the graph
-//                        popUpTo(navController.graph.startDestinationId) {
-//                            // Pop all inclusive
-//                            inclusive = true
-//                        }
-//                        // Avoid multiple copies of the same destination when re-selecting it
-//                        launchSingleTop = true
-//                        // Restore state when re-selecting a previously selected item
-//                        restoreState = true
-//                    }
-//                } else if (isPredicting) {
-//                    isPredicting = true
-//                    Toast.makeText(ctx, "Your data is processing...", Toast.LENGTH_SHORT).show()
-//                    !isBack
-//                }
-//
-//            },
-//            colors = ButtonDefaults.buttonColors(primary),
-//            modifier = Modifier.align(Alignment.CenterHorizontally)
-//        ) {
-//            Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
-//            if (!isPredicting) Text(text = "Prediksi") else if (isPredicting && isBack) {
-//                Text(text = "Kembali")
-//            }
-//        }
-//    }
-//}
 
 @Composable
 private fun CardContent(isVerified: Boolean) {
@@ -800,17 +633,11 @@ private fun CardContent(isVerified: Boolean) {
             }
         }
 
-//        Spacer(modifier = Modifier.weight(1f))
-
         if(isVerified) {
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(
                     imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = null/*if (expanded) {
-                    stringResource(R.string.show_less)
-                } else {
-                    stringResource(R.string.show_more)
-                }*/
+                    contentDescription = null
                 )
             }
         }

@@ -34,7 +34,7 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             RecordScreen(navController = navController)
         }
         composable(route = BottomBarScreen.History.route) {
-            HistoryScreen(navController = navController, storedToken)
+            HistoryScreen(navController = navController/*, storedToken*/)
 //            HistoryScreen(navController)
 //            FileListScreen(navController)
         }
@@ -87,7 +87,7 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
 
             // Komponen untuk menampilkan halaman detail
             // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
-            FileDetail(fileName, fileDate, dataStoreManager, navController)
+            FileDetail(fileName, fileDate, /*dataStoreManager,*/ navController)
         }
 
 //        detailsNavGraph(navController = navController)

@@ -4,25 +4,17 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Upload
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -37,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,20 +36,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.audiopicker.FilePickerDialog
 import com.apicta.myoscopealert.audiopicker.PickerConfig
 import com.apicta.myoscopealert.audiopicker.PickerType
 import com.apicta.myoscopealert.audiopicker.PickerUtils.printToLog
-import com.apicta.myoscopealert.graphs.BottomBarScreen
-import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 
 @RequiresApi(Build.VERSION_CODES.S)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(navController: NavHostController, token: String = "") {
+fun HistoryScreen(navController: NavHostController) {
     val config = PickerConfig(
         currentType = PickerType.Audio,
         storageTitle = "storageTitle",
@@ -172,42 +158,6 @@ fun HistoryScreen(navController: NavHostController, token: String = "") {
 //        }
 
 
-        }
-    }
-}
-
-@Composable
-fun HistoryItem(navController: NavHostController) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-//            .shadow(elevation = 4.dp, spotColor = Color.Gray, shape = RoundedCornerShape(16.dp))
-            .border(2.dp, Color.Black, shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-
-//            .padding(8.dp)
-    ) {
-        Column(Modifier.weight(2f)) {
-            Text(text = "Ceritanya ini nama file", fontWeight = FontWeight.SemiBold)
-            Text(text = "09 Juni 2023 17:08")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-
-        Button(
-            onClick = {
-                navController.navigate("detail_history")
-            }, colors = ButtonDefaults.buttonColors(
-                containerColor = primary,
-                contentColor = Color.White
-            )
-        ) {
-            Text(text = "Lihat Hasil", fontWeight = FontWeight.Bold)
-            Icon(
-                painter = painterResource(id = R.drawable.ic_next_arrow),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
         }
     }
 }
