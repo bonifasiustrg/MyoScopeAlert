@@ -1,5 +1,6 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -37,12 +38,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.bluetooth.BTAppActivity
+import com.apicta.myoscopealert.bluetooth.BluetoothActivity
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -198,7 +203,8 @@ fun HomeScreen(navController: NavHostController) {
                 Text(text = "Lakukan Rekaman Jantung", fontWeight = FontWeight.Bold)
                 Button(
                     onClick = {
-                              navController.navigate("connect_bluetooth")
+//                              navController.navigate("connect_bluetooth")
+                        context.startActivity(Intent(context, BTAppActivity::class.java))
                     },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()
