@@ -3,6 +3,7 @@ package com.apicta.myoscopealert.ui.screen
 import android.content.ContextWrapper
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,7 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun FileListScreen(navController: NavHostController) {
+fun FileListScreen(navController: NavHostController, query: String) {
     val fileList = ArrayList<FileModel>()
 
     val context = LocalContext.current
@@ -55,9 +56,13 @@ fun FileListScreen(navController: NavHostController) {
     }
 //    Log.e("filelist", "$fileList")
 //    Log.e("filelist", "$wavFileNames")
-//    Log.e("filelist", audioDirPath)
-
+    Log.e("filelist", audioDirPath)
+//    if (query.isEmpty())
+//        fileList
+//    else
+//        fileList.filter { it.audioDirPath.lowercase().contains(query.lowercase()) }
     LazyColumn {
+
         items(/*wavFileNames*/fileList) { file ->
             Row(
                 Modifier

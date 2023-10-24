@@ -1,7 +1,7 @@
 package com.apicta.myoscopealert.di;
 
-import com.apicta.myoscopealert.network.UserApi;
 import com.apicta.myoscopealert.data.repository.UserRepository;
+import com.apicta.myoscopealert.network.UserApi;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.Preconditions;

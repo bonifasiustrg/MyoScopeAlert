@@ -64,7 +64,12 @@ android {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
