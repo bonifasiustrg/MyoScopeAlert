@@ -2,7 +2,6 @@ package com.apicta.myoscopealert.bluetooth
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -16,11 +15,10 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.apicta.myoscopealert.R
 import com.psp.bluetoothlibrary.Bluetooth
-import com.psp.bluetoothlibrary.BluetoothListener
 import com.psp.bluetoothlibrary.BluetoothListener.onDevicePairListener
+
 
 class BluetoothActivity : AppCompatActivity() {
     // UI
@@ -37,11 +35,12 @@ class BluetoothActivity : AppCompatActivity() {
     var listPairedBluetoothDevices: ArrayList<BluetoothDevice>? = null
     var adapterDetectBluetoothDevices: ArrayAdapter<String>? = null
     var adapterPairedBluetoothDevices: ArrayAdapter<String>? = null
-    lateinit var context: Context
+
     // Bluetooth object
     private var bluetooth: Bluetooth? = null
 
     // optional
+// optional
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -55,11 +54,10 @@ class BluetoothActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bluetooth)
-        context = applicationContext
         init()
 
         // Request fine location permission
@@ -83,7 +81,6 @@ class BluetoothActivity : AppCompatActivity() {
 
         // turn on bluetooth
         btnTurnOn!!.setOnClickListener {
-
             // With user permission
             bluetooth!!.turnOnWithPermission(this@BluetoothActivity)
             // Without user permission
@@ -128,8 +125,21 @@ class BluetoothActivity : AppCompatActivity() {
         // Detect nearby bluetooth devices #END
 
         // Bluetooth Pairing #START
-        bluetooth!!.setOnDevicePairListener(object : BluetoothListener.onDevicePairListener {
+        bluetooth!!.setOnDevicePairListener(object : onDevicePairListener {
+            @RequiresApi(Build.VERSION_CODES.S)
             override fun onDevicePaired(device: BluetoothDevice) {
+                if (ActivityCompat.checkSelfPermission(
+                        this@BluetoothActivity,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this@BluetoothActivity,
+                        arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                        REQUEST_BLUETOOTH_PERMISSION
+                    )
+                    return
+                }
                 Log.d(TAG, device.name + " Paired successfull")
                 Toast.makeText(
                     this@BluetoothActivity,
@@ -138,20 +148,6 @@ class BluetoothActivity : AppCompatActivity() {
                 ).show()
 
                 // remove device from detect device list
-                if (ActivityCompat.checkSelfPermission(
-                        this@BluetoothActivity,
-                        Manifest.permission.BLUETOOTH_CONNECT
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return
-                }
                 listDetectDevicesString!!.remove(device.name)
                 listDetectBluetoothDevices!!.remove(device)
                 adapterDetectBluetoothDevices!!.notifyDataSetChanged()
@@ -162,19 +158,19 @@ class BluetoothActivity : AppCompatActivity() {
                 adapterPairedBluetoothDevices!!.notifyDataSetChanged()
             }
 
+            @RequiresApi(Build.VERSION_CODES.S)
             override fun onCancelled(device: BluetoothDevice) {
                 if (ActivityCompat.checkSelfPermission(
                         this@BluetoothActivity,
                         Manifest.permission.BLUETOOTH_CONNECT
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                    // Permission is not granted, request it from the user
+                    ActivityCompat.requestPermissions(
+                        this@BluetoothActivity,
+                        arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                        REQUEST_BLUETOOTH_PERMISSION
+                    )
                     return
                 }
                 Toast.makeText(
@@ -200,7 +196,7 @@ class BluetoothActivity : AppCompatActivity() {
 
 
         // Get Paired devices list
-        pairedDevices
+        getPairedDevices()
 
 
         // Unpair bluetooh device #START
@@ -235,97 +231,89 @@ class BluetoothActivity : AppCompatActivity() {
         listDetectBluetoothDevices = ArrayList()
         listPairedBluetoothDevices = ArrayList()
         adapterDetectBluetoothDevices = ArrayAdapter<String>(
-            this@BluetoothActivity, R.layout.device_item,
+            this, R.layout.device_item,
             listDetectDevicesString!!
         )
         adapterPairedBluetoothDevices = ArrayAdapter<String>(
-            this@BluetoothActivity, R.layout.device_item,
+            this, R.layout.device_item,
             listPairedDevicesString!!
         )
         listViewDetectDevices!!.setAdapter(adapterDetectBluetoothDevices)
         listViewPairedDevices!!.setAdapter(adapterPairedBluetoothDevices)
     }
 
-    private val pairedDevices: Unit
-        private get() {
-            val devices = bluetooth!!.getPairedDevices()
-            if (devices.size > 0) {
-                for (device in devices) {
-                    if (ActivityCompat.checkSelfPermission(
-                            this@BluetoothActivity,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return
-                    }
-                    listPairedDevicesString!!.add(device.name)
-                    listPairedBluetoothDevices!!.add(device)
-                    Log.d(TAG, "Paired device is " + device.name)
-                }
-            } else {
-                Log.d(TAG, "Paired device list not found")
-            }
-        }
-
-//    fun checkRunTimePermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (ActivityCompat.checkSelfPermission(
-//                    this,
-//                    Manifest.permission.ACCESS_FINE_LOCATION
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                Log.d(TAG, "Fine location permission is already granted")
+//    private val pairedDevices: Unit
+//        get() {
+//            val devices = bluetooth!!.getPairedDevices()
+//            if (devices.size > 0) {
+//                for (device in devices) {
+//                    if (ActivityCompat.checkSelfPermission(
+//                            this,
+//                            Manifest.permission.BLUETOOTH_CONNECT
+//                        ) != PackageManager.PERMISSION_GRANTED
+//                    ) {
+//                        // TODO: Consider calling
+//                        //    ActivityCompat#requestPermissions
+//                        // here to request the missing permissions, and then overriding
+//                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                        //                                          int[] grantResults)
+//                        // to handle the case where the user grants the permission. See the documentation
+//                        // for ActivityCompat#requestPermissions for more details.
+//                        return
+//                    }
+//                    listPairedDevicesString!!.add(device.name)
+//                    listPairedBluetoothDevices!!.add(device)
+//                    Log.d(TAG, "Paired device is " + device.name)
+//                }
 //            } else {
-//                Log.d(TAG, "request fine location permission")
-//                requestPermissions(
-//                    arrayOf(
-//                        Manifest.permission.ACCESS_COARSE_LOCATION,
-//                        Manifest.permission.ACCESS_FINE_LOCATION
-//                    ),
-//                    10
-//                )
+//                Log.d(TAG, "Paired device list not found")
 //            }
 //        }
-//    }
+@RequiresApi(Build.VERSION_CODES.S)
+private fun getPairedDevices() {
+    val devices = bluetooth!!.getPairedDevices()
+    if (devices.size > 0) {
+        for (device in devices) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Permission is not granted, request it from the user
+                ActivityCompat.requestPermissions(
+                    this@BluetoothActivity,
+                    arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                    REQUEST_BLUETOOTH_PERMISSION
+                )
+                return
+            }
+            listPairedDevicesString!!.add(device.name)
+            listPairedBluetoothDevices!!.add(device)
+            Log.d(TAG, "Paired device is " + device.name)
+        }
+    } else {
+        Log.d(TAG, "Paired device list not found")
+    }
+}
 
-    @RequiresApi(Build.VERSION_CODES.S)
     fun checkRunTimePermission() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            Log.d(TAG, "All permissions are already granted")
+            Log.d(TAG, "Fine location permission is already granted")
         } else {
-            Log.d(TAG, "request all permissions")
+            Log.d(TAG, "request fine location permission")
             requestPermissions(
                 arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 ),
                 10
             )
         }
     }
-
-
 
     private fun clearDetectDeviceList() {
         if (listDetectDevicesString!!.size > 0) {
@@ -338,9 +326,8 @@ class BluetoothActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "bt.BluetoothAppActivity"
-        private const val MY_PERMISSIONS_REQUEST_BLUETOOTH_CONNECT = 1001
-        private const val MY_PERMISSIONS_REQUEST_BLUETOOTH_SCAN = 1002
+        private const val TAG = "psp.BluetoothAct"
+        const val REQUEST_BLUETOOTH_PERMISSION = 1
     }
 
 }

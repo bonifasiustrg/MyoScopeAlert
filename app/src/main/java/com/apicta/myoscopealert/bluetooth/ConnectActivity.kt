@@ -3,9 +3,15 @@ package com.apicta.myoscopealert.bluetooth
 import android.Manifest
 import android.app.Dialog
 import android.bluetooth.BluetoothSocket
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.View
@@ -16,6 +22,7 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,6 +31,8 @@ import com.psp.bluetoothlibrary.Bluetooth
 import com.psp.bluetoothlibrary.BluetoothListener.onConnectionListener
 import com.psp.bluetoothlibrary.BluetoothListener.onReceiveListener
 import com.psp.bluetoothlibrary.Connection
+import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 
 
@@ -40,6 +49,10 @@ class ConnectActivity : AppCompatActivity() {
 
     // Connection object
     private var connection: Connection? = null
+
+    // ArrayList untuk menyimpan received data
+    private val receivedDataList = ArrayList<Int>()
+
     override fun onStart() {
         super.onStart()
         if (connection!!.isConnected()) {
@@ -49,12 +62,14 @@ class ConnectActivity : AppCompatActivity() {
         logMsg("onStart")
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onDestroy() {
         super.onDestroy()
         logMsg("onDestroy")
         disconnect()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect)
@@ -78,6 +93,7 @@ class ConnectActivity : AppCompatActivity() {
 
         // Connect
         btnConnect!!.setOnClickListener(object : View.OnClickListener {
+            @RequiresApi(Build.VERSION_CODES.S)
             override fun onClick(v: View) {
                 deviceAddressAndConnect
             }
@@ -131,17 +147,37 @@ class ConnectActivity : AppCompatActivity() {
         txtDisplay!!.setMovementMethod(ScrollingMovementMethod())
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun disconnect() {
         if (connection != null) {
             connection!!.disconnect()
             logMsg("Disconnect manual")
             txtDisplay!!.append("\n[ST] Disconnect manual")
             setDisplayMessageScrollBottom()
+
+            logMsg("All data received: $receivedDataList")
+            logMsg("All data received: ${receivedDataList::class.java}")
+            logMsg("All data received: ${receivedDataList::class.simpleName}")
+
+//            val intList = arrayListOf(82, 82, 82, 82, 81, 82, 82, 81, 82, 77, 81, 82, 82, 82, 83, 81, 82, 81, 81, 82, 81, 81, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82)
+            val intArray = receivedDataList.toIntArray()
+            val contextWrapper = ContextWrapper(this)
+            val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+
+            val audioDirPath = externalStorage.absolutePath
+            var count = 0
+            var outputFile: File
+            do {
+                val fileName = "output_$count.wav"
+                outputFile = File(audioDirPath, fileName)
+                count++
+            } while (outputFile.exists())
+            convertIntArrayToWav(intArray, outputFile)
         }
     }
 
     private val deviceAddressAndConnect: Unit
-        private get() {
+        @RequiresApi(Build.VERSION_CODES.S) get() {
             // create dialog box
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Select device")
@@ -180,6 +216,7 @@ class ConnectActivity : AppCompatActivity() {
                 }
         }
     private val connectionListener: onConnectionListener = object : onConnectionListener {
+        @RequiresApi(Build.VERSION_CODES.S)
         override fun onConnectionStateChanged(socket: BluetoothSocket?, state: Int) {
             when (state) {
                 Connection.CONNECTING -> {
@@ -203,6 +240,7 @@ class ConnectActivity : AppCompatActivity() {
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.S)
         override fun onConnectionFailed(errorCode: Int) {
             when (errorCode) {
                 Connection.SOCKET_NOT_FOUND -> {
@@ -225,8 +263,23 @@ class ConnectActivity : AppCompatActivity() {
             logMsg("[RX] $receivedData")
             txtDisplay!!.append("\n[RX] $receivedData")
             setDisplayMessageScrollBottom()
+
+
+            // Menambahkan data yang diterima ke dalam ArrayList
+            if (receivedData.trim().isNotEmpty()) {
+                val receivedDataInt = receivedData.replace("\n", "").toIntOrNull()
+                if (receivedDataInt != null) {
+                    receivedDataList.add(receivedDataInt)
+                } else {
+                    Log.e("received data", "String $receivedData gagal dikonversi jadi angka, output null")
+                    // Handle case when receivedData cannot be converted to integer
+                    // Misalnya, Anda dapat menambahkan log atau menampilkan pesan kesalahan
+                }
+            }
+
         }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun getPairedDevices(list: ArrayList<String>) {
         // initialize bluetooth object
         val bluetooth = Bluetooth(this)
@@ -238,13 +291,11 @@ class ConnectActivity : AppCompatActivity() {
                         Manifest.permission.BLUETOOTH_CONNECT
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                        BluetoothActivity.REQUEST_BLUETOOTH_PERMISSION
+                    )
                     return
                 }
                 list.add(
@@ -269,5 +320,115 @@ class ConnectActivity : AppCompatActivity() {
 
     private fun logMsg(msg: String) {
         Log.d(TAG, msg)
+    }
+
+
+
+
+
+
+
+    fun convertIntArrayToWav(intArray: IntArray, outputFile: File) {
+        val sampleRate = 44100 // Sample rate in Hz
+        val numChannels = 1 // Mono audio
+        val bitsPerSample = 16 // 16-bit audio
+
+        val bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
+        val audioTrack = AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM)
+
+        val outputStream = FileOutputStream(outputFile)
+        val header = generateWavHeader(intArray.size * 2, sampleRate, numChannels, bitsPerSample)
+        outputStream.write(header)
+
+        audioTrack.play()
+
+        for (value in intArray) {
+            val byteValue = value.toByte()
+            audioTrack.write(byteArrayOf(byteValue, byteValue), 0, 2)
+            outputStream.write(byteArrayOf(byteValue, byteValue))
+        }
+
+        audioTrack.stop()
+        audioTrack.release()
+        outputStream.close()
+    }
+
+    fun generateWavHeader(dataSize: Int, sampleRate: Int, numChannels: Int, bitsPerSample: Int): ByteArray {
+        val headerSize = 44
+        val totalSize = dataSize + headerSize - 8
+
+        val header = ByteArray(headerSize)
+
+        // ChunkID
+        header[0] = 'R'.toByte()
+        header[1] = 'I'.toByte()
+        header[2] = 'F'.toByte()
+        header[3] = 'F'.toByte()
+
+        // ChunkSize
+        header[4] = (totalSize and 0xff).toByte()
+        header[5] = (totalSize shr 8 and 0xff).toByte()
+        header[6] = (totalSize shr 16 and 0xff).toByte()
+        header[7] = (totalSize shr 24 and 0xff).toByte()
+
+        // Format
+        header[8] = 'W'.toByte()
+        header[9] = 'A'.toByte()
+        header[10] = 'V'.toByte()
+        header[11] = 'E'.toByte()
+
+        // Subchunk1ID
+        header[12] = 'f'.toByte()
+        header[13] = 'm'.toByte()
+        header[14] = 't'.toByte()
+        header[15] = ' '.toByte()
+
+        // Subchunk1Size
+        header[16] = 16 // PCM format
+        header[17] = 0
+        header[18] = 0
+        header[19] = 0
+
+        // AudioFormat
+        header[20] = 1 // PCM format
+
+        // NumChannels
+        header[22] = numChannels.toByte()
+
+        // SampleRate
+        header[24] = (sampleRate and 0xff).toByte()
+        header[25] = (sampleRate shr 8 and 0xff).toByte()
+        header[26] = (sampleRate shr 16 and 0xff).toByte()
+        header[27] = (sampleRate shr 24 and 0xff).toByte()
+
+        // ByteRate
+        val byteRate = sampleRate * numChannels * bitsPerSample / 8
+        header[28] = (byteRate and 0xff).toByte()
+        header[29] = (byteRate shr 8 and 0xff).toByte()
+        header[30] = (byteRate shr 16 and 0xff).toByte()
+        header[31] = (byteRate shr 24 and 0xff).toByte()
+
+        // BlockAlign
+        val blockAlign = numChannels * bitsPerSample / 8
+        header[32] = (blockAlign and 0xff).toByte()
+        header[33] = (blockAlign shr 8 and 0xff).toByte()
+
+        // BitsPerSample
+        header[34] = bitsPerSample.toByte()
+        header[35] = 0
+
+        // Subchunk2ID
+        header[36] = 'd'.toByte()
+        header[37] = 'a'.toByte()
+        header[38] = 't'.toByte()
+        header[39] = 'a'.toByte()
+
+        // Subchunk2Size
+        header[40] = (dataSize and 0xff).toByte()
+        header[41] = (dataSize shr 8 and 0xff).toByte()
+        header[42] = (dataSize shr 16 and 0xff).toByte()
+        header[43] = (dataSize shr 24 and 0xff).toByte()
+
+        return header
     }
 }
