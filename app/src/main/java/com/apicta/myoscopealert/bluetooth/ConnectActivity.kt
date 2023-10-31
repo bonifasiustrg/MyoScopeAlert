@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioManager
+import android.media.AudioRecord
 import android.media.AudioTrack
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +34,7 @@ import com.psp.bluetoothlibrary.BluetoothListener.onReceiveListener
 import com.psp.bluetoothlibrary.Connection
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
 import java.util.UUID
 
 
@@ -51,6 +53,7 @@ class ConnectActivity : AppCompatActivity() {
     private var connection: Connection? = null
 
     // ArrayList untuk menyimpan received data
+//    private val receivedDataList = ArrayList<Int>()
     private val receivedDataList = ArrayList<Int>()
 
     override fun onStart() {
@@ -159,8 +162,8 @@ class ConnectActivity : AppCompatActivity() {
             logMsg("All data received: ${receivedDataList::class.java}")
             logMsg("All data received: ${receivedDataList::class.simpleName}")
 
-//            val intList = arrayListOf(82, 82, 82, 82, 81, 82, 82, 81, 82, 77, 81, 82, 82, 82, 83, 81, 82, 81, 81, 82, 81, 81, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82)
             val intArray = receivedDataList.toIntArray()
+//            val intArray = intArrayOf(82, 82, 82, 82, 81, 82, 82, 81, 82, 77, 81, 82, 82, 82, 83, 81, 82, 81, 81, 82, 81, 81, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82)
             val contextWrapper = ContextWrapper(this)
             val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
 
@@ -173,10 +176,24 @@ class ConnectActivity : AppCompatActivity() {
                 count++
             } while (outputFile.exists())
             convertIntArrayToWav(intArray, outputFile)
-        }
+        } /*else {
+            val intArray = intArrayOf(2, 2, 2, 2, 1, 2, 2, 1, 2, -3, 1, 2, 2, 2, 3, 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -20, 4, 0, 23, 8, -11, -25- 0)
+            val contextWrapper = ContextWrapper(this)
+            val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+
+            val audioDirPath = externalStorage.absolutePath
+            var count = 0
+            var outputFile: File
+            do {
+                val fileName = "output_$count.wav"
+                outputFile = File(audioDirPath, fileName)
+                count++
+            } while (outputFile.exists())
+            convertIntArrayToWav(intArray, outputFile)
+        }*/
     }
 
-    private val deviceAddressAndConnect: Unit
+    val deviceAddressAndConnect: Unit
         @RequiresApi(Build.VERSION_CODES.S) get() {
             // create dialog box
             val builder = AlertDialog.Builder(this)
@@ -260,22 +277,29 @@ class ConnectActivity : AppCompatActivity() {
     }
     private val receiveListener =
         onReceiveListener { receivedData ->
+            Log.d("BluetoothData", "Received data: $receivedData")
+            val receivedBytes = receivedData.toByteArray(Charsets.UTF_8)
+            Log.d("BluetoothData byte", "Received data: $receivedBytes")
+            val intValue = ByteBuffer.wrap(receivedBytes).getInt()
+            Log.d("BluetoothData int", "Received data: $intValue")
+
             logMsg("[RX] $receivedData")
             txtDisplay!!.append("\n[RX] $receivedData")
             setDisplayMessageScrollBottom()
 
 
             // Menambahkan data yang diterima ke dalam ArrayList
-            if (receivedData.trim().isNotEmpty()) {
-                val receivedDataInt = receivedData.replace("\n", "").toIntOrNull()
-                if (receivedDataInt != null) {
-                    receivedDataList.add(receivedDataInt)
-                } else {
-                    Log.e("received data", "String $receivedData gagal dikonversi jadi angka, output null")
-                    // Handle case when receivedData cannot be converted to integer
-                    // Misalnya, Anda dapat menambahkan log atau menampilkan pesan kesalahan
-                }
-            }
+            receivedDataList.add(intValue)
+//            if (receivedData.trim().isNotEmpty()) {
+//                val receivedDataInt = receivedData.replace("\n", "").toIntOrNull()
+//                if (receivedDataInt != null) {
+//                    receivedDataList.add(receivedDataInt)
+//                } else {
+//                    Log.e("received data", "String $receivedData gagal dikonversi jadi angka, output null")
+//                    // Handle case when receivedData cannot be converted to integer
+//                    // Misalnya, Anda dapat menambahkan log atau menampilkan pesan kesalahan
+//                }
+//            }
 
         }
 
@@ -330,10 +354,14 @@ class ConnectActivity : AppCompatActivity() {
 
     fun convertIntArrayToWav(intArray: IntArray, outputFile: File) {
         val sampleRate = 44100 // Sample rate in Hz
-        val numChannels = 1 // Mono audio
-        val bitsPerSample = 16 // 16-bit audio
+//        val sampleRate = 8000 // Sample rate in Hz
+        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+        val channelConfig = AudioFormat.CHANNEL_IN_MONO
+        val bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, audioFormat)
 
-        val bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
+
+        val bitsPerSample = 16 // 16-bit audio
+        val numChannels = 1 // Mono audio
         val audioTrack = AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM)
 
         val outputStream = FileOutputStream(outputFile)
@@ -356,14 +384,16 @@ class ConnectActivity : AppCompatActivity() {
     fun generateWavHeader(dataSize: Int, sampleRate: Int, numChannels: Int, bitsPerSample: Int): ByteArray {
         val headerSize = 44
         val totalSize = dataSize + headerSize - 8
-
         val header = ByteArray(headerSize)
 
+//        val audioDataLength = outputStream.channel.size() - 44 // Subtract header size
+//        val overallSize = audioDataLength + 36 // Add header size
+
         // ChunkID
-        header[0] = 'R'.toByte()
-        header[1] = 'I'.toByte()
-        header[2] = 'F'.toByte()
-        header[3] = 'F'.toByte()
+        header[0] = 'R'.code.toByte()
+        header[1] = 'I'.code.toByte()
+        header[2] = 'F'.code.toByte()
+        header[3] = 'F'.code.toByte()
 
         // ChunkSize
         header[4] = (totalSize and 0xff).toByte()
@@ -372,16 +402,16 @@ class ConnectActivity : AppCompatActivity() {
         header[7] = (totalSize shr 24 and 0xff).toByte()
 
         // Format
-        header[8] = 'W'.toByte()
-        header[9] = 'A'.toByte()
-        header[10] = 'V'.toByte()
-        header[11] = 'E'.toByte()
+        header[8] = 'W'.code.toByte()
+        header[9] = 'A'.code.toByte()
+        header[10] = 'V'.code.toByte()
+        header[11] = 'E'.code.toByte()
 
         // Subchunk1ID
-        header[12] = 'f'.toByte()
-        header[13] = 'm'.toByte()
-        header[14] = 't'.toByte()
-        header[15] = ' '.toByte()
+        header[12] = 'f'.code.toByte()
+        header[13] = 'm'.code.toByte()
+        header[14] = 't'.code.toByte()
+        header[15] = ' '.code.toByte()
 
         // Subchunk1Size
         header[16] = 16 // PCM format
@@ -391,9 +421,14 @@ class ConnectActivity : AppCompatActivity() {
 
         // AudioFormat
         header[20] = 1 // PCM format
+        header[21] = 0
 
         // NumChannels
+        // Number of channels (2 = stereo)`
         header[22] = numChannels.toByte()
+//        header[22] = (if (numChannels == AudioFormat.CHANNEL_IN_MONO) 1 else 2).toByte()
+        header[23] = 0
+
 
         // SampleRate
         header[24] = (sampleRate and 0xff).toByte()
@@ -401,27 +436,32 @@ class ConnectActivity : AppCompatActivity() {
         header[26] = (sampleRate shr 16 and 0xff).toByte()
         header[27] = (sampleRate shr 24 and 0xff).toByte()
 
-        // ByteRate
+        // Byte rate (Sample rate * Number of channels * Bits per sample / 8)
         val byteRate = sampleRate * numChannels * bitsPerSample / 8
+//        val byteRate = sampleRate * (if (numChannels == AudioFormat.CHANNEL_IN_MONO) 1 else 2) * if (numChannels == AudioFormat.ENCODING_PCM_16BIT) 2 else 1
         header[28] = (byteRate and 0xff).toByte()
         header[29] = (byteRate shr 8 and 0xff).toByte()
         header[30] = (byteRate shr 16 and 0xff).toByte()
         header[31] = (byteRate shr 24 and 0xff).toByte()
 
-        // BlockAlign
+        // Block align (Number of channels * Bits per sample / 8)
         val blockAlign = numChannels * bitsPerSample / 8
+//        header[32] = ((if (CHANNEL_CONFIG == AudioFormat.CHANNEL_IN_MONO) 1 else 2) * if (AUDIO_FORMAT == AudioFormat.ENCODING_PCM_16BIT) 2 else 1).toByte()
         header[32] = (blockAlign and 0xff).toByte()
         header[33] = (blockAlign shr 8 and 0xff).toByte()
+//        header[33] = 0
+
 
         // BitsPerSample
         header[34] = bitsPerSample.toByte()
+//        header[34] = (if (AUDIO_FORMAT == AudioFormat.ENCODING_PCM_16BIT) 16 else 8).toByte()
         header[35] = 0
 
         // Subchunk2ID
-        header[36] = 'd'.toByte()
-        header[37] = 'a'.toByte()
-        header[38] = 't'.toByte()
-        header[39] = 'a'.toByte()
+        header[36] = 'd'.code.toByte()
+        header[37] = 'a'.code.toByte()
+        header[38] = 't'.code.toByte()
+        header[39] = 'a'.code.toByte()
 
         // Subchunk2Size
         header[40] = (dataSize and 0xff).toByte()

@@ -40,7 +40,6 @@ class BluetoothActivity : AppCompatActivity() {
     private var bluetooth: Bluetooth? = null
 
     // optional
-// optional
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -55,6 +54,7 @@ class BluetoothActivity : AppCompatActivity() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bluetooth)

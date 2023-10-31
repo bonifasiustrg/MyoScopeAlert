@@ -500,7 +500,18 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             // **Memory Leak Prevention:** Close the WAV file after processing it.
             inputStream.close()
 
+//
+//            val minValue = intArray.minOrNull()?.toFloat() ?: 0f
+//            val maxValue = intArray.maxOrNull()?.toFloat() ?: 1f
+//
+//            val normalizedDataPoints = ArrayList<Float>()
+//            for (value in intArray) {
+//                val normalizedValue = (value - minValue) / (maxValue - minValue)
+//                normalizedDataPoints.add(normalizedValue)
+//            }
 
+// Convert data points to Entry objects for the chart
+            val audioData = ArrayList<Entry>()
             // Convert data points to Entry objects for the chart
             for (i in dataPoints.indices) {
                 val entry = Entry(i.toFloat(), dataPoints[i])

@@ -64,6 +64,8 @@ android {
 }
 
 dependencies {
+    implementation("io.coil-kt:coil-svg:2.2.2")
+
     /*BLUETOOTH*/
     implementation("com.github.prasad-psp:Android-Bluetooth-Library:1.0.2")
 

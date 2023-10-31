@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -37,20 +38,22 @@ fun ConnectBluetoothScreen() {
     ) {
         Text(text = "Scanned Device List", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(modifier = Modifier.height(32.dp))
-
+        var no =3
+        val names = listOf("STET-02", "SmartBand843", "SAMSUNG TV 34", "redmi wr")
         LazyColumn() {
-            items(4) {
-                ListDeviceItem(it + 1)
+            items(names) {
+                ListDeviceItem(it, no)
                 Spacer(modifier = Modifier.height(8.dp))
                 Divider(modifier = Modifier.fillMaxWidth(),thickness = 2.dp, color = Color.LightGray)
                 Spacer(modifier = Modifier.height(8.dp))
+                no++
             }
         }
     }
 }
 
 @Composable
-fun ListDeviceItem(it: Int) {
+fun ListDeviceItem(it: String, no: Int) {
     var clicked by remember {
         mutableStateOf(false)
     }
@@ -59,9 +62,9 @@ fun ListDeviceItem(it: Int) {
     val scope = rememberCoroutineScope()
     Row(horizontalArrangement = Arrangement.SpaceBetween) {
         Column(Modifier.weight(1f)) {
-            Text(text = "ESP32 Device $it", fontWeight = FontWeight.Bold)
+            Text(text = it, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "MAC : ${it * 10}:${it * 12}:${it * 14}:${it * 15}")
+            Text(text = "MAC : ${no * 6}:${no * 12}:${no * 14}:${no * 15}")
         }
         Button(
             onClick = {

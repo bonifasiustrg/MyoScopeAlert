@@ -126,9 +126,6 @@ fun FilePickerDialog(
         val files by remember {
             derivedStateOf {
                 when (currentType.value) {
-//                    PickerType.Image -> images
-//                    PickerType.Video -> videos
-//                    PickerType.File -> listOf()
                     PickerType.Audio -> {
                         if (searchText.isEmpty())
                             audios
@@ -273,16 +270,6 @@ fun BottomSheetDialog(
         ) {
 
             when (currentType) {
-//                PickerType.Image/*, PickerType.Video*/ -> {
-//                    if (files.isEmpty())
-//                        Text(modifier = Modifier.fillMaxWidth(), text = config.noItemMessage, style = config.noItemStyle)
-////                    else
-////                        ImageAndVideoScreen(config, imageLoader, modalHeight, files, mode, onChangeSelect, onCameraPhoto)
-//                }
-
-//                PickerType.File -> {
-//                    FileScreen(config, onStoragePicker = onStoragePicker)
-//                }
 
                 PickerType.Audio -> {
                     if (files.isEmpty())

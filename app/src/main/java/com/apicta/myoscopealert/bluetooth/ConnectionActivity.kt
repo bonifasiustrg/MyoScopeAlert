@@ -11,7 +11,7 @@ class ConnectionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connection)
         val btnConnect = findViewById<Button>(R.id.btnConnect)
-        val btnAccept = findViewById<Button>(R.id.btnAccept)
+//        val btnAccept = findViewById<Button>(R.id.btnAccept)
         btnConnect.setOnClickListener {
             val i = Intent(
                 this@ConnectionActivity,
@@ -19,12 +19,12 @@ class ConnectionActivity : AppCompatActivity() {
             )
             startActivity(i)
         }
-        btnAccept.setOnClickListener {
-            val i = Intent(
-                this@ConnectionActivity,
-                AcceptActivity::class.java
-            )
-            startActivity(i)
-        }
+//        btnAccept.setOnClickListener {
+//            val i = Intent(
+//                this@ConnectionActivity,
+//                AcceptActivity::class.java
+//            )
+//            startActivity(i)
+//        }
     }
 }

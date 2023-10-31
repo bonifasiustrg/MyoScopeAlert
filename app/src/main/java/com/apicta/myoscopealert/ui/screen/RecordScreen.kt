@@ -1,5 +1,9 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.content.Intent
+import android.os.Build
+import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +55,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.view.children
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.airbnb.lottie.compose.LottieAnimation
@@ -58,6 +65,11 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
+import com.apicta.myoscopealert.bluetooth.BTAppActivity
+import com.apicta.myoscopealert.bluetooth.BluetoothActivity
+import com.apicta.myoscopealert.bluetooth.ConnectActivity
+import com.apicta.myoscopealert.databinding.ActivityConnectBinding
+import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
@@ -72,7 +84,7 @@ import java.util.Locale
 fun RecordScreen(navController: NavHostController) {
 //    Text(text = "Record Screen")
     var title by remember {
-        mutableStateOf("Record17Oct")
+        mutableStateOf("New Record")
     }
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -89,7 +101,8 @@ fun RecordScreen(navController: NavHostController) {
     Column(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
 
@@ -171,6 +184,8 @@ fun RecordScreen(navController: NavHostController) {
         val blStatus = rememberSaveable {
             mutableStateOf(false)
         }
+
+        /*Connect BT Button*/
         Row(Modifier.fillMaxWidth()) {
             if (blStatus.value) {
                 Button(
@@ -180,9 +195,11 @@ fun RecordScreen(navController: NavHostController) {
                         if (isRecording == false) {
                             showResult = true
                         }
+//                        context.startActivity(Intent(context, ConnectActivity::class.java))
+
                     },
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .clip(shape = RoundedCornerShape(0.5f)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF72D99D)
@@ -195,11 +212,14 @@ fun RecordScreen(navController: NavHostController) {
                         modifier = Modifier.size(32.dp)
                     )
                 }
-            } else if (isBTConnected == false) {
+
+            } else {
                 Button(
                     onClick = {
                         if (!isBTConnected) {
                             navController.navigate("connect_bluetooth")
+//                            context.startActivity(Intent(context, BluetoothActivity::class.java))
+
                         }
                         scope.launch {
                             delay(800)
@@ -228,9 +248,29 @@ fun RecordScreen(navController: NavHostController) {
                 }
             }
 
+
+
 //            Spacer(modifier = Modifier.width(16.dp))
 
         }
+        val viewBinding = remember { mutableStateOf<ActivityConnectBinding?>(null) }
+        AndroidViewBinding(
+            factory = { layoutInflater, parent, attachToParent ->
+                ActivityConnectBinding.inflate(layoutInflater, parent, attachToParent).also {
+                    viewBinding.value = it
+                }
+            },
+            update = {
+                // Hide all elements
+                this.root.children.forEach { view ->
+                    view.visibility = if (view == viewBinding.value?.btnConnectConnect) View.VISIBLE else View.GONE
+                }
+
+//                // Show only the btnConnectConnect button
+//                viewBinding.value?.btnConnectConnect?.visibility = View.VISIBLE
+            }
+        )
+
 
         if (showResult) {
 
@@ -246,7 +286,7 @@ fun RecordScreen(navController: NavHostController) {
             val fm = "Record17Oct.wav"
             Button(
                 onClick = {
-                    navController.navigate("detail/$fm/17 Oktober 2023")
+                    navController.navigate("detail/$fm/30 Oktober 2023")
 
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = primary,

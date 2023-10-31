@@ -22,30 +22,48 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
+import coil.ImageLoader
+import coil.decode.SvgDecoder
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.bluetooth.BTAppActivity
 import com.apicta.myoscopealert.bluetooth.BluetoothActivity
+import com.apicta.myoscopealert.bluetooth.ConnectActivity
 import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.ui.theme.greenIcon
+import com.apicta.myoscopealert.ui.theme.orangeIcon
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.theme.redIcon
 import com.apicta.myoscopealert.ui.theme.secondary
 import dagger.hilt.android.qualifiers.ApplicationContext
 
@@ -54,8 +72,17 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 fun HomeScreen(navController: NavHostController) {
     val context = LocalContext.current
 
+    val isVerified by remember {
+        mutableStateOf(true)
+    }
+    val heartStatus by remember {
+        mutableStateOf(true)
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+
     val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/Record17Oct.wav"
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/recordwave1.wav"
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +92,7 @@ fun HomeScreen(navController: NavHostController) {
     ) {
         Text(text = "Hallo,", modifier = Modifier.padding(top = 16.dp))
         Text(
-            text = "Oorlo Moore,",
+            text = "Eugene Wehner,",
             fontWeight = FontWeight.ExtraBold,
             fontSize = 32.sp
         )
@@ -88,8 +115,16 @@ fun HomeScreen(navController: NavHostController) {
             )
 
             Column(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp)) {
-                Text(text = "Bagaimana perasaan Anda?", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
-                Text(text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda", fontSize = 12.sp, lineHeight = 20.sp)
+                Text(
+                    text = "Bagaimana perasaan Anda?",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda",
+                    fontSize = 12.sp,
+                    lineHeight = 20.sp
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Button(
                     onClick = {
@@ -130,55 +165,107 @@ fun HomeScreen(navController: NavHostController) {
             ) {
                 Row {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_time),
+                        imageVector = Icons.Default.Event,
                         contentDescription = null,
                         modifier = Modifier
                             .size(24.dp)
                             .padding(end = 4.dp),
-                        tint = Color.Yellow
+                        tint = orangeIcon
                     )
-                    Text(text = "15 Oktober 2023")
+                    Text(text = "30 Oktober 2023")
                 }
-                Row {
-                    Text(text = "oleh ")
-                    Text(text = "Dokter Saparudin", fontWeight = FontWeight.ExtraBold)
-                }
+//                Row {
+//                    Text(text = "oleh ")
+//                    Text(text = "Dokter Saparudin", fontWeight = FontWeight.ExtraBold)
+//                }
 
-//                Image(
-//                    painter = painterResource(id = R.drawable.chart),
-//                    contentDescription = null,
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    contentScale = ContentScale.FillWidth
-//                )
                 SetUpChart(ctx = context)
 //                ProcessWavFileData(filePath, context)
 
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Myocardial Infarction")
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close),
-                        contentDescription = null,
+                    Text(text = "Kesehatan Jantung")
+                    Box(
                         modifier = Modifier
-                            .size(24.dp),
-                        tint = Color.Red
+                            .background(
+                                color = if (heartStatus) greenIcon else redIcon,
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .padding(vertical = 4.dp, horizontal = 8.dp)
+                    ) {
+                        if (heartStatus) {
+                            Text(
+                                text = "Normal",
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.End,
+                                color = Color.White,
+                                fontFamily = poppins
+                            )
+                        }  else {
+                            Text(
+                                text = "MI",
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.End,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontFamily = poppins
+
+                            )
+                        }
+                    }
+
+
+
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Verified by Dokter Saparudin")
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.checkicon /*else R.drawable.ic_close*/),
+                        contentDescription = null,
+                        tint = greenIcon,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "Normal")
-                    Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = Color.Green
+
+
+
+
+                Row {
+
+                    Text(
+                        text = "Catatan dokter", style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = poppins
+
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    if(isVerified) {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(
+                                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                if (expanded) {
+                    Text(
+                        text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
+                        fontFamily = poppins
+
                     )
                 }
             }
+
 
 
         }
@@ -205,6 +292,7 @@ fun HomeScreen(navController: NavHostController) {
                     onClick = {
 //                              navController.navigate("connect_bluetooth")
                         context.startActivity(Intent(context, BTAppActivity::class.java))
+
                     },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()
