@@ -11,7 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.ui.screen.ConnectBluetoothScreen
+//import com.apicta.myoscopealert.ui.screen.ConnectBluetoothScreen
 import com.apicta.myoscopealert.ui.screen.FileDetail
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
@@ -46,7 +46,7 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
 //            HistoryDetail(navController)
 //        }
         composable(route = "connect_bluetooth") {
-            ConnectBluetoothScreen()
+//            ConnectBluetoothScreen()
         }
 
         composable(

@@ -64,7 +64,12 @@ android {
 }
 
 dependencies {
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
+    /*BLUETOOTH*/
+    implementation("com.github.prasad-psp:Android-Bluetooth-Library:1.0.2")
+
+    
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
 
@@ -84,6 +89,8 @@ dependencies {
 
 //    HILT
     implementation("com.google.dagger:hilt-android:2.44")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 //    implementation("androidx.wear.compose:compose-material3:1.0.0-alpha11")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")

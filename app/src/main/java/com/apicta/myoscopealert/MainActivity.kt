@@ -15,6 +15,8 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -34,11 +36,12 @@ import com.apicta.myoscopealert.graphs.RootNavigationGraph
 import com.apicta.myoscopealert.ui.screen.FileDetail
 import com.apicta.myoscopealert.ui.screen.FileListScreen
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
+import com.psp.bluetoothlibrary.Bluetooth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
@@ -48,11 +51,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         installSplashScreen()
-        setContent {
-            val context = applicationContext
 
-            // Dapatkan lokasi default package untuk penyimpanan file-file eksternal
-            val packageLocation = context.getExternalFilesDir(null)
+        setContent {
+//            val context = applicationContext
+//            // Dapatkan lokasi default package untuk penyimpanan file-file eksternal
+//            val packageLocation = context.getExternalFilesDir(null)
             MyoScopeAlertTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -60,9 +63,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     RootNavigationGraph(navController = rememberNavController(), dataStoreManager)
 //                    MainNavGrap   h(rememberNavController())
-                    Log.e("dir", "$packageLocation")
+//                    Log.e("dir", "$packageLocation")
                 }
             }
         }
     }
+
 }

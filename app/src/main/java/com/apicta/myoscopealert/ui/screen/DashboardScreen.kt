@@ -6,6 +6,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.graphs.MainNavGraph
+import com.apicta.myoscopealert.ui.theme.hover
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import kotlinx.coroutines.flow.first
@@ -50,17 +53,8 @@ fun DashboardScreen(
     dataStoreManager: DataStoreManager,
     navController: NavHostController = rememberNavController()
 ) {
-    var storedToken by remember { mutableStateOf<String?>(null) }
-    Log.d("DashboardScreen1", "Stored Token: $storedToken")
-
-    // Ambil token jika belum diinisialisasi
-    if (storedToken == null) {
-        runBlocking {
-            storedToken = dataStoreManager.getAuthToken.first()
-            Log.d("DashboardScreen runblocking", "Stored Token: $storedToken")
-        }
-    }
-    storedToken?.let { Log.e("stored token dashboard", it) }
+    val token by dataStoreManager.getAuthToken.collectAsState(initial = "")
+    Log.e("Dashboard token classtate", "Stored Token: $token")
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) }
@@ -116,9 +110,6 @@ fun RowScope.AddItem(
     selectedItemIndex: MutableState<Int>
 ) {
     NavigationBarItem(
-        label = {
-            Text(text = screen.title)
-        },
         icon = {
             Icon(
                 imageVector = screen.selectedIcon,
@@ -137,10 +128,13 @@ fun RowScope.AddItem(
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = Color.White,
             selectedTextColor = Color.White,
-            indicatorColor = primary,
+            indicatorColor = hover,
             unselectedIconColor = secondary,
             unselectedTextColor = secondary
-        )
+        ),
+        label = {
+            Text(text = screen.title)
+        },
     )
 }
 
