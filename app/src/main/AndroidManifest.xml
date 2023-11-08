@@ -47,28 +47,39 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@drawable/ic_icon"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light"
+        android:theme="@style/App.Starting.Theme"
         tools:targetApi="31">
         <activity
             android:name=".bluetooth.BTAppActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light">
+            android:theme="@style/Theme.AppCompat"
+            android:exported="false">
 
         </activity>
         <activity
             android:name=".bluetooth.AcceptActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat"
+
+            />
         <activity
             android:name=".bluetooth.SendReceiveActivity"
+            android:theme="@style/Theme.AppCompat"
+
             android:exported="false" />
         <activity
             android:name=".bluetooth.ConnectActivity"
+            android:theme="@style/Theme.AppCompat"
+
             android:exported="false" />
         <activity
             android:name=".bluetooth.ConnectionActivity"
+            android:theme="@style/Theme.AppCompat"
+
             android:exported="false" />
         <activity
             android:name=".bluetooth.BluetoothActivity"
+            android:theme="@style/Theme.AppCompat"
+
             android:exported="false" />
         <activity
             android:name=".MainActivity"

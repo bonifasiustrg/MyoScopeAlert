@@ -13,6 +13,8 @@ val Pink40 = Color(0xFF7D5260)
 val primary = Color(0xFF293077)
 val hover = Color(0xFF383f8a)
 val secondary = Color(0xFFA3AAED)
+val cardsecondary = Color(0xAEA3AAED)
+val cardbg = Color(0xBF8C90B6)
 val terniary = Color(0xC1FFFFFF)
 
 val redIcon = Color(0xFFea5455)

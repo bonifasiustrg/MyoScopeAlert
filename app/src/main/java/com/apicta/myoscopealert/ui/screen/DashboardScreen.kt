@@ -110,9 +110,6 @@ fun RowScope.AddItem(
     selectedItemIndex: MutableState<Int>
 ) {
     NavigationBarItem(
-        label = {
-            Text(text = screen.title)
-        },
         icon = {
             Icon(
                 imageVector = screen.selectedIcon,
@@ -134,7 +131,10 @@ fun RowScope.AddItem(
             indicatorColor = hover,
             unselectedIconColor = secondary,
             unselectedTextColor = secondary
-        )
+        ),
+        label = {
+            Text(text = screen.title)
+        },
     )
 }
 

@@ -78,6 +78,7 @@ import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
@@ -125,7 +126,8 @@ fun FileDetail(
 
     var isBack by remember { mutableStateOf(false) }
 
-    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+    val filePath =
+        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -193,8 +195,10 @@ fun FileDetail(
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold,
-            fontFamily = poppins)
+        Text(
+            text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold,
+            fontFamily = poppins
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         var isZooming by remember {
@@ -443,7 +447,10 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             .padding(horizontal = 4.dp)
     ) {
 
-        AndroidViewBinding(SignalChartBinding::inflate) {
+        AndroidViewBinding(
+            factory = SignalChartBinding::inflate,
+            modifier = Modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
+        ) {
             signalView.description?.isEnabled = false
             signalView.setTouchEnabled(true)
             signalView.setPinchZoom(true)
@@ -531,9 +538,6 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 
             // moveViewToX(...) also calls invalidate()
 
-            // Refresh the chart
-            signalView.invalidate()
-
             if (isZooming) {
                 // now modify viewport
                 signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
@@ -541,6 +545,9 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             }
 
             Log.e("processwav", "Refresh signalview")
+            // Refresh the chart
+            signalView.invalidate()
+
         }
 
 
@@ -554,15 +561,17 @@ fun SetUpChart(ctx: Context) {
         SignalChartBinding::inflate,
         modifier = Modifier.border(
             width = 2.dp,
-            color = secondary,
+            color = cardsecondary,
             shape = RoundedCornerShape(16.dp)
         )
+
+
     ) {
         // Configure chart properties
         signalView.description?.isEnabled = false
         signalView.setTouchEnabled(true)
         signalView.setPinchZoom(true)
-        signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
+//        signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.transparent))
         signalView.setDrawGridBackground(false)
 
         // Customize X-axis properties if needed
@@ -599,7 +608,8 @@ private fun CardContent(isVerified: Boolean) {
             Row {
 
                 Text(
-                    text = "Hasil verifikasi Dokter", style = MaterialTheme.typography.titleMedium.copy(
+                    text = "Hasil verifikasi Dokter",
+                    style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = poppins
 
@@ -622,7 +632,7 @@ private fun CardContent(isVerified: Boolean) {
                             color = Color.Black,
                             fontFamily = poppins
                         )
-                    }  else {
+                    } else {
                         Text(
                             text = "Not verified",
                             fontSize = 10.sp,
@@ -644,7 +654,7 @@ private fun CardContent(isVerified: Boolean) {
             }
         }
 
-        if(isVerified) {
+        if (isVerified) {
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(
                     imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,

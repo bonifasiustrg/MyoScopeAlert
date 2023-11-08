@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.MyoScopeAlert" parent="android:Theme.Material.Light.NoActionBar" />
+<!--    <style name="Theme.MyoScopeAlert" parent="android:Theme.Material.Light.NoActionBar" />-->
     <!-- Base application theme. -->
-    <style name="Base.Theme.BluetoothSerial" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.MyoScopeAlert" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.BluetoothSerial" parent="Base.Theme.BluetoothSerial" />
+<!--    <style name="Theme.BluetoothSerial" parent="Base.Theme.BluetoothSerial" />-->
 
 </resources>

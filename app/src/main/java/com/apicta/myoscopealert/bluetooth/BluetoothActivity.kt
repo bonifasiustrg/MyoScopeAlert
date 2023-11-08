@@ -326,7 +326,7 @@ private fun getPairedDevices() {
     }
 
     companion object {
-        private const val TAG = "psp.BluetoothAct"
+        const val TAG = "psp.BluetoothAct"
         const val REQUEST_BLUETOOTH_PERMISSION = 1
     }
 

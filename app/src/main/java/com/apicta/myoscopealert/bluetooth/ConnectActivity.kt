@@ -106,38 +106,38 @@ class ConnectActivity : AppCompatActivity() {
         // Disconnect
         btnDisconnect!!.setOnClickListener { disconnect() }
 
-        // Send Data
-        btnSend!!.setOnClickListener(View.OnClickListener {
-            val msg = edtMessage!!.getText().toString().trim { it <= ' ' }
-            if (msg.isEmpty()) {
-                return@OnClickListener
-            }
-            if (connection!!.send(msg)) {
-                logMsg("[TX] $msg")
-                txtDisplay!!.append("\n[TX] $msg")
-                setDisplayMessageScrollBottom()
-            } else {
-                logMsg("[TX] $msg")
-                txtDisplay!!.append("\n[TX] Failed $msg")
-                setDisplayMessageScrollBottom()
-            }
-        })
+//        // Send Data
+//        btnSend!!.setOnClickListener(View.OnClickListener {
+//            val msg = edtMessage!!.getText().toString().trim { it <= ' ' }
+//            if (msg.isEmpty()) {
+//                return@OnClickListener
+//            }
+//            if (connection!!.send(msg)) {
+//                logMsg("[TX] $msg")
+//                txtDisplay!!.append("\n[TX] $msg")
+//                setDisplayMessageScrollBottom()
+//            } else {
+//                logMsg("[TX] $msg")
+//                txtDisplay!!.append("\n[TX] Failed $msg")
+//                setDisplayMessageScrollBottom()
+//            }
+//        })
 
 
-        // Send Receive in another activity
-        btnSendReceive!!.setOnClickListener {
-            if (connection!!.isConnected()) {
-                val i = Intent(
-                    this@ConnectActivity,
-                    SendReceiveActivity::class.java
-                )
-                startActivity(i)
-            } else {
-                Toast.makeText(this@ConnectActivity, "Device not connected", Toast.LENGTH_SHORT)
-                    .show()
-                logMsg("Device not connected")
-            }
-        }
+//        // Send Receive in another activity
+//        btnSendReceive!!.setOnClickListener {
+//            if (connection!!.isConnected()) {
+//                val i = Intent(
+//                    this@ConnectActivity,
+//                    SendReceiveActivity::class.java
+//                )
+//                startActivity(i)
+//            } else {
+//                Toast.makeText(this@ConnectActivity, "Device not connected", Toast.LENGTH_SHORT)
+//                    .show()
+//                logMsg("Device not connected")
+//            }
+//        }
     }
 
     private fun init() {
@@ -216,7 +216,7 @@ class ConnectActivity : AppCompatActivity() {
                     val device =
                         listPaired[position].split("\n".toRegex()).dropLastWhile { it.isEmpty() }
                             .toTypedArray()
-
+                    Log.e("device trad", "$device -- ${device[0]} -- ${device[1]}")
                     // Connect Bluetooth Device --- device[1] = device mac address
                     if (connection!!.connect(
                             device[1],
