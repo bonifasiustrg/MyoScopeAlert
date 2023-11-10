@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
@@ -52,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -67,22 +70,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun ColumnScope.ModalBottomSheetM3(ctx: Context) {
     // Bluetooth object
-    var bluetooth: Bluetooth? = null
-    bluetooth = Bluetooth(ctx)
-
+    val bluetooth: Bluetooth? = Bluetooth(ctx)
     val appContext = ctx.getActivity()
     Log.e("turn on bt", "context $appContext")
-
     // check bluetooth is supported or not
     Log.d(BluetoothActivity.TAG, "Bluetooth is supported " + Bluetooth.isBluetoothSupported())
-    Log.d(BluetoothActivity.TAG, "Bluetooth is on " + bluetooth.isOn())
+    if (bluetooth != null) {
+        Log.d(BluetoothActivity.TAG, "Bluetooth is on " + bluetooth.isOn())
+    }
     Log.d(BluetoothActivity.TAG, "Bluetooth is discovering " + (bluetooth?.isDiscovering() ?: "no bt discovered"))
 
     var openBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-//        skipPartiallyExpanded = true
-    )
+    val bottomSheetState = rememberModalBottomSheetState(/*skipPartiallyExpanded = true*/)
 
     Button(onClick = { openBottomSheet = true },
         colors = ButtonDefaults.buttonColors(
@@ -100,7 +100,6 @@ fun ColumnScope.ModalBottomSheetM3(ctx: Context) {
             tint = primary
 
         )
-//        Text(text = "Connect", color = primary)
     }
 
     if (openBottomSheet) {
@@ -108,10 +107,7 @@ fun ColumnScope.ModalBottomSheetM3(ctx: Context) {
             sheetState = bottomSheetState,
             onDismissRequest = { openBottomSheet = false },
             dragHandle = {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     BottomSheetDefaults.DragHandle()
                     Text(text = "Connect Bluetooth", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(10.dp))
@@ -145,13 +141,46 @@ fun BottomSheetContent(
     val listPairedDevicesString = remember { mutableListOf<String?>() }
     val listPairedBluetoothDevices = remember { mutableListOf<BluetoothDevice?>() }
 
-    val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.bluetooth_animation))
+    val composition  by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.bluetooth_animation))
     var isScan by remember {
         mutableStateOf(false)
     }
-    Column(Modifier.padding(horizontal = 16.dp)) {
-        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+//    val launcher = rememberLauncherForActivityResult(
+//        ActivityResultContracts.RequestPermission()
+//    ) { isGranted: Boolean ->
+//        if (isGranted) {
+//            // Permission Accepted: Do something
+//            Log.d("ExampleScreen","PERMISSION GRANTED")
+//
+//        } else {
+//            // Permission Denied: Do something
+//            Log.d("ExampleScreen","PERMISSION DENIED")
+//        }
+//    }
+//
+//    when (PackageManager.PERMISSION_GRANTED) {
+//        ContextCompat.checkSelfPermission(
+//            context,
+//            Manifest.permission.BLUETOOTH_CONNECT
+//        ) -> {
+//            // Some works that require permission
+//            Log.d("ExampleScreen","Code requires permission")
+//        }
+//        else -> {
+//            // Asking for permission
+//            launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+//        }
+//    }
+
+    Column(Modifier.padding(horizontal = 16.dp)
+        .fillMaxWidth(),
+//        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(modifier = Modifier.fillMaxWidth(),verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = {
+
+
+
                 // Check if not null
                 appContext?.let {
                     // With user permission
@@ -173,18 +202,6 @@ fun BottomSheetContent(
             } else {
                 Button(
                     onClick = {
-//                        if (listDetectDevicesString.size > 0) {
-//                            listDetectDevicesString.clear()
-//                        }
-//                        if (listDetectBluetoothDevices.size > 0) {
-//                            listDetectBluetoothDevices.clear()
-//                        }
-//                        if (listPairedDevicesString.size > 0) {
-//                            listPairedDevicesString.clear()
-//                        }
-//                        if (listPairedBluetoothDevices.size > 0) {
-//                            listPairedBluetoothDevices.clear()
-//                        }
                         // scan nearby bluetooth devices
                         bluetooth!!.startDetectNearbyDevices()
                         isScan = true },
@@ -286,7 +303,9 @@ fun BottomSheetContent(
                 )
             }
         }
+        if (listPairedBluetoothDevices.isEmpty()) Text(text = "No paired device detected", color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(text = "Available Devices", fontSize = 20.sp)
         Log.e("list bottomsheet", listDetectDevicesString.toString())
         Log.e("list bottomsheet paired str", listPairedDevicesString.toString())
@@ -314,11 +333,17 @@ fun BottomSheetContent(
                 }
             }
         }
+
+        if (listDetectBluetoothDevices.isEmpty()) Text(text = "No available device detected", color = Color.Gray)
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = onHideButtonClick
         ) {
-            Text(text = "Cancel")
+            Text(text = "Kembali")
         }
     }
 }

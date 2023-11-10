@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.ui.screen
+package com.apicta.myoscopealert.ui.screen.auth
 
 import android.util.Log
 import androidx.compose.foundation.Image

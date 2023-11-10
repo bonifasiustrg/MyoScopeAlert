@@ -15,13 +15,12 @@ import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.ui.screen.FileDetail
 import com.apicta.myoscopealert.ui.screen.HistoryScreen
 import com.apicta.myoscopealert.ui.screen.HomeScreen
-import com.apicta.myoscopealert.ui.screen.ProfileScreen
+import com.apicta.myoscopealert.ui.screen.auth.ProfileScreen
 import com.apicta.myoscopealert.ui.screen.RecordScreen
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
-    val storedToken = "token"
     NavHost(
         navController = navController,
         route = Graph.MAIN,
@@ -33,20 +32,56 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         composable(route = BottomBarScreen.Record.route) {
             RecordScreen(navController = navController)
         }
-        composable(route = BottomBarScreen.History.route) {
+        composable(route = BottomBarScreen.History.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "detail/{fileName}/{date}" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "detail/{fileName}/{date}" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "detail/{fileName}/{date}" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "detail/{fileName}/{date}" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            }
+            ) {
             HistoryScreen(navController = navController/*, storedToken*/)
-//            HistoryScreen(navController)
-//            FileListScreen(navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)
-        }
-
-//        composable(route = "detail_history") {
-//            HistoryDetail(navController)
-//        }
-        composable(route = "connect_bluetooth") {
-//            ConnectBluetoothScreen()
         }
 
         composable(
@@ -54,39 +89,12 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
             arguments = listOf(
                 navArgument("fileName") { type = NavType.StringType },
                 navArgument("date") { type = NavType.StringType }
-            ),
-
-//            enterTransition = {
-//                slideIntoContainer(
-//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-//                    animationSpec = tween(700)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-//                    animationSpec = tween(700)
-//                )
-//            },
-//            popEnterTransition = {
-//                slideIntoContainer(
-//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-//                    animationSpec = tween(700)
-//                )
-//            },
-//            popExitTransition = {
-//                slideOutOfContainer(
-//                    towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-//                    animationSpec = tween(700)
-//                )
-//            }
+            )
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")
             val fileDate = backStackEntry.arguments?.getString("date")
 
-            // Komponen untuk menampilkan halaman detail
-            // Di dalam komponen ini, Anda dapat menggunakan `fileName` untuk menampilkan konten yang sesuai
             FileDetail(fileName, fileDate, /*dataStoreManager,*/ navController)
         }
 

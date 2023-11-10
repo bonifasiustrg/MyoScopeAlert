@@ -3,11 +3,17 @@ package com.apicta.myoscopealert.ui.screen
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
-import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -61,7 +68,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -71,34 +78,30 @@ import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
+import com.apicta.myoscopealert.utils.convertIntArrayToWav
+import com.apicta.myoscopealert.utils.getCurrentTime
 import com.psp.bluetoothlibrary.Bluetooth
 import com.psp.bluetoothlibrary.BluetoothListener
 import com.psp.bluetoothlibrary.Connection
 import kotlinx.coroutines.delay
+import java.io.File
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import kotlin.time.ExperimentalTime
 
-interface OnConnectionListener {
-    fun onConnectionStateChanged(socket: BluetoothSocket?, state: Int)
-    fun onConnectionFailed(errorCode: Int)
-}
-
-@OptIn(ExperimentalTime::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun RecordScreen(navController: NavHostController) {
+    val context = LocalContext.current
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
     var title by remember {
         mutableStateOf("")
     }
-
-    var isRecording by remember { mutableStateOf(false) }
     var showResult by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    val isRecording = remember { mutableStateOf(false) }
     val isStopwatch = remember {
         mutableStateOf(false)
     }
@@ -108,46 +111,72 @@ fun RecordScreen(navController: NavHostController) {
 //    var receivedDataList = remember { mutableStateOf(emptyList<Int>()) }
     var receivedDataList by remember { mutableStateOf(mutableListOf<Int>()) }
 
-    var isDialogVisible = remember { mutableStateOf(false) }
+    val isDialogVisible = remember { mutableStateOf(false) }
 
+    val stopWatch = remember { StopWatch() }
 
     // Connection object
     val connection by remember { mutableStateOf(Connection(context)) }
     val your_uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     connection.setUUID(your_uuid);
-    DisposableEffect(Unit) {
-        onDispose {
-            connection.disconnect()
-        }
+    val isConnect = remember {
+        mutableStateOf(false)
     }
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            connection.disconnect()
+//        }
+//    }
     // Bluetooth object
     var bluetooth: Bluetooth? = null
     bluetooth = Bluetooth(context)
     val listPaired = remember { mutableListOf<String?>() }
-//    //    val listPaired by rememberUpdatedState<List<String>>(emptyList())
-//    var listPaired = remember { mutableStateOf(emptyList<String>()) }
 
     val listPairedBluetoothDevices = remember { mutableListOf<BluetoothDevice?>() }
-//    val connectionListener = rememberUpdatedState(BluetoothListener.onConnectionListener {
-//        // Implement your connection listener logic here
-//        // You can access receivedDataList and update the UI accordingly
-//    })
-//
-//    val receiveListener = rememberUpdatedState(BluetoothListener.onReceiveListener { receivedData ->
-//        // Implement your receive listener logic here
-//        // You can access receivedDataList and update the UI accordingly
-//    })
-// Permission state
-//    val permissionState = rememberPermissionState(android.Manifest.permission.BLUETOOTH_CONNECT)
-//    val context = LocalContext.current
-//    // Check and request Bluetooth permission
-//    LaunchedEffect(permissionState) {
-//        if (!permissionState.hasPermission) {
-//            permissionState.launchPermissionRequest()
-//        } else {
-//            getPairedDevices()
-//        }
-//    }
+
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun disconnect() {
+        if (connection != null) {
+            connection!!.disconnect()
+            logMsg("Disconnect manual")
+//                txtDisplay!!.append("\n[ST] Disconnect manual")
+//                setDisplayMessageScrollBottom()
+
+            logMsg("All data received: $receivedDataList")
+            logMsg("All data received: ${receivedDataList::class.java}")
+            logMsg("All data received: ${receivedDataList::class.simpleName}")
+
+            val intArray = receivedDataList.toIntArray()
+//            val intArray = intArrayOf(82, 82, 82, 82, 81, 82, 82, 81, 82, 77, 81, 82, 82, 82, 83, 81, 82, 81, 81, 82, 81, 81, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82)
+            val contextWrapper = ContextWrapper(context)
+            val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+
+            val audioDirPath = externalStorage.absolutePath
+            var count = 0
+            var outputFile: File
+            do {
+                val fileName = "RecordOutput_$count.wav"
+                outputFile = File(audioDirPath, fileName)
+                count++
+            } while (outputFile.exists())
+            convertIntArrayToWav(intArray, outputFile)
+        } /*else {
+            val intArray = intArrayOf(2, 2, 2, 2, 1, 2, 2, 1, 2, -3, 1, 2, 2, 2, 3, 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -20, 4, 0, 23, 8, -11, -25- 0)
+            val contextWrapper = ContextWrapper(this)
+            val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+
+            val audioDirPath = externalStorage.absolutePath
+            var count = 0
+            var outputFile: File
+            do {
+                val fileName = "output_$count.wav"
+                outputFile = File(audioDirPath, fileName)
+                count++
+            } while (outputFile.exists())
+            convertIntArrayToWav(intArray, outputFile)
+        }*/
+    }
     val connectionListener: BluetoothListener.onConnectionListener = object :
         BluetoothListener.onConnectionListener {
         @RequiresApi(Build.VERSION_CODES.S)
@@ -155,21 +184,27 @@ fun RecordScreen(navController: NavHostController) {
             when (state) {
                 Connection.CONNECTING -> {
                     logMsg("Connecting...")
+                    Toast.makeText(context, "Connecting...", Toast.LENGTH_SHORT).show()
 //                    txtDisplay!!.append("\n[ST] Connecting...")
 //                    setDisplayMessageScrollBottom()
                 }
 
                 Connection.CONNECTED -> {
                     logMsg("Connected")
+                    Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
+
 //                    txtDisplay!!.append("\n[ST] Connected")
 //                    setDisplayMessageScrollBottom()
                 }
 
                 Connection.DISCONNECTED -> {
                     logMsg("Disconnected")
+
 //                    txtDisplay!!.append("\n[ST] Disconnected")
 //                    setDisplayMessageScrollBottom()
-                    connection.disconnect()
+//                    connection.disconnect()
+                    disconnect()
+                    Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -181,17 +216,23 @@ fun RecordScreen(navController: NavHostController) {
                     logMsg("Socket not found")
 //                    txtDisplay!!.append("\n[ST] Socket not found")
 //                    setDisplayMessageScrollBottom()
+                    Toast.makeText(context, "Socket not found", Toast.LENGTH_SHORT).show()
+
                 }
 
                 Connection.CONNECT_FAILED -> {
                     logMsg("Connect Failed")
 //                    txtDisplay!!.append("\n[ST] Connect failed")
 //                    setDisplayMessageScrollBottom()
+                    Toast.makeText(context, "Connect Failed", Toast.LENGTH_SHORT).show()
+
                 }
             }
             connection.disconnect()
         }
     }
+
+
 
     val receiveListener =
         BluetoothListener.onReceiveListener { receivedData ->
@@ -201,12 +242,14 @@ fun RecordScreen(navController: NavHostController) {
             val intValue = ByteBuffer.wrap(receivedBytes).getInt()
             Log.d("BluetoothData int", "Received data: $intValue")
 
-//            logMsg("[RX] $receivedData")
+            logMsg("[RX] $receivedData")
 //            txtDisplay!!.append("\n[RX] $receivedData")
 //            setDisplayMessageScrollBottom()
 
 
             // Menambahkan data yang diterima ke dalam ArrayList
+            Toast.makeText(context, "Receiving data...", Toast.LENGTH_SHORT).show()
+
             receivedDataList.add(intValue)
             // Trigger recomposition by assigning the updated list to the mutableStateOf
             receivedDataList = receivedDataList.toMutableList()
@@ -232,13 +275,6 @@ fun RecordScreen(navController: NavHostController) {
             .padding(top = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        val stopWatch = remember { StopWatch() }
-//        StopWatchDisplay(
-//            formattedTime = stopWatch.formattedTime,
-//            onStartClick = stopWatch::start,
-//            onPauseClick = stopWatch::pause,
-//            onResetClick = stopWatch::reset
-//        )
 
         TextField(
             value = title,
@@ -270,16 +306,14 @@ fun RecordScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(32.dp))
 
 
-        if (!isRecording) {
-            if (showResult) {
-//                ProcessWavFileData(filePath, context)
-                SetUpChart(ctx = context)
-            } else {
-                SetUpChart(context)
-            }
-        } else {
+//        if (showResult) {
+////                ProcessWavFileData(filePath, context)
+//            SetUpChart(ctx = context)
+//        } else {
+//            SetUpChart(context)
+//        }
+        if (/*isConnect.value && !showResult*/isRecording.value && isStopwatch.value) {
             Column {
-
                 LottieAnimation(
                     modifier = Modifier
                         .fillMaxHeight(0.4f)
@@ -288,10 +322,14 @@ fun RecordScreen(navController: NavHostController) {
                     iterations = LottieConstants.IterateForever,
                 )
             }
+        } else {
+            SetUpChart(context)
 
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+//        STOPWATCH
         Text(
             text = stopWatch.formattedTime,
             fontWeight = FontWeight.Bold,
@@ -300,56 +338,26 @@ fun RecordScreen(navController: NavHostController) {
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
-//        val currentTime = rememberUpdatedState(getCurrentTime())
-//        val currentTimeNoCLock = rememberUpdatedState(getCurrentTimeNoClock())
-//        Box(
-//            modifier = Modifier
-//                .padding(8.dp)
-//                .clip(RoundedCornerShape(50.dp))
-//                .background(secondary)
-//                .padding(vertical = 14.dp, horizontal = 64.dp)
-//                .align(Alignment.CenterHorizontally)
-//        ) {
-//
-//            Text(
-//                text = currentTimeNoCLock.value,
-//                style = TextStyle(
-//                    color = Color.Black,
-//                    fontWeight = FontWeight.SemiBold,
-//                    fontSize = 16.sp
-//                )
-//            )
-//        }
-//
-//        Spacer(modifier = Modifier.height(32.dp))
-//        Stopwatch(isStopwatch)
 
-
-
-        val blStatus = rememberSaveable {
-            mutableStateOf(false)
-        }
-        var lastTimer = "00:00:000"
-
-        var showDeviceConnect = remember {
-            mutableStateOf(false)
-        }
-        /*Connect BT Button*/
         Row(Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
+                        getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
+                        isDialogVisible.value = true
 
-//                    isStopwatch.value = true
-//                    isRecording = true
 
-//                        context.startActivity(Intent(context, ConnectActivity::class.java))
-//                    stopWatch.start()
 
-//                    getPairedDevices(listPaired, context)
-                    // Get Paired devices list
-                    getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
-
-                    isDialogVisible.value = true
+//                    LaunchedEffect(isConnect.value) {
+//                        if (isConnect.value) {
+//                            // Lakukan logika Anda setelah isConnect.value berubah menjadi true
+//                            stopWatch.start()
+//                            isStopwatch.value = true
+//                            isRecording = true
+//                        } else {
+//                            // Lakukan logika Anda setelah isConnect.value berubah menjadi false
+//                            // Get Paired devices list atau tindakan lainnya
+//                        }
+//                    }
 
                 },
                 modifier = Modifier
@@ -359,7 +367,6 @@ fun RecordScreen(navController: NavHostController) {
                     containerColor = Color(0xFF72D99D)
                 )
             ) {
-
                 Icon(
                     imageVector = Icons.Filled.Mic,
                     contentDescription = null,
@@ -367,19 +374,17 @@ fun RecordScreen(navController: NavHostController) {
                     tint = primary
                 )
             }
-
             /*stop*/
             Button(
                 onClick = {
-
-//                    stopWatch.pause()
-//                    isStopwatch.value = false
-//                    isRecording = false
-//
-//                    showResult = true
-
-
                     connection.disconnect()
+
+                    stopWatch.pause()
+                    isStopwatch.value = false
+                    isRecording.value = false
+
+                    showResult = true
+
 //                    stopWatch.reset()
 
                 },
@@ -398,6 +403,10 @@ fun RecordScreen(navController: NavHostController) {
                     tint = primary
                 )
             }
+//            if (!isRecording) {
+//                /*RECORD*/
+//            } else {
+//            }
         }
 
         if (isDialogVisible.value) {
@@ -405,8 +414,6 @@ fun RecordScreen(navController: NavHostController) {
                 listPaired = listPaired,
                 listPairedBluetoothDevices = listPairedBluetoothDevices,
                 onDeviceSelected = { deviceAddress ->
-
-
                     if (connection.connect(
                             deviceAddress,
                             true,
@@ -415,12 +422,18 @@ fun RecordScreen(navController: NavHostController) {
                         )
                     ) {
                         Log.e("connect", "Start connection process")
+                        Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
                     } else {
                         Log.e("connect","Start connection process failed")
+                        Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onDismiss = { isDialogVisible.value = false },
-                isDialogVisible
+                isDialogVisible = isDialogVisible,
+                isConnect = isConnect,
+                stopWatch,
+                isStopwatch,
+                isRecording
             )
         }
 
@@ -430,17 +443,13 @@ fun RecordScreen(navController: NavHostController) {
             Text(text = "Recorded result", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(text = "Filename       : $title")
             Text(text = "Last modified  : $date")
-            Text(text = "Duration  : ${stopWatch.formattedTime}")
-            Log.e("result", "title $title data $date duration $lastTimer")
+            Text(text = "Duration       : ${stopWatch.formattedTime}")
             Spacer(modifier = Modifier.height(16.dp))
-
-
-
 
             val fm = "Record17Oct.wav"
             Button(
                 onClick = {
-                    navController.navigate("detail/$fm/30 Oktober 2023")
+                    navController.navigate("detail/$fm/$date")
 
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = primary,
@@ -461,113 +470,33 @@ fun RecordScreen(navController: NavHostController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Stopwatch(isStart: MutableState<Boolean>) {
-    var elapsedTime by remember { mutableLongStateOf(0L) }
-    val isRunning = isStart.value
-
-    LaunchedEffect(isRunning) {
-        while (isRunning) {
-            delay(1000) // Wait for 1 second
-            elapsedTime++
-        }
-    }
-
-    val hours = (elapsedTime / 3600).toString().padStart(2, '0')
-    val minutes = ((elapsedTime % 3600) / 60).toString().padStart(2, '0')
-    val seconds = (elapsedTime % 60).toString().padStart(2, '0')
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "$hours:$minutes:$seconds",
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-
-
-//@Composable
-//fun DeviceAddressAndConnect(
-//    connection: Connection,
-//    receivedDataList: List<Int>,
-//    showDeviceConnect: MutableState<Boolean>
-//) {
-//    // Implement your device selection logic here
-//    // You can use AlertDialog or other UI components to select a device
-//    Log.e("connect", "${connection.isConnected} ${connection.connectTimeout}")
-//    Log.e("connect", "$receivedDataList.")
-//
-//    AlertDialog(
-//        onDismissRequest = {
-//            // Dismiss the dialog when the user clicks outside the dialog or on the back
-//            // button. If you want to disable that functionality, simply use an empty
-//            // onCloseRequest.
-//            showDeviceConnect.value = false
-//        },
-//        title = {
-//            Text(text = "Dialog Title")
-//        },
-//        text = {
-//            Text("Here is a text ")
-//        },
-//        confirmButton = {
-//            Button(
-//
-//                onClick = {
-//                    showDeviceConnect.value = false
-//                }) {
-//                Text("This is the Confirm Button")
-//            }
-//        },
-//        dismissButton = {
-//            Button(
-//
-//                onClick = {
-//                    showDeviceConnect.value = false
-//                }) {
-//                Text("This is the dismiss Button")
-//            }
-//        }
-//    )
-//
-//}
 @Composable
 private fun DeviceSelectionDialog(
     listPaired: MutableList<String?>,
     listPairedBluetoothDevices: MutableList<BluetoothDevice?>,
     onDeviceSelected: (String) -> Unit,
     onDismiss: () -> Unit,
-    isDialogVisible: MutableState<Boolean>
+    isDialogVisible: MutableState<Boolean>,
+    isConnect: MutableState<Boolean>,
+    stopWatch: StopWatch, // Parameter stopWatch ditambahkan di sini
+    isStopwatch: MutableState<Boolean>, // Parameter isStopwatch ditambahkan di sini
+    isRecording: MutableState<Boolean> // Parameter isRecording ditambahkan di sini
 ) {
-    AlertDialog(onDismissRequest = {  /*isDialogVisible.value = false*/ }, confirmButton = { /*isDialogVisible.value = false*/ }, title = { Text(text = "Select device") },
+    AlertDialog(
+        onDismissRequest = { isDialogVisible.value = false },
+        confirmButton = { /*isDialogVisible.value = false*/ },
+        title = { Text(text = "Select device") },
         text = {
             Log.e("alert", listPaired.toString())
             Log.e("alert", listPairedBluetoothDevices.toString())
             LazyColumn {
                 items(items = listPaired) { pairedDevice ->
-                    val device = pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
-                        .toTypedArray()
+                    val device =
+                        pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
+                            .toTypedArray()
                     Log.e("device", device.toString())
                     Log.e("device modr", "$device -- ${device[0]} -- ${device[1]}")
 
-//                    Text(
-//                        text = device[0], // Display device name or other information
-//                        modifier = Modifier
-//                            .clickable {
-//                                onDeviceSelected(device[1])
-//                                onDismiss()
-//                            }
-//                            .padding(16.dp)
-//                    )
                     ListItem(
                         modifier = Modifier.clickable {
 //                            val position = listDetectDevicesString.indexOf(it.name)
@@ -579,160 +508,46 @@ private fun DeviceSelectionDialog(
 //                                    Toast.LENGTH_SHORT
 //                                ).show()
 //                            }
-
                             onDeviceSelected(device[1])
+                            isConnect.value = true
+                            if (isConnect.value) {
+                                stopWatch.start()
+                                isStopwatch.value = true
+                                isRecording.value = true
+                            }
                             onDismiss()
                         },
                         headlineContent = { Text(text = device[0]) },
                         leadingContent = {
-                            Icon(imageVector = Icons.Default.SettingsRemote, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Default.SettingsRemote,
+                                contentDescription = null
+                            )
                         }
                     )
                 }
             }
-        },)
 
-}
+            if (listPaired.isEmpty()) {
+                Column {
 
-
-@Composable
-fun Disconnect(
-    connection: Connection,
-    receivedDataList: List<Int>,
-    context: Context
-) {
-    DisposableEffect(Unit) {
-        onDispose {
-            if (connection.isConnected()) {
-                connection.disconnect()
-                // Handle received data and save it to a file if needed
-                // You can use receivedDataList and context to handle the received data
-                // For example, saving the data to a file
+                    Text(
+                        text = "No paired device detected",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Please check bluetooth connection",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = Color.Red
+                    )
+                }
             }
-        }
-    }
-}
-
-
-//@RequiresApi(Build.VERSION_CODES.S)
-//private fun getPairedDevices(list: ArrayList<String>) {
-//    // initialize bluetooth object
-//    val bluetooth = Bluetooth(this)
-//    val deviceList = bluetooth.getPairedDevices()
-//    if (deviceList.size > 0) {
-//        for (device in deviceList) {
-//            if (ActivityCompat.checkSelfPermission(
-//                    this,
-//                    Manifest.permission.BLUETOOTH_CONNECT
-//                ) != PackageManager.PERMISSION_GRANTED
-//            ) {
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-//                    BluetoothActivity.REQUEST_BLUETOOTH_PERMISSION
-//                )
-//                return
-//            }
-//            list.add(
-//                """
-//                        ${device.name}
-//                        ${device.address}
-//                        """.trimIndent()
-//            )
-//            Log.d("connect paired", "Paired device is " + device.name)
-//        }
-//    }
-//}
-
-// Get paired devices function
-fun getPairedDevices(listPaired: MutableState<List<String>>, context: Context) {
-    val bluetooth = Bluetooth(context)
-    val deviceList = bluetooth.getPairedDevices()
-    if (deviceList.isNotEmpty()) {
-        listPaired.value = deviceList.map { if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-            "${it.name}\n${it.address}" }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-@Composable
-fun StopWatchDisplay(
-    formattedTime: String,
-    onStartClick: () -> Unit,
-    onPauseClick: () -> Unit,
-    onResetClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = formattedTime,
-            fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
-            color = Color.Black
-        )
-        Spacer(Modifier.height(16.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(onStartClick) {
-                Text("Start")
-            }
-            Spacer(Modifier.width(16.dp))
-            Button(onPauseClick) {
-                Text("Pause")
-            }
-            Spacer(Modifier.width(16.dp))
-            Button(onResetClick) {
-                Text("Reset")
-            }
-        }
-    }
-}
-
-
-
-
-
-/*FUNCTION*/
-fun getCurrentTimeNoClock(): String {
-    val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
-    val currentTime = Date()
-    return dateFormat.format(currentTime)
-}
-fun getCurrentTime(): String {
-    val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm:ss", Locale.getDefault())
-    val currentTime = Date()
-    return dateFormat.format(currentTime)
+        },
+    )
 }
 
 fun logMsg(msg: String) {
