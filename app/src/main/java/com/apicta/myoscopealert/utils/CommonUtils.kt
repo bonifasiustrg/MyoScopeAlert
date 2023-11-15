@@ -1,8 +1,23 @@
 package com.apicta.myoscopealert.utils
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.core.content.ContextCompat
+import com.apicta.myoscopealert.bluetooth.BluetoothActivity
+import com.apicta.myoscopealert.ui.screen.getActivity
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -139,4 +154,17 @@ fun generateWavHeader(dataSize: Int, sampleRate: Int, numChannels: Int, bitsPerS
     header[43] = (dataSize shr 24 and 0xff).toByte()
 
     return header
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+fun checkBtPermission(context: Context): Boolean {
+    if (context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+        requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+            BluetoothActivity.REQUEST_BLUETOOTH_PERMISSION
+        )
+    }
+    val check = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+    return check == PackageManager.PERMISSION_GRANTED
 }

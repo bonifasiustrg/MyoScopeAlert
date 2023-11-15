@@ -1,8 +1,13 @@
 package com.apicta.myoscopealert.ui.screen
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothSocket
+import android.content.ContentValues
+import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -10,6 +15,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,8 +38,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.SettingsRemote
 import androidx.compose.material.icons.filled.StopCircle
@@ -43,6 +51,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -68,7 +77,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -77,7 +89,12 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
+import com.apicta.myoscopealert.utils.BluetoothSocketHolder
+import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
+import com.apicta.myoscopealert.utils.ThreadConnected
+import com.apicta.myoscopealert.utils.checkBtPermission
 import com.apicta.myoscopealert.utils.convertIntArrayToWav
 import com.apicta.myoscopealert.utils.getCurrentTime
 import com.psp.bluetoothlibrary.Bluetooth
@@ -86,7 +103,10 @@ import com.psp.bluetoothlibrary.Connection
 import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,11 +115,18 @@ import java.util.UUID
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun RecordScreen(navController: NavHostController) {
+    lateinit var threadConnectBTDevice: ThreadConnectBTDevice
+    val bluetoothViewModel: BluetoothViewModel = viewModel()
+    var myThreadConnected: ThreadConnected? = null
+
     val context = LocalContext.current
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
-    var title by remember {
-        mutableStateOf("")
-    }
+
+    var title by rememberSaveable { mutableStateOf("defaultname")}
+    val errorTitle = "Text input too long"
+    var isErrorTitle by rememberSaveable { mutableStateOf(false)}
+
+
     var showResult by remember { mutableStateOf(false) }
     val isRecording = remember { mutableStateOf(false) }
     val isStopwatch = remember {
@@ -161,21 +188,7 @@ fun RecordScreen(navController: NavHostController) {
                 count++
             } while (outputFile.exists())
             convertIntArrayToWav(intArray, outputFile)
-        } /*else {
-            val intArray = intArrayOf(2, 2, 2, 2, 1, 2, 2, 1, 2, -3, 1, 2, 2, 2, 3, 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -20, 4, 0, 23, 8, -11, -25- 0)
-            val contextWrapper = ContextWrapper(this)
-            val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
-
-            val audioDirPath = externalStorage.absolutePath
-            var count = 0
-            var outputFile: File
-            do {
-                val fileName = "output_$count.wav"
-                outputFile = File(audioDirPath, fileName)
-                count++
-            } while (outputFile.exists())
-            convertIntArrayToWav(intArray, outputFile)
-        }*/
+        }
     }
     val connectionListener: BluetoothListener.onConnectionListener = object :
         BluetoothListener.onConnectionListener {
@@ -185,24 +198,17 @@ fun RecordScreen(navController: NavHostController) {
                 Connection.CONNECTING -> {
                     logMsg("Connecting...")
                     Toast.makeText(context, "Connecting...", Toast.LENGTH_SHORT).show()
-//                    txtDisplay!!.append("\n[ST] Connecting...")
-//                    setDisplayMessageScrollBottom()
                 }
 
                 Connection.CONNECTED -> {
                     logMsg("Connected")
                     Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
 
-//                    txtDisplay!!.append("\n[ST] Connected")
-//                    setDisplayMessageScrollBottom()
                 }
 
                 Connection.DISCONNECTED -> {
                     logMsg("Disconnected")
 
-//                    txtDisplay!!.append("\n[ST] Disconnected")
-//                    setDisplayMessageScrollBottom()
-//                    connection.disconnect()
                     disconnect()
                     Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show()
                 }
@@ -268,6 +274,7 @@ fun RecordScreen(navController: NavHostController) {
 
         }
 
+
     Column(
         Modifier
             .fillMaxSize()
@@ -278,7 +285,9 @@ fun RecordScreen(navController: NavHostController) {
 
         TextField(
             value = title,
-            onValueChange = { title = it },
+            onValueChange = { title = it
+                if (title!="") isErrorTitle = false
+                            },
             placeholder = {
                 Text(
                     text = "Masukkan Nama File",
@@ -300,7 +309,23 @@ fun RecordScreen(navController: NavHostController) {
             textStyle = TextStyle(
                 fontSize = 24.sp,
                 fontFamily = poppins,
-            )
+            ),
+            singleLine = true,
+            isError = isErrorTitle,
+            supportingText = {
+                if (isErrorTitle) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Please fill the title name",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            trailingIcon = {
+                if (isErrorTitle)
+                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+            },
+            keyboardActions = KeyboardActions { isErrorTitle = title.isNotEmpty() }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -339,26 +364,80 @@ fun RecordScreen(navController: NavHostController) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
+        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (checkBtPermission(context)){
+            if (bluetoothAdapter.isEnabled){
+                val connectedDevices = bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener{
+                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                        if (profile == BluetoothProfile.HEADSET){
+                            val devices = proxy.connectedDevices
+                            for (device in devices){
+                                if (checkBtPermission(context)){
+                                    val deviceName = device.name
+//                                    binding.deviceName.text = deviceName
+                                    Toast.makeText(context, deviceName, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        bluetoothAdapter.closeProfileProxy(profile, proxy)
+                    }
+
+                    override fun onServiceDisconnected(profile: Int) {
+//                        binding.deviceName.text = "Disconnected"
+                        Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
+
+                    }
+                }, BluetoothProfile.HEADSET)
+
+
+                LaunchedEffect(connectedDevices) {
+                    bluetoothViewModel.bluetoothName.value?.let { name ->
+                        Toast.makeText(context, name, Toast.LENGTH_SHORT).show()
+                        // Lakukan hal-hal lain yang perlu Anda lakukan dengan 'name'
+                    }
+                }
+//                if (connectedDevices){
+//                    bluetoothViewModel.bluetoothName.observe(viewLifecycleOwner, Observer {
+//                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+////                        binding.deviceName.text = it
+//
+//                    })
+//                } else {
+//                    Toast.makeText(context, "No Device Connected", Toast.LENGTH_SHORT).show()
+//
+////                    binding.deviceName.text = "No Device Connected"
+//                }
+            } else {
+//                binding.deviceName.text = "Bluetooth is not enabled"
+                Toast.makeText(context, "Bluetooth is not enabled", Toast.LENGTH_SHORT).show()
+
+            }
+        }
+
         Row(Modifier.fillMaxWidth()) {
+            Button(onClick = {
+                val socket = BluetoothSocketHolder.getBluetoothSocket()
+
+                if (socket != null){
+                    myThreadConnected = ThreadConnected(socket, true, context, title)
+                    myThreadConnected!!.start()
+                    Log.e("newBT", "start Thread connected")
+                    Toast.makeText(context, "start Thread connected", Toast.LENGTH_LONG).show()
+                } else {
+                    Log.e("newBT", "Connect to  your device first!")
+                    Toast.makeText(context, "Connect to  your device first!", Toast.LENGTH_LONG).show()
+                }
+            }) {
+
+            }
             Button(
                 onClick = {
-                        getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
-                        isDialogVisible.value = true
+                        if (title != "") {
 
+                            getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
+                            isDialogVisible.value = true
 
-
-//                    LaunchedEffect(isConnect.value) {
-//                        if (isConnect.value) {
-//                            // Lakukan logika Anda setelah isConnect.value berubah menjadi true
-//                            stopWatch.start()
-//                            isStopwatch.value = true
-//                            isRecording = true
-//                        } else {
-//                            // Lakukan logika Anda setelah isConnect.value berubah menjadi false
-//                            // Get Paired devices list atau tindakan lainnya
-//                        }
-//                    }
-
+                        } else isErrorTitle = true
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -377,7 +456,7 @@ fun RecordScreen(navController: NavHostController) {
             /*stop*/
             Button(
                 onClick = {
-                    connection.disconnect()
+//                    connection.disconnect()
 
                     stopWatch.pause()
                     isStopwatch.value = false
@@ -385,6 +464,7 @@ fun RecordScreen(navController: NavHostController) {
 
                     showResult = true
 
+//                    myThreadConnected?.cancel()
 //                    stopWatch.reset()
 
                 },
@@ -403,11 +483,8 @@ fun RecordScreen(navController: NavHostController) {
                     tint = primary
                 )
             }
-//            if (!isRecording) {
-//                /*RECORD*/
-//            } else {
-//            }
         }
+        val socket = BluetoothSocketHolder.getBluetoothSocket()
 
         if (isDialogVisible.value) {
             DeviceSelectionDialog(
@@ -421,10 +498,11 @@ fun RecordScreen(navController: NavHostController) {
                             receiveListener
                         )
                     ) {
-                        Log.e("connect", "Start connection process")
+                        Log.e("newBT", "Start connection process")
                         Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
+
                     } else {
-                        Log.e("connect","Start connection process failed")
+                        Log.e("newBT","Start connection process failed")
                         Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -433,7 +511,12 @@ fun RecordScreen(navController: NavHostController) {
                 isConnect = isConnect,
                 stopWatch,
                 isStopwatch,
-                isRecording
+                isRecording,
+                context,
+                bluetoothViewModel,
+                title,
+                socket
+
             )
         }
 
@@ -480,22 +563,29 @@ private fun DeviceSelectionDialog(
     isConnect: MutableState<Boolean>,
     stopWatch: StopWatch, // Parameter stopWatch ditambahkan di sini
     isStopwatch: MutableState<Boolean>, // Parameter isStopwatch ditambahkan di sini
-    isRecording: MutableState<Boolean> // Parameter isRecording ditambahkan di sini
+    isRecording: MutableState<Boolean>, // Parameter isRecording ditambahkan di sini
+    context: Context,
+    bluetoothViewModel: BluetoothViewModel,
+    title: String,
+    socket: BluetoothSocket?
 ) {
+    var myThreadConnected: ThreadConnected? = null
+    lateinit var threadConnectBTDevice: ThreadConnectBTDevice
     AlertDialog(
         onDismissRequest = { isDialogVisible.value = false },
         confirmButton = { /*isDialogVisible.value = false*/ },
         title = { Text(text = "Select device") },
         text = {
-            Log.e("alert", listPaired.toString())
-            Log.e("alert", listPairedBluetoothDevices.toString())
+            Log.e("newBT alert", listPaired.toString())
+            Log.e("newBT alert", listPairedBluetoothDevices.toString())
             LazyColumn {
-                items(items = listPaired) { pairedDevice ->
-                    val device =
-                        pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
-                            .toTypedArray()
-                    Log.e("device", device.toString())
-                    Log.e("device modr", "$device -- ${device[0]} -- ${device[1]}")
+                items(items = listPairedBluetoothDevices) { /*pairedDevice*/device ->
+//                    val device =
+//                        pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
+//                            .toTypedArray()
+//                    val deviceBt = listPairedBluetoothDevices.toTypedArray()
+//                    Log.e("device", device.toString())
+//                    Log.e("device modr", "$device -- ${device[0]} -- ${device[1]}")
 
                     ListItem(
                         modifier = Modifier.clickable {
@@ -508,7 +598,40 @@ private fun DeviceSelectionDialog(
 //                                    Toast.LENGTH_SHORT
 //                                ).show()
 //                            }
-                            onDeviceSelected(device[1])
+
+//                            onDeviceSelected(device[1])
+
+                            if (ActivityCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.BLUETOOTH_CONNECT
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                return@clickable
+                            }
+                            Toast.makeText(context, "Connecting to ${device?.name}..", Toast.LENGTH_SHORT).show()
+                            threadConnectBTDevice = ThreadConnectBTDevice(device!!, context)
+                            threadConnectBTDevice.start()
+                            Log.e("newBT thread connect", "onClick: $threadConnectBTDevice")
+                            bluetoothViewModel.setBluetoothName(device.name)
+
+
+//                            if (socket != null){
+//                                myThreadConnected = ThreadConnected(socket, true, context, title)
+//                                myThreadConnected!!.start()
+//                                Log.e("newBT", "start Thread connected")
+//                                Toast.makeText(context, "start Thread connected", Toast.LENGTH_LONG).show()
+//                            } else {
+//                                Log.e("newBT", "Connect to  your device first!")
+//                                Toast.makeText(context, "Connect to  your device first!", Toast.LENGTH_LONG).show()
+//                            }
+
                             isConnect.value = true
                             if (isConnect.value) {
                                 stopWatch.start()
@@ -517,7 +640,7 @@ private fun DeviceSelectionDialog(
                             }
                             onDismiss()
                         },
-                        headlineContent = { Text(text = device[0]) },
+                        headlineContent = { Text(text = /*device[0]*/device!!.name) },
                         leadingContent = {
                             Icon(
                                 imageVector = Icons.Default.SettingsRemote,
