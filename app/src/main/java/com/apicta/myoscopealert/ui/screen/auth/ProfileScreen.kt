@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.ui.screen
+package com.apicta.myoscopealert.ui.screen.auth
 
 import android.content.Intent
 import android.util.Log

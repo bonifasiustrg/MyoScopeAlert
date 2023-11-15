@@ -130,7 +130,7 @@ fun FileDetail(
         "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
-    var progress by remember { mutableFloatStateOf(0f) }
+    /*var progress by remember { mutableFloatStateOf(0f) }
 
     val mediaPlayer = remember {
         MediaPlayer().apply {
@@ -141,30 +141,8 @@ fun FileDetail(
     val animatedProgress = animateFloatAsState(
         targetValue = progress,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
-    ).value
+    ).value*/
 
-//    // Tracking progress audio
-//    LaunchedEffect(key1 = isPlaying.value) {
-//        while (isPlaying.value) {
-//            // Ambil progress audio saat ini
-//            val currentPosition = mediaPlayer.currentPosition / 1000
-//
-//            // Log progress audio
-//            Log.e("AudioPlayer", "Progress: $currentPosition")
-//            Log.e("AudioPlayer", "Progressbar: $progress")
-//
-//            // Tunggu 1 detik
-//            delay(1000)
-//        }
-//    }
-//
-//    DisposableEffect(Unit) {
-//        // Ketika komponen dihancurkan, hentikan pemutaran audio
-//        onDispose {
-//            mediaPlayer.stop()
-//            mediaPlayer.release()
-//        }
-//    }
     // Set tombol play dan stop
     Column(
         modifier = Modifier
@@ -221,55 +199,55 @@ fun FileDetail(
                 modifier = Modifier.size(24.dp)
             )
         }
-        LinearProgressIndicator(
-            progress = animatedProgress,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .padding(horizontal = 28.dp),
-            color = Color.Blue.copy(alpha = 0.2f)
-        )
-        Button(
-            shape = CircleShape,
-            onClick = {
-                // Mulai atau berhenti memutar audio
-                if (isPlaying.value) {
-                    if (mediaPlayer.isPlaying) {
-                        mediaPlayer.pause()
-                    }
-                } else {
-                    mediaPlayer.start()
-                    // Memantau progress audio
-                    CoroutineScope(Dispatchers.IO).launch {
-                        while (isPlaying.value) {
-                            val currentPosition = mediaPlayer.currentPosition.toFloat()
-                            val totalDuration = mediaPlayer.duration.toFloat()
-                            Log.e("progress", "$currentPosition | $totalDuration")
-                            val progressPercentage = currentPosition / totalDuration
-                            progress = progressPercentage
-                            if (progress == 1.0f) {
-                                isPlaying.value = false
-                            }
-                            if (isPlaying.value && mediaPlayer.currentPosition >= mediaPlayer.duration) {
-                                // Audio telah diputar sampai selesai
-                                isPlaying.value = false
-                                // Tampilkan pesan ke pengguna jika diperlukan
-                            }
-                            delay(200)
-
-                        }
-                    }
-                }
-                isPlaying.value = !isPlaying.value
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Icon(
-                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-        }
+//        LinearProgressIndicator(
+//            progress = animatedProgress,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(24.dp)
+//                .padding(horizontal = 28.dp),
+//            color = Color.Blue.copy(alpha = 0.2f)
+//        )
+//        Button(
+//            shape = CircleShape,
+//            onClick = {
+//                // Mulai atau berhenti memutar audio
+//                if (isPlaying.value) {
+//                    if (mediaPlayer.isPlaying) {
+//                        mediaPlayer.pause()
+//                    }
+//                } else {
+//                    mediaPlayer.start()
+//                    // Memantau progress audio
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        while (isPlaying.value) {
+//                            val currentPosition = mediaPlayer.currentPosition.toFloat()
+//                            val totalDuration = mediaPlayer.duration.toFloat()
+//                            Log.e("progress", "$currentPosition | $totalDuration")
+//                            val progressPercentage = currentPosition / totalDuration
+//                            progress = progressPercentage
+//                            if (progress == 1.0f) {
+//                                isPlaying.value = false
+//                            }
+//                            if (isPlaying.value && mediaPlayer.currentPosition >= mediaPlayer.duration) {
+//                                // Audio telah diputar sampai selesai
+//                                isPlaying.value = false
+//                                // Tampilkan pesan ke pengguna jika diperlukan
+//                            }
+//                            delay(200)
+//
+//                        }
+//                    }
+//                }
+//                isPlaying.value = !isPlaying.value
+//            },
+//            modifier = Modifier.padding(top = 16.dp)
+//        ) {
+//            Icon(
+//                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
+//                contentDescription = null,
+//                modifier = Modifier.size(32.dp)
+//            )
+//        }
         Spacer(modifier = Modifier.height(4.dp))
 
         val isVerified by remember {
@@ -412,7 +390,7 @@ fun FileDetail(
     }
 
 
-    // Tracking progress audio
+    /*// Tracking progress audio
     LaunchedEffect(key1 = isPlaying.value) {
         while (isPlaying.value) {
             // Ambil progress audio saat ini
@@ -433,7 +411,7 @@ fun FileDetail(
             mediaPlayer.stop()
             mediaPlayer.release()
         }
-    }
+    }*/
 }
 
 @Composable

@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.apicta.myoscopealert.data.DataStoreManager
-import com.apicta.myoscopealert.ui.screen.LoginScreen
+import com.apicta.myoscopealert.ui.screen.auth.LoginScreen
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
     navigation(
