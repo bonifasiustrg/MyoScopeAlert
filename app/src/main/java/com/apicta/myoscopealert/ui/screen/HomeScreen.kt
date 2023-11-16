@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -40,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -51,14 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
-import com.apicta.myoscopealert.bluetooth.BTAppActivity
-import com.apicta.myoscopealert.bluetooth.BluetoothActivity
-import com.apicta.myoscopealert.bluetooth.ConnectActivity
 import com.apicta.myoscopealert.graphs.BottomBarScreen
-import com.apicta.myoscopealert.ui.theme.cardbg
 import com.apicta.myoscopealert.ui.theme.greenIcon
 import com.apicta.myoscopealert.ui.theme.orangeIcon
 import com.apicta.myoscopealert.ui.theme.poppins
@@ -66,7 +57,6 @@ import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.redIcon
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
-import dagger.hilt.android.qualifiers.ApplicationContext
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -293,9 +283,7 @@ fun HomeScreen(navController: NavHostController) {
                 Text(text = "Lakukan Rekaman Jantung", fontWeight = FontWeight.Bold)
                 Button(
                     onClick = {
-//                              navController.navigate("connect_bluetooth")
-                        context.startActivity(Intent(context, BTAppActivity::class.java))
-
+                              navController.navigate(BottomBarScreen.Record.route)
                     },
                     colors = ButtonDefaults.buttonColors(primary),
                     modifier = Modifier.fillMaxWidth()

@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaPlayer
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -104,7 +105,6 @@ import java.io.IOException
 fun FileDetail(
     filename: String?,
     fileDate: String?,
-    /*dataStoreManager: DataStoreManager,*/
     navController: NavHostController,
 ) {
     val viewModel: DiagnosesViewModel = hiltViewModel()
@@ -113,21 +113,17 @@ fun FileDetail(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-//    var storedToken by remember { mutableStateOf<String?>(null) }
-//    // Ambil token jika belum diinisialisasi
-//    if (storedToken == null) {
-//        runBlocking {
-//            storedToken = dataStoreManager.getAuthToken.first()
-//            Log.d("DetailScreen runblocking", "Stored Token: $storedToken")
-//        }
-//    }
-//    storedToken?.let { Log.e("stored token dashboard", it) }
 
 
     var isBack by remember { mutableStateOf(false) }
 
-    val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+//    val filePath =
+//        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+
+    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+    val filePath = "${musicDir.absolutePath}/$filename"
+    Log.e("newBT save", "$filePath")
+
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
     /*var progress by remember { mutableFloatStateOf(0f) }

@@ -13,6 +13,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContentProviderCompat.requireContext
 import com.apicta.myoscopealert.utils.FloatArrayListToWav.shortToBytes
 import com.github.mikephil.charting.data.Entry
@@ -52,6 +53,7 @@ class ThreadConnected(
 
     private var startTime: Long = 0
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun run() {
         var numBytes: Int = 0
 
@@ -66,8 +68,6 @@ class ThreadConnected(
             }
             Log.e("newBT Bluetooth record", "numBytes: $numBytes")
 
-//            activity?.runOnUiThread {
-//            }
             val currentTime = System.currentTimeMillis()
             if (startTime == 0L){
                 startTime = currentTime
@@ -75,28 +75,41 @@ class ThreadConnected(
             val elapsedTime = currentTime - startTime
             val elapsedTimeFloat = millisToSeconds(elapsedTime)
 
-            if (elapsedTimeFloat >= 10.0){
+            if (elapsedTimeFloat >= 15.0){
                 startTime = currentTime
                 Log.e("newBT " + TAG, "pcgArray: ${ArrayReceiver.pcgArray}")
                 Log.e("newBT " + TAG, "timeArray: ${ArrayReceiver.timeArray}")
                 isOn = false
 
                 val contentValues = ContentValues()
-                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "${System.currentTimeMillis()}-$title.wav")
+//                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "$title-${System.currentTimeMillis()}.wav")
+                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, title)
                 contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
 
                 val contentResolver = context?.contentResolver
                 val uri = contentResolver?.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
-
+                Log.e("newBT save", "$uri")
+                Log.e("newBT save", "${MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}")
                 val desiredByteCount = ArrayReceiver.timeArray.last().toInt() * SAMPLE_RATE
                 Log.e("newBT " + TAG, "desiredByCount: $desiredByteCount")
                 Log.e("newBT " + TAG, "lastTime: ${ArrayReceiver.timeArray.last().toInt()}")
+
+//                val contextWrapper = ContextWrapper(context)
+//                val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+//
+//                val audioDirPath = externalStorage.absolutePath
+//                val fileName = "${System.currentTimeMillis()}-$title.wav"
+//                val filePath = "$audioDirPath/$fileName"
+//
+//                val file = File(filePath)
+//                file.createNewFile()
 
                 data = byteArrayOutputStream.toByteArray()
                 val wavData: ByteArray = Wav.generateWavHeader(data, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
 
                 try {
                     val outputStream: OutputStream = contentResolver?.openOutputStream(uri!!)!!
+//                    val outputStream: FileOutputStream = FileOutputStream(file)
                     if (desiredByteCount <= wavData.size){
 //                                outputStream.write(wavData)
                         outputStream.write(wavData, 0, desiredByteCount)
@@ -107,6 +120,7 @@ class ThreadConnected(
                     }
                     outputStream.close()
                     Log.e("newBT save" + TAG, "File saved to: $uri")
+//                    Log.e("newBT save" + TAG, "File saved to: $filePath")
 //                    Toast.makeText(context, "File saved to: $uri", Toast.LENGTH_SHORT).show()
                 } catch (e: IOException){
                     e.printStackTrace()
@@ -121,41 +135,6 @@ class ThreadConnected(
 //                    updateChart()
         }
 //            super.run()
-    }
-
-    private fun getOutputPath(): String {
-        val storageDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context?.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)
-        } else {
-            context?.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-        }
-
-        val fileName = "${System.currentTimeMillis()}_BluetoothRecording.wav"
-        return "${storageDir?.absolutePath}/$fileName"
-    }
-
-    private fun saveToMediaStore(filePath: String) {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "BluetoothRecording.wav")
-            put(MediaStore.MediaColumns.MIME_TYPE, "audio/x-wav")
-        }
-
-        val contentResolver = context?.contentResolver
-        val uri = contentResolver?.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        uri?.let { mediaUri ->
-            try {
-                val outputStream = contentResolver.openOutputStream(mediaUri)
-                outputStream?.use { stream ->
-                    val file = File(filePath)
-                    val fileInputStream = file.inputStream()
-                    fileInputStream.copyTo(stream)
-                }
-                Log.d("BluetoothDataRecorder", "File saved to: $mediaUri")
-            } catch (e: IOException) {
-                Log.e("BluetoothDataRecorder", "Error saving to MediaStore", e)
-            }
-        }
     }
     fun cancel(){
         try {

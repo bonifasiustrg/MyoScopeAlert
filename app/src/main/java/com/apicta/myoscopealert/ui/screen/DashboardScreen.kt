@@ -128,7 +128,7 @@ fun DashboardScreen(
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) }
-    ) {
+        ) {
         Surface(modifier = Modifier.padding(it)) {
             MainNavGraph(navController = navController, dataStoreManager = dataStoreManager)
         }

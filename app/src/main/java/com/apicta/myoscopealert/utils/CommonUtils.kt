@@ -9,15 +9,8 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import com.apicta.myoscopealert.bluetooth.BluetoothActivity
-import com.apicta.myoscopealert.ui.screen.getActivity
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -162,7 +155,7 @@ fun checkBtPermission(context: Context): Boolean {
         requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-            BluetoothActivity.REQUEST_BLUETOOTH_PERMISSION
+            1
         )
     }
     val check = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)

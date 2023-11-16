@@ -1,8 +1,13 @@
 package com.apicta.myoscopealert.ui.screen
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.ContextWrapper
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.models.FileModel
@@ -61,6 +67,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@SuppressLint("Range")
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun FileListScreen(navController: NavHostController, query: String) {
@@ -68,17 +75,20 @@ fun FileListScreen(navController: NavHostController, query: String) {
 
     val context = LocalContext.current
 
-    val contextWrapper = ContextWrapper(context)
-    val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+    fileListDir(context, fileList)
 
-    val audioDirPath = externalStorage.absolutePath
 
-    File(audioDirPath).walk().forEach {
-        if (it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
-    }
-//    Log.e("filelist", "$fileList")
+
+//    val audioDirPath = "/storage/emulated/0/Music/" // Specify the desired path
+//
+//    File(audioDirPath).walk().forEach {
+//        if (it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
+//    }
+
+
+    Log.e("filelist", "$fileList")
 //    Log.e("filelist", "$wavFileNames")
-    Log.e("filelist", audioDirPath)
+//    Log.e("filelist", audioDirPath)
 //    if (query.isEmpty())
 //        fileList
 //    else
@@ -228,3 +238,34 @@ fun FileListScreen(navController: NavHostController, query: String) {
 
 }
 
+fun fileListDir(context:Context, fileList: ArrayList<FileModel>) {
+    val resolver = context.contentResolver
+    val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    val projection = arrayOf(MediaStore.Audio.Media.DISPLAY_NAME, MediaStore.Audio.Media.DATE_MODIFIED)
+    val selection = MediaStore.Audio.Media.DATA + " like ? "
+
+    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+    val selectionArgs = arrayOf("%${musicDir.absolutePath}%")
+//    val selectionArgs = arrayOf("%/storage/emulated/0/Music/%")
+
+    val sortOrder = MediaStore.Audio.Media.DATE_MODIFIED + " DESC"
+
+    val cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder)
+
+    cursor?.use {
+        val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+        val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(nameColumn)
+            val date = cursor.getLong(dateColumn)
+
+            if (name.endsWith(".wav")) fileList.add(FileModel(name, date))
+        }
+    }
+
+    Log.e("newBT save", "$uri")
+
+    Log.e("newBT filelist", "$musicDir")
+    Log.e("newBT filelist2", "$selectionArgs")
+}

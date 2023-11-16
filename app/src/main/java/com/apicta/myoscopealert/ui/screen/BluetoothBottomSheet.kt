@@ -29,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.SettingsRemote
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -60,39 +63,53 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
-import com.apicta.myoscopealert.bluetooth.BluetoothActivity
 import com.apicta.myoscopealert.ui.theme.primary
+import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
+import com.apicta.myoscopealert.ui.viewmodel.StopWatch
+import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
+import com.apicta.myoscopealert.utils.ThreadConnected
 import com.psp.bluetoothlibrary.Bluetooth
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColumnScope.ModalBottomSheetM3(ctx: Context) {
+fun ColumnScope.ModalBottomSheetM3(
+    ctx: Context, isConnect: MutableState<Boolean>,
+    stopWatch: StopWatch,
+    isStopwatch: MutableState<Boolean>,
+    isRecording: MutableState<Boolean>,
+    bluetoothViewModel: BluetoothViewModel
+) {
     // Bluetooth object
     val bluetooth: Bluetooth? = Bluetooth(ctx)
     val appContext = ctx.getActivity()
-    Log.e("turn on bt", "context $appContext")
-    // check bluetooth is supported or not
-    Log.d(BluetoothActivity.TAG, "Bluetooth is supported " + Bluetooth.isBluetoothSupported())
-    if (bluetooth != null) {
-        Log.d(BluetoothActivity.TAG, "Bluetooth is on " + bluetooth.isOn())
-    }
-    Log.d(BluetoothActivity.TAG, "Bluetooth is discovering " + (bluetooth?.isDiscovering() ?: "no bt discovered"))
+//    Log.e("turn on bt", "context $appContext")
+//    // check bluetooth is supported or not
+//    Log.d("newBT BTBottomSheet", "Bluetooth is supported " + Bluetooth.isBluetoothSupported())
+//    if (bluetooth != null) {
+//        Log.d("newBT BTBottomSheet", "Bluetooth is on " + bluetooth.isOn())
+//    }
+//    Log.d("newBT BTBottomSheet", "Bluetooth is discovering " + (bluetooth?.isDiscovering() ?: "no bt discovered"))
 
     var openBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(/*skipPartiallyExpanded = true*/)
-
-    Button(onClick = { openBottomSheet = true },
+    // Check if not null
+    appContext?.let {
+        bluetooth!!.turnOnWithPermission(it)
+        Log.e("turn on bt", "call func")
+        // With user permission
+    }
+    Button(
+        onClick = { openBottomSheet = true },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xBFFFC107)
         ),
         modifier = Modifier.align(Alignment.CenterHorizontally)
     ) {
         Icon(
-            imageVector = Icons.Filled.BluetoothSearching
-            ,
+            imageVector = Icons.Filled.BluetoothSearching,
             contentDescription = null,
             modifier = Modifier
                 .size(32.dp)
@@ -122,7 +139,13 @@ fun ColumnScope.ModalBottomSheetM3(ctx: Context) {
                     }
                 },
                 bluetooth = bluetooth,
-                appContext = appContext
+                appContext = appContext,
+                isConnect,
+                stopWatch,
+                isStopwatch,
+                isRecording,
+                bluetoothViewModel,
+                ctx
             )
         }
     }
@@ -134,62 +157,44 @@ fun BottomSheetContent(
     onHideButtonClick: () -> Unit,
     bluetooth: Bluetooth?,
     appContext: AppCompatActivity?,
+    isConnect: MutableState<Boolean>,
+    stopWatch: StopWatch,
+    isStopwatch: MutableState<Boolean>,
+    isRecording: MutableState<Boolean>,
+    bluetoothViewModel: BluetoothViewModel,
+    context: Context
 ) {
-    val context = LocalContext.current
     val listDetectDevicesString = remember { mutableListOf<String?>() }
     val listDetectBluetoothDevices = remember { mutableListOf<BluetoothDevice?>() }
     val listPairedDevicesString = remember { mutableListOf<String?>() }
     val listPairedBluetoothDevices = remember { mutableListOf<BluetoothDevice?>() }
 
-    val composition  by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.bluetooth_animation))
-    var isScan by remember {
-        mutableStateOf(false)
-    }
-//    val launcher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            // Permission Accepted: Do something
-//            Log.d("ExampleScreen","PERMISSION GRANTED")
-//
-//        } else {
-//            // Permission Denied: Do something
-//            Log.d("ExampleScreen","PERMISSION DENIED")
-//        }
-//    }
-//
-//    when (PackageManager.PERMISSION_GRANTED) {
-//        ContextCompat.checkSelfPermission(
-//            context,
-//            Manifest.permission.BLUETOOTH_CONNECT
-//        ) -> {
-//            // Some works that require permission
-//            Log.d("ExampleScreen","Code requires permission")
-//        }
-//        else -> {
-//            // Asking for permission
-//            launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-//        }
-//    }
+    val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.bluetooth_animation))
+    var isScan by remember {mutableStateOf(false)}
 
-    Column(Modifier.padding(horizontal = 16.dp)
-        .fillMaxWidth(),
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
 //        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.fillMaxWidth(),verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-
-
-
-                // Check if not null
-                appContext?.let {
-                    // With user permission
-                    bluetooth!!.turnOnWithPermission(it)
-                    Log.e("turn on bt", "call func")
-                }
-            }) {
-                Text(text = "Turn On")
-            }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+//            Button(onClick = {
+//
+//
+//                // Check if not null
+//                appContext?.let {
+//                    // With user permission
+//                    bluetooth!!.turnOnWithPermission(it)
+//                    Log.e("turn on bt", "call func")
+//                }
+//            }) {
+//                Text(text = "Turn On")
+//            }
             Spacer(modifier = Modifier.height(8.dp))
             if (isScan) {
                 LottieAnimation(
@@ -204,7 +209,8 @@ fun BottomSheetContent(
                     onClick = {
                         // scan nearby bluetooth devices
                         bluetooth!!.startDetectNearbyDevices()
-                        isScan = true },
+                        isScan = true
+                    },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = "Scan devices")
@@ -218,10 +224,10 @@ fun BottomSheetContent(
         // Bluetooth discovery #START
         bluetooth!!.setOnDiscoveryStateChangedListener { state ->
             if (state == Bluetooth.DISCOVERY_STARTED) {
-                Log.e(BluetoothActivity.TAG, "Discovery started")
+                Log.e("newBT BTBottomSheet", "Discovery started")
             }
             if (state == Bluetooth.DISCOVERY_FINISHED) {
-                Log.e(BluetoothActivity.TAG, "Discovery finished")
+                Log.e("newBT BTBottomSheet", "Discovery finished")
             }
         }
         // Bluetooth discovery #END
@@ -232,7 +238,7 @@ fun BottomSheetContent(
             // check device is already in list or not
             if (!listDetectDevicesString.contains(device.name)) {
                 Log.d(
-                    BluetoothActivity.TAG,
+                    "newBT BTBottomSheet",
                     "Bluetooth device found " + device.name
                 )
 
@@ -259,7 +265,6 @@ fun BottomSheetContent(
 
         // Menggunakan LaunchedEffect untuk melakukan recompose ketika listPairedBluetoothDevices berubah
         LaunchedEffect(listDetectDevicesString, listPairedDevicesString) {
-
             // Menggunakan coroutine untuk menjalankan recompose
             launch {
                 // Melakukan recompose ketika listDetectBluetoothDevices berubah
@@ -276,21 +281,24 @@ fun BottomSheetContent(
 
         // Get Paired devices list
         getPairedDevices(bluetooth, context, listPairedDevicesString, listPairedBluetoothDevices)
+        val isDialogVisible = remember { mutableStateOf(false) }
 
         Text(text = "Paired Devices", fontSize = 20.sp)
-        LazyColumn{
+        LazyColumn {
             items(listPairedBluetoothDevices) {
                 ListItem(
                     modifier = Modifier.clickable {
-                        val position = listDetectDevicesString.indexOf(it?.name)
-
-                        if (bluetooth.unpairDevice(listPairedBluetoothDevices[position])) {
-                            Log.e(BluetoothActivity.TAG, "Unpair successfully $it")
-                            listPairedDevicesString.removeAt(position)
-                            listPairedBluetoothDevices.removeAt(position)
-                        } else {
-                            Log.d(BluetoothActivity.TAG, "Unpair failed")
-                        }
+//                        getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
+                        isDialogVisible.value = true
+//                        val position = listDetectDevicesString.indexOf(it?.name)
+//
+//                        if (bluetooth.unpairDevice(listPairedBluetoothDevices[position])) {
+//                            Log.e("newBT BTBottomSheet", "Unpair successfully $it")
+//                            listPairedDevicesString.removeAt(position)
+//                            listPairedBluetoothDevices.removeAt(position)
+//                        } else {
+//                            Log.d("newBT BTBottomSheet", "Unpair failed")
+//                        }
                     },
                     headlineContent = {
                         if (it != null) {
@@ -303,20 +311,58 @@ fun BottomSheetContent(
                 )
             }
         }
-        if (listPairedBluetoothDevices.isEmpty()) Text(text = "No paired device detected", color = Color.Gray)
+        if (isDialogVisible.value) {
+            DeviceSelectionDialog(
+                listPaired = listPairedDevicesString,
+                listPairedBluetoothDevices = listPairedBluetoothDevices,
+//                onDeviceSelected = { deviceAddress ->
+//                    if (connection.connect(
+//                            deviceAddress,
+//                            true,
+//                            connectionListener,
+//                            receiveListener
+//                        )
+//                    ) {
+//                        Log.e("newBT", "Start connection process")
+//                        Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
+//
+//                    } else {
+//                        Log.e("newBT","Start connection process failed")
+//                        Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
+//                    }
+//                },
+                onDismiss = { isDialogVisible.value = false },
+                isDialogVisible = isDialogVisible,
+                isConnect = isConnect,
+                stopWatch,
+                isStopwatch,
+                isRecording,
+                context,
+                bluetoothViewModel,
+                onHideButtonClick
+            )
+        }
+
+        if (listPairedBluetoothDevices.isEmpty()) Text(
+            text = "No paired device detected",
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(text = "Available Devices", fontSize = 20.sp)
         Log.e("list bottomsheet", listDetectDevicesString.toString())
         Log.e("list bottomsheet paired str", listPairedDevicesString.toString())
         Log.e("list bottomsheet paired blt", listPairedBluetoothDevices.toString())
-        LazyColumn{
+        LazyColumn {
             items(listDetectBluetoothDevices) {
                 if (it != null) {
                     ListItem(
                         modifier = Modifier.clickable {
                             val position = listDetectDevicesString.indexOf(it.name)
-                            if (bluetooth.requestPairDevice(/*listDetectBluetoothDevices[position]*/it)) {
+                            if (bluetooth.requestPairDevice(/*listDetectBluetoothDevices[position]*/
+                                    it
+                                )
+                            ) {
 //                                Log.d(BluetoothActivity.TAG, "Pair request send successfully $position")
                                 Toast.makeText(
                                     context,
@@ -327,14 +373,20 @@ fun BottomSheetContent(
                         },
                         headlineContent = { Text(text = it.name) },
                         leadingContent = {
-                            Icon(imageVector = Icons.Default.SettingsRemote, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Default.SettingsRemote,
+                                contentDescription = null
+                            )
                         }
                     )
                 }
             }
         }
 
-        if (listDetectBluetoothDevices.isEmpty()) Text(text = "No available device detected", color = Color.Gray)
+        if (listDetectBluetoothDevices.isEmpty()) Text(
+            text = "No available device detected",
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
 
@@ -349,7 +401,6 @@ fun BottomSheetContent(
 }
 
 
-
 /*FUNCTION*/
 fun Context.getActivity(): AppCompatActivity? = when (this) {
     is AppCompatActivity -> this
@@ -358,7 +409,12 @@ fun Context.getActivity(): AppCompatActivity? = when (this) {
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-fun getPairedDevices(bluetooth: Bluetooth?, context: Context, listPairedDevicesString: MutableList<String?>, listPairedBluetoothDevices: MutableList<BluetoothDevice?>) {
+fun getPairedDevices(
+    bluetooth: Bluetooth?,
+    context: Context,
+    listPairedDevicesString: MutableList<String?>,
+    listPairedBluetoothDevices: MutableList<BluetoothDevice?>
+) {
     val devices = bluetooth!!.getPairedDevices()
     if (devices.size > 0) {
         listPairedDevicesString.clear()
@@ -373,7 +429,7 @@ fun getPairedDevices(bluetooth: Bluetooth?, context: Context, listPairedDevicesS
                 ActivityCompat.requestPermissions(
                     context as Activity,
                     arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-                    BluetoothActivity.REQUEST_BLUETOOTH_PERMISSION
+                    /*REQUEST_BLUETOOTH_PERMISSION*/1
                 )
                 return
             }
@@ -388,9 +444,113 @@ fun getPairedDevices(bluetooth: Bluetooth?, context: Context, listPairedDevicesS
             )
             listPairedBluetoothDevices.add(device)
 
-            Log.d(BluetoothActivity.TAG, "Paired device is " + device.name)
+            Log.d("newBT BTBottomSheet 1", "Paired device is " + device.name)
         }
     } else {
-        Log.d(BluetoothActivity.TAG, "Paired device list not found")
+        Log.d("newBT BTBottomSheet 1", "Paired device list not found")
     }
+}
+
+@Composable
+fun DeviceSelectionDialog(
+    listPaired: MutableList<String?>,
+    listPairedBluetoothDevices: MutableList<BluetoothDevice?>,
+//    onDeviceSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    isDialogVisible: MutableState<Boolean>,
+    isConnect: MutableState<Boolean>,
+    stopWatch: StopWatch, // Parameter stopWatch ditambahkan di sini
+    isStopwatch: MutableState<Boolean>, // Parameter isStopwatch ditambahkan di sini
+    isRecording: MutableState<Boolean>, // Parameter isRecording ditambahkan di sini
+    context: Context,
+    bluetoothViewModel: BluetoothViewModel,
+    onHideButtonClick: () -> Unit,
+
+) {
+    lateinit var threadConnectBTDevice: ThreadConnectBTDevice
+    AlertDialog(
+        onDismissRequest = { isDialogVisible.value = false },
+        confirmButton = { /*isDialogVisible.value = false*/ },
+        title = { Text(text = "Select device") },
+        text = {
+            Log.e("newBT alert", listPaired.toString())
+            Log.e("newBT alert", listPairedBluetoothDevices.toString())
+            LazyColumn {
+                items(items = listPairedBluetoothDevices) { /*pairedDevice*/device ->
+//                    val device =
+//                        pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
+//                            .toTypedArray()
+//                    val deviceBt = listPairedBluetoothDevices.toTypedArray()
+//                    Log.e("device", device.toString())
+//                    Log.e("device modr", "$device -- ${device[0]} -- ${device[1]}")
+
+                    ListItem(
+                        modifier = Modifier.clickable {
+
+//                            onDeviceSelected(device[1])
+
+                            if (ActivityCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.BLUETOOTH_CONNECT
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                return@clickable
+                            }
+                            Toast.makeText(
+                                context,
+                                "Connecting to ${device?.name}..",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            threadConnectBTDevice = ThreadConnectBTDevice(device!!, context)
+                            threadConnectBTDevice.start()
+                            Log.e("newBT thread connect", "onClick: $threadConnectBTDevice")
+                            bluetoothViewModel.setBluetoothName(device.name)
+
+//                            isConnect.value = true
+//                            if (isConnect.value) {
+//                                stopWatch.start()
+//                                isRecording.value = true
+//                                isStopwatch.value = true
+//                            }
+                            onDismiss()
+                            onHideButtonClick()
+                        },
+                        headlineContent = { Text(text = /*device[0]*/device!!.name) },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Default.SettingsRemote,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+            }
+
+            if (listPaired.isEmpty()) {
+                Column {
+
+                    Text(
+                        text = "No paired device detected",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Please check bluetooth connection",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = Color.Red
+                    )
+                }
+            }
+        },
+    )
 }

@@ -109,9 +109,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
-    //    HiveMQ MQTT Client Library
-    implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
-
     //Splash Api
     implementation("androidx.core:core-splashscreen:1.0.1")
 
