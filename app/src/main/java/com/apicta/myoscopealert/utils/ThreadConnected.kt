@@ -61,6 +61,7 @@ class ThreadConnected(
             if (elapsedTimeFloat >= 15.0){
                 startTime = currentTime
                 Log.e("newBT " + TAG, "pcgArray: ${ArrayReceiver.pcgArray}")
+                Log.e("newBT " + TAG, "nilai maksimum: ${ArrayReceiver.pcgArray.maxOrNull()}")
                 Log.e("newBT " + TAG, "timeArray: ${ArrayReceiver.timeArray}")
                 isOn = false
 
@@ -130,6 +131,20 @@ class ThreadConnected(
         return (millis / 1000.0).toFloat().let { "%.3f".format(it).toFloat() }
     }
 
+    companion object{
+        private const val TAG = "Record Patient Screen vm"
+        private const val REQUEST_PERMISSION = 1
+        const val SAMPLE_RATE = 24000
+        const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+        // encoding float ok but time not ok
+        //
+        const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
+        val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+//        private const val BUFFER_SIZE = 1024
+    }
+}
+
+
 //    private fun updateChart() {
 //        val dataValues: ArrayList<Entry> = ArrayList()
 //        for ((time, audio) in ArrayReceiver.timeArray.zip(ArrayReceiver.pcgArray)) {
@@ -156,19 +171,5 @@ class ThreadConnected(
 //        binding.signalView.notifyDataSetChanged()
 //        binding.signalView.invalidate()
 //    }
-    companion object{
-        private const val TAG = "Record Patient Screen vm"
-        private const val REQUEST_PERMISSION = 1
-        private const val SAMPLE_RATE = 24000
-        private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
-        // encoding float ok but time not ok
-        //
-        private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
-        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
-//        private const val BUFFER_SIZE = 1024
-    }
-}
-
-
 
 

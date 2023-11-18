@@ -413,9 +413,10 @@ fun FileDetail(
 
 @Composable
 fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
-    val SAMPLE_RATE = 8000
-    val SHRT_MAX = 32767
-    val audioData = ArrayList<Entry>()
+//    val SAMPLE_RATE = 8000
+    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
+    val SHRT_MAX = 32767 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
+//    val SHRT_MAX = 255
     Column(
         Modifier
             .fillMaxWidth()
@@ -441,15 +442,15 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             yAxis?.setDrawGridLines(false)
 
             if (isZooming) {
-                yAxis?.setAxisMaximum(0.03f)
-                yAxis?.setAxisMinimum(-0.03f)
+                yAxis?.setAxisMaximum(0.008f)
+                yAxis?.setAxisMinimum(-0.008f)
             }
 
             // **Memory Efficiency Improvement:** Read the WAV file in chunks instead of loading the entire file into memory at once.
             val bufferSize = AudioRecord.getMinBufferSize(
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT
+                AudioFormat.ENCODING_PCM_FLOAT
             )
             val wavData = ByteArray(bufferSize)
             val dataPoints = ArrayList<Float>()

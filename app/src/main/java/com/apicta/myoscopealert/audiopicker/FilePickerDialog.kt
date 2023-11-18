@@ -96,8 +96,8 @@ fun FilePickerDialog(
 ) {
     val context = LocalContext.current
     val contextWrapper = ContextWrapper(context)
-    val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
-    val audioDirPath = externalStorage.absolutePath
+//    val externalStorage: File = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)!!
+    val audioDirPath = /*externalStorage*/Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)?.absolutePath
 
 
 
