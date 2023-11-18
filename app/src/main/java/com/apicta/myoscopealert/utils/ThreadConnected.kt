@@ -5,24 +5,13 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.ContentValues
 import android.content.Context
-import android.content.ContextWrapper
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContentProviderCompat.requireContext
-import com.apicta.myoscopealert.utils.FloatArrayListToWav.shortToBytes
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -46,13 +35,8 @@ class ThreadConnected(
     private val byteArrayOutputStream = ByteArrayOutputStream()
     private lateinit var data: ByteArray
 
-
     private var isOn = switch
-
-//        private val byteArrayOutputStream = ByteArrayOutputStream()
-
     private var startTime: Long = 0
-
     @RequiresApi(Build.VERSION_CODES.S)
     override fun run() {
         var numBytes: Int = 0
@@ -67,7 +51,6 @@ class ThreadConnected(
                 break
             }
             Log.e("newBT Bluetooth record", "numBytes: $numBytes")
-
             val currentTime = System.currentTimeMillis()
             if (startTime == 0L){
                 startTime = currentTime
@@ -127,6 +110,7 @@ class ThreadConnected(
                 }
             }
 
+
             val receivedInt = ByteBuffer.wrap(mmBuffer, 0, numBytes).order(ByteOrder.LITTLE_ENDIAN).int
             Log.e("newBT Bluetooth record", "received: ${receivedInt.toFloat()}")
             ArrayReceiver.pcgArray.add(receivedInt.toFloat())
@@ -134,7 +118,6 @@ class ThreadConnected(
 
 //                    updateChart()
         }
-//            super.run()
     }
     fun cancel(){
         try {
@@ -183,57 +166,9 @@ class ThreadConnected(
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
         private val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
 //        private const val BUFFER_SIZE = 1024
-
-
     }
 }
 
 
-@SuppressLint("MissingPermission")
-class ThreadConnectBTDevice constructor(device: BluetoothDevice, private val context:Context) :
-    Thread() {
-    private var bluetoothSocket: BluetoothSocket? = null
 
 
-    private var myUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-
-    init {
-        try {
-            bluetoothSocket = device.createRfcommSocketToServiceRecord(myUUID)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    override fun run() {
-        var success = false
-        try {
-            bluetoothSocket!!.connect()
-            success = true
-        } catch (e: IOException){
-            e.printStackTrace()
-            Log.e("newBT thread", "Couldn't connect to your device")
-//            Toast.makeText(context, "Couldn't connect to your device", Toast.LENGTH_SHORT).show()
-
-            try {
-                bluetoothSocket!!.close()
-            } catch (e: IOException){
-                e.printStackTrace()
-            }
-        }
-        if (success){
-//            Toast.makeText(context, "Connection Success!", Toast.LENGTH_SHORT).show()
-            Log.e("newBT thread connectt","Connection Success!")
-            bluetoothSocket.let { BluetoothSocketHolder.setBluetoothSocket(it!!) }
-        }
-
-    }
-
-    fun cancel() {
-        try {
-            bluetoothSocket!!.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-}

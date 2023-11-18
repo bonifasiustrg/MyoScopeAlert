@@ -121,6 +121,57 @@ fun RecordScreen(navController: NavHostController) {
     val isConnect = remember {
         mutableStateOf(false)
     }
+    val appContext = context.getActivity()
+    val bluetooth: Bluetooth = Bluetooth(context)
+
+
+    @Suppress("DEPRECATION") val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+    if (checkBtPermission(context)){
+        if (bluetoothAdapter.isEnabled){
+            val connectedDevices = bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener{
+                override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                    if (profile == BluetoothProfile.HEADSET){
+                        val devices = proxy.connectedDevices
+                        for (device in devices){
+                            if (checkBtPermission(context)){
+                                val deviceName = device.name
+//                                    binding.deviceName.text = deviceName
+                                Toast.makeText(context, deviceName, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                    bluetoothAdapter.closeProfileProxy(profile, proxy)
+                }
+
+                override fun onServiceDisconnected(profile: Int) {
+//                        binding.deviceName.text = "Disconnected"
+
+                    Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
+
+
+                }
+            }, BluetoothProfile.HEADSET)
+
+
+            LaunchedEffect(connectedDevices) {
+                bluetoothViewModel.bluetoothName.value?.let { name ->
+                    Toast.makeText(context, name, Toast.LENGTH_SHORT).show()
+                    // Lakukan hal-hal lain yang perlu Anda lakukan dengan 'name'
+                }
+            }
+        } else {
+            // Check if not null
+            appContext?.let {
+                bluetooth.turnOnWithPermission(it)
+                Log.e("turn on bt", "call func")
+                // With user permission
+            }
+            Log.e("newBT check permission", "Bluetooth is not enabled")
+        }
+    }
+
+    val scope = rememberCoroutineScope()
 
     Column(
         Modifier
@@ -211,55 +262,7 @@ fun RecordScreen(navController: NavHostController) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        if (checkBtPermission(context)){
-            if (bluetoothAdapter.isEnabled){
-                val connectedDevices = bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener{
-                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-                        if (profile == BluetoothProfile.HEADSET){
-                            val devices = proxy.connectedDevices
-                            for (device in devices){
-                                if (checkBtPermission(context)){
-                                    val deviceName = device.name
-//                                    binding.deviceName.text = deviceName
-                                    Toast.makeText(context, deviceName, Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                        bluetoothAdapter.closeProfileProxy(profile, proxy)
-                    }
 
-                    override fun onServiceDisconnected(profile: Int) {
-//                        binding.deviceName.text = "Disconnected"
-                        Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
-
-                    }
-                }, BluetoothProfile.HEADSET)
-
-
-                LaunchedEffect(connectedDevices) {
-                    bluetoothViewModel.bluetoothName.value?.let { name ->
-                        Toast.makeText(context, name, Toast.LENGTH_SHORT).show()
-                        // Lakukan hal-hal lain yang perlu Anda lakukan dengan 'name'
-                    }
-                }
-//                if (connectedDevices){
-//                    bluetoothViewModel.bluetoothName.observe(viewLifecycleOwner, Observer {
-//                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-////                        binding.deviceName.text = it
-//
-//                    })
-//                } else {
-//                    Toast.makeText(context, "No Device Connected", Toast.LENGTH_SHORT).show()
-//
-////                    binding.deviceName.text = "No Device Connected"
-//                }
-            } else {
-                Log.e("newBT check permission", "Bluetooth is not enabled")
-            }
-        }
-
-        val scope = rememberCoroutineScope()
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             if (!isRecording.value){
 
@@ -344,8 +347,6 @@ fun RecordScreen(navController: NavHostController) {
             Log.e("newBT show", "$fileList")
             val ctx = LocalContext.current
             fileListDir(ctx, fileList)
-            // Now fileList contains only the first file in the specified directory
-//            val filename: String? = fileList.firstOrNull()?.name
             val filename: String? = fileList.firstOrNull()?.name
             Log.e("newBT showresult", filename.toString())
             Spacer(modifier = Modifier.height(16.dp))
@@ -378,10 +379,4 @@ fun RecordScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.weight(1f))
         ModalBottomSheetM3(context, isConnect, stopWatch, isStopwatch, isRecording, bluetoothViewModel)
     }
-}
-
-
-
-fun logMsg(msg: String) {
-    Log.d("connection receive", msg)
 }

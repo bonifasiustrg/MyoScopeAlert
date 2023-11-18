@@ -123,6 +123,8 @@ fun FileDetail(
     val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
     val filePath = "${musicDir.absolutePath}/$filename"
     Log.e("newBT save", "$filePath")
+    var isPredicting by remember { mutableStateOf(false) }
+
 
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
@@ -266,7 +268,6 @@ fun FileDetail(
             fontFamily = poppins
 
         )
-        var isPredicting by remember { mutableStateOf(false) }
         val predictResponse by viewModel.predictResponse.collectAsState()
 //        LaunchedEffect(predictResponse) {
 //            // Set isPredicting menjadi false saat nilai predictResponse berubah

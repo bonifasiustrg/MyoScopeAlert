@@ -2,6 +2,8 @@ package com.apicta.myoscopealert.ui.screen
 
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.models.FileModel
 import com.apicta.myoscopealert.ui.theme.greenIcon
 import com.apicta.myoscopealert.ui.theme.orangeIcon
 import com.apicta.myoscopealert.ui.theme.poppins
@@ -71,9 +74,8 @@ fun HomeScreen(navController: NavHostController) {
     }
 
     var expanded by remember { mutableStateOf(false) }
-
     val filePath =
-        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/recordwave1.wav"
+        "/storage/emulated/0/Android/data/com.apicta.qmyoscopealert/files/Recordings/recordwave1.wav"
     Column(
         modifier = Modifier
             .fillMaxSize()

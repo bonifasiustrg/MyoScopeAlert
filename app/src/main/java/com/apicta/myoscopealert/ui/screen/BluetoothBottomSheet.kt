@@ -1,8 +1,11 @@
 package com.apicta.myoscopealert.ui.screen
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
@@ -68,6 +71,7 @@ import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
 import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
 import com.apicta.myoscopealert.utils.ThreadConnected
+import com.apicta.myoscopealert.utils.checkBtPermission
 import com.psp.bluetoothlibrary.Bluetooth
 import kotlinx.coroutines.launch
 
@@ -83,24 +87,11 @@ fun ColumnScope.ModalBottomSheetM3(
 ) {
     // Bluetooth object
     val bluetooth: Bluetooth? = Bluetooth(ctx)
-    val appContext = ctx.getActivity()
-//    Log.e("turn on bt", "context $appContext")
-//    // check bluetooth is supported or not
-//    Log.d("newBT BTBottomSheet", "Bluetooth is supported " + Bluetooth.isBluetoothSupported())
-//    if (bluetooth != null) {
-//        Log.d("newBT BTBottomSheet", "Bluetooth is on " + bluetooth.isOn())
-//    }
-//    Log.d("newBT BTBottomSheet", "Bluetooth is discovering " + (bluetooth?.isDiscovering() ?: "no bt discovered"))
 
     var openBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(/*skipPartiallyExpanded = true*/)
-    // Check if not null
-    appContext?.let {
-        bluetooth!!.turnOnWithPermission(it)
-        Log.e("turn on bt", "call func")
-        // With user permission
-    }
+
     Button(
         onClick = { openBottomSheet = true },
         colors = ButtonDefaults.buttonColors(
@@ -139,7 +130,6 @@ fun ColumnScope.ModalBottomSheetM3(
                     }
                 },
                 bluetooth = bluetooth,
-                appContext = appContext,
                 isConnect,
                 stopWatch,
                 isStopwatch,
@@ -156,7 +146,6 @@ fun ColumnScope.ModalBottomSheetM3(
 fun BottomSheetContent(
     onHideButtonClick: () -> Unit,
     bluetooth: Bluetooth?,
-    appContext: AppCompatActivity?,
     isConnect: MutableState<Boolean>,
     stopWatch: StopWatch,
     isStopwatch: MutableState<Boolean>,
@@ -333,10 +322,6 @@ fun BottomSheetContent(
 //                },
                 onDismiss = { isDialogVisible.value = false },
                 isDialogVisible = isDialogVisible,
-                isConnect = isConnect,
-                stopWatch,
-                isStopwatch,
-                isRecording,
                 context,
                 bluetoothViewModel,
                 onHideButtonClick
@@ -392,11 +377,13 @@ fun BottomSheetContent(
 
 
         Button(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = onHideButtonClick
         ) {
             Text(text = "Kembali")
         }
+        
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -458,10 +445,6 @@ fun DeviceSelectionDialog(
 //    onDeviceSelected: (String) -> Unit,
     onDismiss: () -> Unit,
     isDialogVisible: MutableState<Boolean>,
-    isConnect: MutableState<Boolean>,
-    stopWatch: StopWatch, // Parameter stopWatch ditambahkan di sini
-    isStopwatch: MutableState<Boolean>, // Parameter isStopwatch ditambahkan di sini
-    isRecording: MutableState<Boolean>, // Parameter isRecording ditambahkan di sini
     context: Context,
     bluetoothViewModel: BluetoothViewModel,
     onHideButtonClick: () -> Unit,
@@ -477,13 +460,6 @@ fun DeviceSelectionDialog(
             Log.e("newBT alert", listPairedBluetoothDevices.toString())
             LazyColumn {
                 items(items = listPairedBluetoothDevices) { /*pairedDevice*/device ->
-//                    val device =
-//                        pairedDevice?.split("\n".toRegex())!!.dropLastWhile { it.isEmpty() }
-//                            .toTypedArray()
-//                    val deviceBt = listPairedBluetoothDevices.toTypedArray()
-//                    Log.e("device", device.toString())
-//                    Log.e("device modr", "$device -- ${device[0]} -- ${device[1]}")
-
                     ListItem(
                         modifier = Modifier.clickable {
 
@@ -510,15 +486,9 @@ fun DeviceSelectionDialog(
                             ).show()
                             threadConnectBTDevice = ThreadConnectBTDevice(device!!, context)
                             threadConnectBTDevice.start()
-                            Log.e("newBT thread connect", "onClick: $threadConnectBTDevice")
+                            Log.e("newBT thread connect", "onClick: ${threadConnectBTDevice.name}")
                             bluetoothViewModel.setBluetoothName(device.name)
 
-//                            isConnect.value = true
-//                            if (isConnect.value) {
-//                                stopWatch.start()
-//                                isRecording.value = true
-//                                isStopwatch.value = true
-//                            }
                             onDismiss()
                             onHideButtonClick()
                         },
