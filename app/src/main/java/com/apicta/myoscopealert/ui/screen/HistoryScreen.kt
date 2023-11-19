@@ -2,78 +2,57 @@ package com.apicta.myoscopealert.ui.screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarColors
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.audiopicker.FilePickerDialog
 import com.apicta.myoscopealert.audiopicker.PickerConfig
 import com.apicta.myoscopealert.audiopicker.PickerType
 import com.apicta.myoscopealert.audiopicker.PickerUtils.printToLog
-import com.apicta.myoscopealert.ui.theme.cardbg
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
-import com.apicta.myoscopealert.ui.theme.terniary
+import com.apicta.myoscopealert.ui.viewmodel.AudioViewModel
+import com.apicta.myoscopealert.ui.viewmodel.UIEvents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun HistoryScreen(navController: NavHostController) {
+fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) {
+    val viewModel: AudioViewModel = hiltViewModel()
+
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val items = remember {
@@ -182,10 +161,22 @@ fun HistoryScreen(navController: NavHostController) {
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            FileListScreen(navController, query)
+            FileListScreen(navController, query,progress = viewModel.progress,
+                onProgress = { viewModel.onUiEvents(UIEvents.SeekTo(it)) },
+                isAudioPlaying =viewModel.isPlaying,
+                audiList = viewModel.audioList,
+                currentPlayingAudio =viewModel.currentSelectedAudio,
+                onStart = {
+                    viewModel.onUiEvents(UIEvents.PlayPause)
+                },
+                onItemClick = {
+                    viewModel.onUiEvents(UIEvents.SelectedAudioChange(it))
+                        onServiceStart()
+                },
+                onNext = {
+                    viewModel.onUiEvents(UIEvents.SeekToNext)
+                })
             if (isShowing.value) FilePickerDialog(
                 config = config,
                 onDismissDialog = {

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -86,6 +87,7 @@ import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
 import com.apicta.myoscopealert.utils.ThreadConnected
 import com.apicta.myoscopealert.utils.checkBtPermission
 import com.apicta.myoscopealert.utils.convertIntArrayToWav
+import com.apicta.myoscopealert.utils.fileListDir
 import com.apicta.myoscopealert.utils.getCurrentTime
 import com.psp.bluetoothlibrary.Bluetooth
 import com.psp.bluetoothlibrary.BluetoothListener
@@ -95,18 +97,22 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.UUID
+import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun RecordScreen(navController: NavHostController) {
     val bluetoothViewModel: BluetoothViewModel = viewModel()
     var myThreadConnected: ThreadConnected? = null
+    var timeCode by Delegates.notNull<Long>()
 
     val context = LocalContext.current
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
 
-    var title by rememberSaveable { mutableStateOf("defaultname")}
-    var formatedTitle = title
+    var title by rememberSaveable { mutableStateOf("RecordName")}
+    var formatedTitle by remember {
+        mutableStateOf(title)
+    }
     var isErrorTitle by rememberSaveable { mutableStateOf(false)}
 
     var showResult by remember { mutableStateOf(false) }
@@ -123,7 +129,9 @@ fun RecordScreen(navController: NavHostController) {
     }
     val appContext = context.getActivity()
     val bluetooth: Bluetooth = Bluetooth(context)
-
+    var isLoad by remember {
+        mutableStateOf(false)
+    }
 
     @Suppress("DEPRECATION") val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -230,11 +238,12 @@ fun RecordScreen(navController: NavHostController) {
 
 
 //        if (showResult) {
-////                ProcessWavFileData(filePath, context)
 //            SetUpChart(ctx = context)
 //        } else {
 //            SetUpChart(context)
 //        }
+        val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+        val filePath = "${musicDir.absolutePath}/1700032300811-defaultnamefff.wav"
         if (/*isConnect.value && !showResult*/isRecording.value && isStopwatch.value) {
             Column {
                 LottieAnimation(
@@ -245,6 +254,14 @@ fun RecordScreen(navController: NavHostController) {
                     iterations = LottieConstants.IterateForever,
                 )
             }
+        } else if (showResult) {
+//            val filePath = "${musicDir.absolutePath}/$formatedTitle"
+
+            ProcessWavFileData2(filePath, context)
+        } else if (isLoad) {
+            CircularProgressIndicator(modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 24.dp))
         } else {
             SetUpChart(context)
 
@@ -256,31 +273,36 @@ fun RecordScreen(navController: NavHostController) {
         Text(
             text = stopWatch.formattedTime,
             fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
+            fontSize = 48.sp,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 16.dp)
         )
 
-
+        timeCode = System.currentTimeMillis()
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             if (!isRecording.value){
 
                 IconButton(
                     onClick = {
+                        stopWatch.reset()
                         if (title != "") {
                             val socket = BluetoothSocketHolder.getBluetoothSocket()
 
                             if (socket != null){
-                                formatedTitle = "$title-${System.currentTimeMillis()}.wav"
+                                formatedTitle = "$title-$timeCode.wav"
+                                Log.e("filename0", formatedTitle)
+
                                 myThreadConnected = ThreadConnected(socket, true, context, formatedTitle)
                                 myThreadConnected!!.start()
                                 isConnect.value = true
                                 stopWatch.start()
                                 isRecording.value = true
                                 isStopwatch.value = true
-                                Log.e("newBT", "start Thread connected")
-                                Toast.makeText(context, "start Thread connected", Toast.LENGTH_LONG).show()
+                                Log.e("newBT", "Start Record Heartbeat")
+                                Toast.makeText(context, "Start Record Heartbeat", Toast.LENGTH_LONG).show()
                             } else {
                                 Log.e("newBT", "Connect to  your device first!")
                                 Toast.makeText(context, "Connect to  your device first!", Toast.LENGTH_LONG).show()
@@ -288,7 +310,7 @@ fun RecordScreen(navController: NavHostController) {
                         } else isErrorTitle = true
                     },
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(86.dp)
                         .clip(shape = CircleShape),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = Color(0xFF72D99D)
@@ -315,17 +337,18 @@ fun RecordScreen(navController: NavHostController) {
 
 
                         scope.launch {
+                            isLoad = true
                             myThreadConnected?.cancel()
-//                    stopWatch.reset()
                             delay(2000)
                             showResult = true
+                            isLoad = false
                         }
 
 
 
                     },
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(86.dp)
                         .clip(shape = CircleShape),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = Color(0xFF72D99D)
@@ -343,24 +366,32 @@ fun RecordScreen(navController: NavHostController) {
         }
 
         if (showResult) {
-            val fileList = ArrayList<FileModel>()
-            Log.e("newBT show", "$fileList")
-            val ctx = LocalContext.current
-            fileListDir(ctx, fileList)
-            val filename: String? = fileList.firstOrNull()?.name
-            Log.e("newBT showresult", filename.toString())
+            Log.e("newBT showresult", formatedTitle.toString())
             Spacer(modifier = Modifier.height(16.dp))
             val date = getCurrentTime()
             Text(text = "Recorded result", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(text = "Filename       : $filename")
+            Text(text = "Filename       : $formatedTitle")
+            Log.e("filename1", formatedTitle)
+
             Text(text = "Last modified  : $date")
             Text(text = "Duration       : ${stopWatch.formattedTime}")
             Spacer(modifier = Modifier.height(16.dp))
 
+            var isButtonEnabled by remember { mutableStateOf(false) }
+            val textLoad = if (isButtonEnabled) "Lihat Detail" else "Processing audio..."
+
+            LaunchedEffect(Unit) {
+                delay((25000)/*.random().toLong()*/)
+                isButtonEnabled = true
+            }
+//            val scope = rememberCoroutineScope()\
             Button(
+                enabled = isButtonEnabled,
                 onClick = {
 //                    val fm = "$title-${System.currentTimeMillis()}.wav"
-                    navController.navigate("detail/$filename/$date")
+                    // Delay for 4 to 8 seconds (4000 to 8000 milliseconds)
+                    Log.e("filename2", formatedTitle)
+                    navController.navigate("detail/$formatedTitle/$date")
 
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = primary,
@@ -368,13 +399,19 @@ fun RecordScreen(navController: NavHostController) {
                 ),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text(text = "Lihat detail", fontWeight = FontWeight.Bold)
+                Text(text = /*"Lihat detail"*/textLoad, fontWeight = FontWeight.Bold)
                 Icon(
                     painter = painterResource(id = R.drawable.ic_next_arrow),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
             }
+
+
+        } else if (isLoad) {
+            CircularProgressIndicator(modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 56.dp))
         }
         Spacer(modifier = Modifier.weight(1f))
         ModalBottomSheetM3(context, isConnect, stopWatch, isStopwatch, isRecording, bluetoothViewModel)

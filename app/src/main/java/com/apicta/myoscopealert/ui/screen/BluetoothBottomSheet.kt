@@ -97,7 +97,9 @@ fun ColumnScope.ModalBottomSheetM3(
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xBFFFC107)
         ),
-        modifier = Modifier.align(Alignment.CenterHorizontally)
+        modifier = Modifier
+            .align(Alignment.CenterHorizontally)
+            .padding(bottom = 16.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.BluetoothSearching,
@@ -106,8 +108,8 @@ fun ColumnScope.ModalBottomSheetM3(
                 .size(32.dp)
                 .padding(end = 4.dp),
             tint = primary
-
         )
+        Text(text = "Connect Device", color = Color.Black)
     }
 
     if (openBottomSheet) {

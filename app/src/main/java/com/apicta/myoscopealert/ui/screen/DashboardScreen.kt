@@ -58,7 +58,8 @@ import kotlinx.coroutines.runBlocking
 @Composable
 fun DashboardScreen(
     dataStoreManager: DataStoreManager,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    onServiceStart: () -> Unit
 ) {
     val token by dataStoreManager.getAuthToken.collectAsState(initial = "")
     Log.e("Dashboard token classtate", "Stored Token: $token")
@@ -130,7 +131,8 @@ fun DashboardScreen(
         bottomBar = { BottomBar(navController = navController) }
         ) {
         Surface(modifier = Modifier.padding(it)) {
-            MainNavGraph(navController = navController, dataStoreManager = dataStoreManager)
+            MainNavGraph(navController = navController, dataStoreManager = dataStoreManager,
+                { onServiceStart() })
         }
     }
 }
@@ -212,9 +214,4 @@ fun RowScope.AddItem(
 @Preview
 @Composable
 fun DashboardScreenPrev() {
-    DashboardScreen(
-        navController = rememberNavController(), dataStoreManager = DataStoreManager(
-            LocalContext.current
-        )
-    )
 }

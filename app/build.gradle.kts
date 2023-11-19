@@ -64,6 +64,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     /*BLUETOOTH*/
@@ -114,6 +116,17 @@ dependencies {
 
     val lottieVersion = "6.1.0"
     implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+
+    // Media Player
+    val media3_version = "1.1.0"
+    implementation("androidx.media3:media3-datasource-okhttp:$media3_version")
+    implementation("androidx.media3:media3-exoplayer:$media3_version")
+    implementation("androidx.media3:media3-ui:$media3_version")
+    implementation("androidx.media3:media3-session:$media3_version")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0") // Needed MediaSessionCompat.Token
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation ("com.google.accompanist:accompanist-permissions:0.30.0")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")

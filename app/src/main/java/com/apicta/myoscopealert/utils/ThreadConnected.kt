@@ -58,7 +58,7 @@ class ThreadConnected(
             val elapsedTime = currentTime - startTime
             val elapsedTimeFloat = millisToSeconds(elapsedTime)
 
-            if (elapsedTimeFloat >= 15.0){
+            if (elapsedTimeFloat >= 30.0){
                 startTime = currentTime
                 Log.e("newBT " + TAG, "pcgArray: ${ArrayReceiver.pcgArray}")
                 Log.e("newBT " + TAG, "nilai maksimum: ${ArrayReceiver.pcgArray.maxOrNull()}")

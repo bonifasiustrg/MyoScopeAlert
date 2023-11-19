@@ -14,8 +14,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun RootNavigationGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
+fun RootNavigationGraph(navController: NavHostController, dataStoreManager: DataStoreManager, onServiceStart: () -> Unit) {
     val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
     Log.e("token app navigation", storedToken.toString())
 
@@ -33,7 +34,7 @@ fun RootNavigationGraph(navController: NavHostController, dataStoreManager: Data
         authNavGraph(navController = navController, dataStoreManager = dataStoreManager)
         composable(route = Graph.MAIN) {
 //            HomeScreen()
-            DashboardScreen(dataStoreManager = dataStoreManager)
+            DashboardScreen(dataStoreManager = dataStoreManager, onServiceStart = {onServiceStart()})
         }
     }
 }

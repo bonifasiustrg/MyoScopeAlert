@@ -20,7 +20,7 @@ import com.apicta.myoscopealert.ui.screen.RecordScreen
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager) {
+fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreManager, onServiceStart: () -> Unit) {
     NavHost(
         navController = navController,
         route = Graph.MAIN,
@@ -78,7 +78,7 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
                 }
             }
             ) {
-            HistoryScreen(navController = navController/*, storedToken*/)
+            HistoryScreen(navController = navController/*, storedToken*/, onServiceStart)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)

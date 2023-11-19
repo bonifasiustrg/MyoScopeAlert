@@ -8,9 +8,13 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
+import com.apicta.myoscopealert.models.FileModel
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -160,4 +164,36 @@ fun checkBtPermission(context: Context): Boolean {
     }
     val check = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
     return check == PackageManager.PERMISSION_GRANTED
+}
+
+fun fileListDir(context:Context, fileList: ArrayList<FileModel>) {
+    val resolver = context.contentResolver
+    val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    val projection = arrayOf(MediaStore.Audio.Media.DISPLAY_NAME, MediaStore.Audio.Media.DATE_MODIFIED)
+    val selection = MediaStore.Audio.Media.DATA + " like ? "
+
+    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+    val selectionArgs = arrayOf("%${musicDir.absolutePath}%")
+//    val selectionArgs = arrayOf("%/storage/emulated/0/Music/%")
+
+    val sortOrder = MediaStore.Audio.Media.DATE_MODIFIED + " DESC"
+
+    val cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder)
+
+    cursor?.use {
+        val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+        val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(nameColumn)
+            val date = cursor.getLong(dateColumn)
+
+            if (name.endsWith(".wav")) fileList.add(FileModel(name, date))
+        }
+    }
+
+    Log.e("newBT save", "$uri")
+
+    Log.e("newBT filelist", "$musicDir")
+    Log.e("newBT filelist2", "$selectionArgs")
 }

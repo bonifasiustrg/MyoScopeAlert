@@ -1,19 +1,14 @@
 package com.apicta.myoscopealert.ui.screen
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,110 +17,126 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.R
-import com.apicta.myoscopealert.models.FileModel
-import com.apicta.myoscopealert.ui.theme.cardbg
+import com.apicta.myoscopealert.models.Audio
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.greenIcon
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.redIcon
-import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
-@SuppressLint("Range")
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun FileListScreen(navController: NavHostController, query: String) {
-    val fileList = ArrayList<FileModel>()
-
-    val context = LocalContext.current
-
-    fileListDir(context, fileList)
-
-
-
-//    val audioDirPath = "/storage/emulated/0/Music/" // Specify the desired path
+fun ColumnScope.FileListScreen(
+    navController: NavHostController,
+    query: String, progress: Float,
+    onProgress: (Float) -> Unit,
+    isAudioPlaying: Boolean,
+    currentPlayingAudio: Audio,
+    audiList: List<Audio>,
+    onStart: () -> Unit,
+    onItemClick: (Int) -> Unit,
+    onNext: () -> Unit,
+) {
+    var openController by remember {
+        mutableStateOf(false)
+    }
+    var formattedDate by remember {
+        mutableStateOf("")
+    }
+//    val fileList = ArrayList<FileModel>()
+//    val context = LocalContext.current
+//    fileListDir(context, fileList)
 //
-//    File(audioDirPath).walk().forEach {
-//        if (it.absolutePath.endsWith(".wav")) fileList.add(FileModel(it.name, it.lastModified()))
-//    }
-
-
-    Log.e("filelist", "$fileList")
-//    Log.e("filelist", "$wavFileNames")
-//    Log.e("filelist", audioDirPath)
-//    if (query.isEmpty())
-//        fileList
-//    else
-//        fileList.filter { it.audioDirPath.lowercase().contains(query.lowercase()) }
+//    Log.e("filelist", "$fileList")
     LazyColumn(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
 
-        items(/*wavFileNames*/fileList) { file ->
+        itemsIndexed(/*wavFileNames*/audiList) { index, file ->
             Row(
                 Modifier
                     .fillMaxWidth()
-//            .shadow(elevation = 4.dp, spotColor = Color.Gray, shape = RoundedCornerShape(16.dp))
                     .clip(shape = RoundedCornerShape(16.dp))
-//                    .background(color = terniary)
 
                     .background(
                         color = cardsecondary,
                         shape = RoundedCornerShape(16.dp)
                     )
-//                    .background(
-//                        color = Color(0xC1FFFFFF)
-//                    )
+                    .clickable {
+                        navController.navigate("detail/${file.displayName}/${formattedDate}")
+                    }
                     .padding(start = 16.dp, end = 16.dp)
-//            .padding(8.dp)
             ) {
-                val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+//                Text(text = file.title, modifier = Modifier.clickable {
+//                    onItemClick(index)
+//                })
+//                Text(text = file.data, modifier = Modifier.clickable {
+//                    onItemClick(index)
+//                })
+//                Spacer(modifier = Modifier.height(16.dp))
 
-                val formattedDate = file.date?.let { Date(it) }?.let { dateFormat.format(it) }
+//                val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+//
+//                val formattedDate = file.dateModified?.let { Date(it) }?.let { dateFormat.format(it) }
 
+
+                val timestamp: Long = file.dateModified * 1000L // Assuming the timestamp is in seconds, so multiply by 1000 to convert to milliseconds
+
+                val date = Date(timestamp)
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                formattedDate = formatter.format(date)
                 val heartStatus by remember {
                     mutableStateOf(true)
                 }
                 Column(Modifier.weight(2f)) {
-                    Text(text = file.name.toString(), fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
-                    
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(
+                        text = file.title.toString(),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
                         if (formattedDate != null) {
                             Text(text = formattedDate, fontSize = 12.sp)
                         }
@@ -153,7 +164,7 @@ fun FileListScreen(navController: NavHostController, query: String) {
                                     color = Color.White,
                                     fontFamily = poppins
                                 )
-                            }  else {
+                            } else {
                                 Text(
                                     text = "MI",
                                     fontSize = 10.sp,
@@ -171,50 +182,10 @@ fun FileListScreen(navController: NavHostController, query: String) {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-//                Button(
-//                    onClick = {
-//                        navController.navigate("detail/${file.name}/${formattedDate}")
-//                    }, colors = ButtonDefaults.buttonColors(
-//                        containerColor = primary,
-//                        contentColor = Color.White
-//                    ),
-//                    modifier = Modifier.align(Alignment.CenterVertically)
-//                ) {
-//                    Text(text = "Detail", fontWeight = FontWeight.Bold)
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_next_arrow),
-//                        contentDescription = null,
-//                        modifier = Modifier.size(28.dp),
-//                        tint = Color.White
-//                    )
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_next_arrow),
-//                        contentDescription = null,
-//                        modifier = Modifier.size(28.dp),
-//                        tint = Color.White
-//                    )
-//                }
-
-//                IconButton(
-//                    onClick = {
-//                        navController.navigate("detail/${file.name}/${formattedDate}")
-//                    }, colors = IconButtonDefaults.iconButtonColors(
-//                        containerColor = primary,
-//                        contentColor = terniary
-//                    ),
-//                    modifier = Modifier.align(Alignment.CenterVertically)
-//                ) {
-////                    Text(text = "Detail", fontWeight = FontWeight.Bold)
-//                    Icon(
-//                        imageVector = Icons.Filled.ChevronRight,
-//                        contentDescription = null,
-//                        modifier = Modifier.size(28.dp)
-//                    )
-//                }
-
                 IconButton(
                     onClick = {
-                        navController.navigate("detail/${file.name}/${formattedDate}")
+                        openController = true
+                        onItemClick(index)
                     }, colors = IconButtonDefaults.iconButtonColors(
                         containerColor = primary,
                         contentColor = terniary
@@ -222,9 +193,11 @@ fun FileListScreen(navController: NavHostController, query: String) {
                     modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ChevronRight,
+                        imageVector = Icons.Filled.PlayArrow,
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp).align(Alignment.CenterVertically)
+                        modifier = Modifier
+                            .size(32.dp)
+                            .align(Alignment.CenterVertically)
                     )
                 }
 
@@ -234,38 +207,159 @@ fun FileListScreen(navController: NavHostController, query: String) {
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-
-
+    if (openController) {
+        BottomBarPlayer(
+            progress = progress,
+            onProgress = onProgress,
+            audio = currentPlayingAudio,
+            onStart = onStart,
+            onNext = onNext,
+            isAudioPlaying = isAudioPlaying
+        )
+    }
 }
 
-fun fileListDir(context:Context, fileList: ArrayList<FileModel>) {
-    val resolver = context.contentResolver
-    val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-    val projection = arrayOf(MediaStore.Audio.Media.DISPLAY_NAME, MediaStore.Audio.Media.DATE_MODIFIED)
-    val selection = MediaStore.Audio.Media.DATA + " like ? "
+@Composable
+fun BottomBarPlayer(
+    progress: Float,
+    onProgress: (Float) -> Unit,
+    audio: Audio,
+    isAudioPlaying: Boolean,
+    onStart: () -> Unit,
+    onNext: () -> Unit,
+) {
+    BottomAppBar(
+        content = {
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ArtistInfo(
+                        audio = audio,
+                        modifier = Modifier.weight(1f),
+                    )
+                    MediaPlayerController(
+                        isAudioPlaying = isAudioPlaying,
+                        onStart = onStart,
+                        onNext = onNext
+                    )
+                    Slider(
+                        value = progress,
+                        onValueChange = { onProgress(it) },
+                        valueRange = 0f..100f
+                    )
 
-    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-    val selectionArgs = arrayOf("%${musicDir.absolutePath}%")
-//    val selectionArgs = arrayOf("%/storage/emulated/0/Music/%")
+                }
+            }
+        }
+    )
+}
 
-    val sortOrder = MediaStore.Audio.Media.DATE_MODIFIED + " DESC"
+@Composable
+fun MediaPlayerController(
+    isAudioPlaying: Boolean,
+    onStart: () -> Unit,
+    onNext: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .height(56.dp)
+            .padding(4.dp)
+    ) {
+        PlayerIconItem(
+            icon = if (isAudioPlaying) Icons.Default.Pause
+            else Icons.Default.PlayArrow
+        ) {
+            onStart()
+        }
+        Spacer(modifier = Modifier.size(8.dp))
+        Icon(
+            imageVector = Icons.Default.SkipNext,
+            modifier = Modifier.clickable {
+                onNext()
+            },
+            contentDescription = null
+        )
+    }
+}
 
-    val cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder)
-
-    cursor?.use {
-        val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
-        val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
-
-        while (cursor.moveToNext()) {
-            val name = cursor.getString(nameColumn)
-            val date = cursor.getLong(dateColumn)
-
-            if (name.endsWith(".wav")) fileList.add(FileModel(name, date))
+@Composable
+fun ArtistInfo(
+    modifier: Modifier = Modifier,
+    audio: Audio,
+) {
+    Row(
+        modifier = modifier.padding(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PlayerIconItem(
+            icon = Icons.Default.MusicNote,
+            borderStroke = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        ) {}
+        Spacer(modifier = Modifier.size(4.dp))
+        Column {
+            audio.title?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1
+                )
+            }
+            Spacer(modifier = Modifier.size(4.dp))
+            audio.artist?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Normal,
+                    style = MaterialTheme.typography.bodySmall,
+                    overflow = TextOverflow.Clip,
+                    maxLines = 1
+                )
+            }
         }
     }
+}
 
-    Log.e("newBT save", "$uri")
-
-    Log.e("newBT filelist", "$musicDir")
-    Log.e("newBT filelist2", "$selectionArgs")
+@Composable
+fun PlayerIconItem(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    borderStroke: BorderStroke? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit,
+) {
+    Surface(
+        shape = CircleShape,
+        border = borderStroke,
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable {
+                onClick()
+            },
+        contentColor = color,
+        color = backgroundColor
+    ) {
+        Box(
+            modifier = Modifier.padding(4.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null
+            )
+        }
+    }
 }
