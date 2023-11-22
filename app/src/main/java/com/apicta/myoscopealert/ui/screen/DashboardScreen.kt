@@ -59,7 +59,8 @@ import kotlinx.coroutines.runBlocking
 fun DashboardScreen(
     dataStoreManager: DataStoreManager,
     navController: NavHostController = rememberNavController(),
-    onServiceStart: () -> Unit
+    onServiceStart: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val token by dataStoreManager.getAuthToken.collectAsState(initial = "")
     Log.e("Dashboard token classtate", "Stored Token: $token")
@@ -128,9 +129,9 @@ fun DashboardScreen(
 //    }
 
     Scaffold(
-        bottomBar = { BottomBar(navController = navController) }
+        bottomBar = { BottomBar(navController = navController, modifier = modifier) }
         ) {
-        Surface(modifier = Modifier.padding(it)) {
+        Surface(modifier = modifier.padding(it)) {
             MainNavGraph(navController = navController, dataStoreManager = dataStoreManager,
                 { onServiceStart() })
         }
@@ -138,7 +139,7 @@ fun DashboardScreen(
 }
 
 @Composable
-fun BottomBar(navController: NavHostController) {
+fun BottomBar(navController: NavHostController, modifier:Modifier) {
     val screens = listOf(
         BottomBarScreen.Home,
         BottomBarScreen.Record,
@@ -154,7 +155,7 @@ fun BottomBar(navController: NavHostController) {
     val bottomBarDestination = screens.any { it.route == currentDestination?.route }
     if (bottomBarDestination) {
         NavigationBar(
-            modifier = Modifier.clip(
+            modifier = modifier.clip(
                 shape = RoundedCornerShape(
                     topStart = 16.dp,
                     topEnd = 16.dp

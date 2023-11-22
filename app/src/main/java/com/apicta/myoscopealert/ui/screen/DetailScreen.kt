@@ -102,6 +102,7 @@ fun FileDetail(
     filename: String?,
     fileDate: String?,
     navController: NavHostController,
+    modifier: Modifier = Modifier
 ) {
     val viewModel: DiagnosesViewModel = hiltViewModel()
     val storedToken by viewModel.userToken.collectAsState()
@@ -112,8 +113,7 @@ fun FileDetail(
 
     var isBack by remember { mutableStateOf(false) }
 
-//    val filePath =
-//        "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
+//    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
 
     val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
     val filePath = "${musicDir.absolutePath}/$filename"
@@ -135,7 +135,7 @@ fun FileDetail(
 //    ).value
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
 //            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
@@ -145,12 +145,12 @@ fun FileDetail(
 
 
         Column(
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .background(primary)
                 .padding(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
 
             Text(
                 text = "$filename",
@@ -161,13 +161,13 @@ fun FileDetail(
             Text(text = "Dokter      : Saparudin ", color = Color.White)
             Text(text = "Tanggal    : $fileDate", color = Color.White)
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = modifier.height(24.dp))
 
         Text(
             text = "Grafik Detak Jantung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold,
             fontFamily = poppins
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = modifier.height(8.dp))
 
         var isZooming by remember {
             mutableStateOf(false)
@@ -182,25 +182,25 @@ fun FileDetail(
                 isZooming = !isZooming
                 Log.e("zoom", isZooming.toString())
             },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
             Icon(
                 imageVector = if (isZooming) Icons.Default.ZoomOut else Icons.Default.ZoomIn,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp)
+                modifier = modifier.size(24.dp)
             )
         }
 //        LinearProgressIndicator(
 //            progress = animatedProgress,
-//            modifier = Modifier
+//            modifier = modifier
 //                .fillMaxWidth()
 //                .height(24.dp)
 //                .padding(horizontal = 28.dp),
 //            color = Color.Blue.copy(alpha = 0.2f)
 //        )
-        Button(
-            shape = CircleShape,
-            onClick = {
+//        Button(
+//            shape = CircleShape,
+//            onClick = {
 //                // Mulai atau berhenti memutar audio
 //                if (isPlaying.value) {
 //                    if (mediaPlayer.isPlaying) {
@@ -230,16 +230,16 @@ fun FileDetail(
 //                    }
 //                }
 //                isPlaying.value = !isPlaying.value
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Icon(
-                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
+//            },
+//            modifier = modifier.padding(top = 16.dp)
+//        ) {
+//            Icon(
+//                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
+//                contentDescription = null,
+//                modifier = modifier.size(32.dp)
+//            )
+//        }
+//        Spacer(modifier = modifier.height(4.dp))
 
         val isVerified by remember {
             mutableStateOf(true)
@@ -248,12 +248,12 @@ fun FileDetail(
             colors = CardDefaults.cardColors(
                 containerColor = terniary
             ),
-            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             CardContent(if (filename != "Record17Oct.wav") isVerified else false)
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = modifier.height(6.dp))
         Text(
             text = "Prediksi Status Kesehatan Jantung",
             fontSize = 16.sp,
@@ -271,7 +271,7 @@ fun FileDetail(
             isLoading.value = false
 
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .padding(8.dp)
                     .clip(RoundedCornerShape(50.dp))
                     .background(
@@ -284,7 +284,7 @@ fun FileDetail(
                     .fillMaxWidth(0.8f)
 
             ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
                         text = if (predictResponse!!.result == 0) "Jantung Normal" else "myocardial infarction",
                         style = TextStyle(
@@ -301,10 +301,10 @@ fun FileDetail(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
         }
         if (isLoading.value) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            CircularProgressIndicator(modifier = modifier.align(Alignment.CenterHorizontally))
         }
 
 
@@ -365,7 +365,7 @@ fun FileDetail(
 
             },
             colors = ButtonDefaults.buttonColors(primary),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
             if (!isPredicting && !isBack) {
                 Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
@@ -405,20 +405,20 @@ fun FileDetail(
 }
 
 @Composable
-fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
+fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false, modifier: Modifier = Modifier) {
 //    val SAMPLE_RATE = 8000
     val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
     val SHRT_MAX = 32767 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
 //    val SHRT_MAX = 255
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
     ) {
 
         AndroidViewBinding(
             factory = SignalChartBinding::inflate,
-            modifier = Modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
+            modifier = modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
         ) {
             signalView.description?.isEnabled = false
             signalView.setTouchEnabled(true)
@@ -434,8 +434,8 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
 
-            yAxis?.setAxisMaximum(0.006f)
-            yAxis?.setAxisMinimum(-0.004f)
+            yAxis?.setAxisMaximum(0.008f)
+            yAxis?.setAxisMinimum(-0.005f)
 //            if (isZooming) {
 //            }
             // Customize right Y-axis properties to hide labels
@@ -557,10 +557,10 @@ fun SetUpChart(ctx: Context) {
 }
 
 @Composable
-private fun CardContent(isVerified: Boolean) {
+private fun CardContent(isVerified: Boolean, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(12.dp)
             .animateContentSize(
                 animationSpec = spring(
@@ -572,7 +572,7 @@ private fun CardContent(isVerified: Boolean) {
 
     ) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .weight(1f)
                 .padding(12.dp)
         ) {
@@ -587,9 +587,9 @@ private fun CardContent(isVerified: Boolean) {
 
                     )
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = modifier.width(4.dp))
                 Box(
-                    modifier = Modifier
+                    modifier = modifier
                         .background(
                             color = if (isVerified) Color.Green else Color.Red,
                             shape = RoundedCornerShape(16.dp)
@@ -616,7 +616,7 @@ private fun CardContent(isVerified: Boolean) {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = modifier.height(8.dp))
             if (expanded) {
                 Text(
                     text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
@@ -748,6 +748,130 @@ fun ProcessWavFileData2(wavFilePath: String, ctx: Context, isZooming: Boolean = 
 
             // moveViewToX(...) also calls invalidate()
 
+
+            Log.e("processwav", "Refresh signalview")
+            // Refresh the chart
+            signalView.invalidate()
+
+        }
+
+
+    }
+}
+
+@Composable
+fun ProcessWavFileData3(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
+//    val SAMPLE_RATE = 8000
+    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
+    val SHRT_MAX = 32767 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
+//    val SHRT_MAX = 255
+    Column(
+        Modifier
+            .fillMaxWidth()
+    ) {
+
+        AndroidViewBinding(
+            factory = SignalChartBinding::inflate,
+            modifier = Modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
+        ) {
+            signalView.description?.isEnabled = false
+            signalView.setTouchEnabled(true)
+            signalView.setPinchZoom(true)
+            signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
+            signalView.setDrawGridBackground(false)
+
+            // Customize X-axis properties if needed
+            val xAxis = signalView.xAxis
+            xAxis?.setDrawLabels(false)
+            xAxis?.setDrawGridLines(false)
+
+            // Customize Y-axis properties if needed
+            val yAxis = signalView.axisLeft
+            yAxis?.setDrawLabels(false)
+            yAxis?.setDrawGridLines(false)
+
+            // Customize right Y-axis properties to hide labels
+            val rightYAxis = signalView.axisRight
+            rightYAxis?.setDrawLabels(false)
+            rightYAxis?.setDrawGridLines(false)
+
+            yAxis?.setAxisMaximum(0.006f)
+            yAxis?.setAxisMinimum(-0.002f)
+//            if (isZooming) {
+//            }
+            signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
+            signalView.moveViewToX(25F) // set the left edge of the chart to x-index 10
+
+            // **Memory Efficiency Improvement:** Read the WAV file in chunks instead of loading the entire file into memory at once.
+            val bufferSize = AudioRecord.getMinBufferSize(
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_FLOAT
+            )
+            val wavData = ByteArray(bufferSize)
+            val dataPoints = ArrayList<Float>()
+
+            val inputStream = FileInputStream(wavFilePath)
+            val bufferedInputStream = BufferedInputStream(inputStream)
+            val dataInputStream = DataInputStream(bufferedInputStream)
+
+
+            try {
+                var bytesRead = dataInputStream.read(wavData, 0, bufferSize)
+
+                while (bytesRead != -1) {
+                    // Process the WAV data and convert it to data points suitable for the chart
+                    for (i in 0 until bytesRead / 2) { // Assuming 16-bit PCM
+                        val sample =
+                            wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
+                        val amplitude = sample.toFloat() / SHRT_MAX.toFloat() // Normalize amplitude
+                        dataPoints.add(amplitude)
+                    }
+
+                    bytesRead = dataInputStream.read(wavData, 0, bufferSize)
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } finally {
+                dataInputStream.close()
+            }
+
+            // **Memory Leak Prevention:** Close the WAV file after processing it.
+            inputStream.close()
+
+//
+//            val minValue = intArray.minOrNull()?.toFloat() ?: 0f
+//            val maxValue = intArray.maxOrNull()?.toFloat() ?: 1f
+//
+//            val normalizedDataPoints = ArrayList<Float>()
+//            for (value in intArray) {
+//                val normalizedValue = (value - minValue) / (maxValue - minValue)
+//                normalizedDataPoints.add(normalizedValue)
+//            }
+
+// Convert data points to Entry objects for the chart
+            val audioData = ArrayList<Entry>()
+            // Convert data points to Entry objects for the chart
+            for (i in dataPoints.indices) {
+                val entry = Entry(i.toFloat(), dataPoints[i])
+                audioData.add(entry)
+            }
+
+            // Create a LineDataSet with the audio data
+            val dataSet = LineDataSet(audioData, "Heart Beat Wave (zoom for detail)")
+            dataSet.color = R.color.green
+            dataSet.setDrawCircles(false)
+
+            // Create a LineData object and set the LineDataSet
+            val lineData = LineData(dataSet)
+
+            // Set the LineData object to the chart
+            signalView.data = lineData
+
+            // now modify viewport
+            signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
+            signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
+            // moveViewToX(...) also calls invalidate()
 
             Log.e("processwav", "Refresh signalview")
             // Refresh the chart

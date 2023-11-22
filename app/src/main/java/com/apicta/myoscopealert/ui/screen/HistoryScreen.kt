@@ -50,9 +50,8 @@ import com.apicta.myoscopealert.ui.viewmodel.UIEvents
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) {
+fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit, modifier:Modifier = Modifier) {
     val viewModel: AudioViewModel = hiltViewModel()
-
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val items = remember {
@@ -61,18 +60,20 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
             "recordwave1"
         )
     }
-    val config = PickerConfig(
-        currentType = PickerType.Audio,
-        storageTitle = "storageTitle",
-        storageDescription = "storageDescription",
-        galleryTitle = "galleryTitle",
-        galleryDescription = "galleryDescription",
-        supportRtl = true,
-        maxSelection = 12,
-        searchTextHint = "searchTextHint",
-        searchTextHintStyle = TextStyle(textAlign = TextAlign.Right),
-        enableCamera = false
-    )
+    val config = lazy {
+        PickerConfig(
+            currentType = PickerType.Audio,
+            storageTitle = "storageTitle",
+            storageDescription = "storageDescription",
+            galleryTitle = "galleryTitle",
+            galleryDescription = "galleryDescription",
+            supportRtl = true,
+            maxSelection = 12,
+            searchTextHint = "searchTextHint",
+            searchTextHintStyle = TextStyle(textAlign = TextAlign.Right),
+            enableCamera = false
+        )
+    }
     val query by remember {
         mutableStateOf("")
     }
@@ -80,14 +81,14 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
         mutableStateOf(false)
     }
 
-    Scaffold(modifier = Modifier,
+    Scaffold(modifier = modifier,
         floatingActionButton = {
             if (!isShowing.value) {
 
 //            Button(onClick = { isShowing.value = true }) {
 //                Text(text = "Open Dialog")
 //            }
-            FloatingActionButton(modifier = Modifier
+            FloatingActionButton(modifier = modifier
                 .padding(bottom = 16.dp),
                 containerColor = secondary,
                 shape = CircleShape,
@@ -98,7 +99,7 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
                     imageVector = Icons.Default.LibraryMusic,
                     contentDescription = null,
                     tint = primary,
-                    modifier = Modifier.size(36.dp)
+                    modifier = modifier.size(36.dp)
                 )
             }
             }
@@ -106,15 +107,15 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
     ) {
 
         Column(
-            Modifier
+            modifier
                 .fillMaxSize()
                 .padding(top = 16.dp)
                 .padding(it)
         ) {
-            Text(text = "Data Rekaman", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Text(text = "Data Rekaman", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, modifier = modifier.align(Alignment.CenterHorizontally))
 
             SearchBar(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth(),
                 query = text,
                 onQueryChange = {
                     text = it
@@ -137,7 +138,7 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
                 trailingIcon = {
                     if (active) {
                         Icon(
-                            modifier = Modifier.clickable {
+                            modifier = modifier.clickable {
                                 if (text.isNotEmpty()) {
                                     text = ""
                                 } else {
@@ -151,9 +152,9 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
                 }
             ) {
                 items.forEach {
-                    Row(modifier = Modifier.padding(all = 14.dp)) {
+                    Row(modifier = modifier.padding(all = 14.dp)) {
                         Icon(
-                            modifier = Modifier.padding(end = 10.dp),
+                            modifier = modifier.padding(end = 10.dp),
                             imageVector = Icons.Default.History,
                             contentDescription = "History Icon"
                         )
@@ -161,8 +162,9 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            FileListScreen(navController, query,progress = viewModel.progress,
+            Spacer(modifier = modifier.height(16.dp))
+            FileListScreen(navController, query,
+                progress = viewModel.progress,
                 onProgress = { viewModel.onUiEvents(UIEvents.SeekTo(it)) },
                 isAudioPlaying =viewModel.isPlaying,
                 audiList = viewModel.audioList,
@@ -174,11 +176,13 @@ fun HistoryScreen(navController: NavHostController, onServiceStart: () -> Unit) 
                     viewModel.onUiEvents(UIEvents.SelectedAudioChange(it))
                         onServiceStart()
                 },
-                onNext = {
-                    viewModel.onUiEvents(UIEvents.SeekToNext)
-                })
+//                onNext = {
+//                    viewModel.onUiEvents(UIEvents.SeekToNext)
+//                }
+                modifier = modifier
+            )
             if (isShowing.value) FilePickerDialog(
-                config = config,
+                config = config.value,
                 onDismissDialog = {
                     isShowing.value = false
                 },

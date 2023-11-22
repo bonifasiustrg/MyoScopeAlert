@@ -101,7 +101,7 @@ import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun RecordScreen(navController: NavHostController) {
+fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     val bluetoothViewModel: BluetoothViewModel = viewModel()
     var myThreadConnected: ThreadConnected? = null
     var timeCode by Delegates.notNull<Long>()
@@ -182,7 +182,7 @@ fun RecordScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
 
     Column(
-        Modifier
+        modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
@@ -204,7 +204,7 @@ fun RecordScreen(navController: NavHostController) {
                     textAlign = TextAlign.Center
                 )
             },
-            modifier = Modifier
+            modifier = modifier
                 .background(color = Color.Transparent)
                 .align(Alignment.CenterHorizontally),
             colors = TextFieldDefaults.colors(
@@ -221,7 +221,7 @@ fun RecordScreen(navController: NavHostController) {
             supportingText = {
                 if (isErrorTitle) {
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = modifier.fillMaxWidth(),
                         text = "Please fill the title name",
                         color = MaterialTheme.colorScheme.error
                     )
@@ -234,7 +234,7 @@ fun RecordScreen(navController: NavHostController) {
             keyboardActions = KeyboardActions { isErrorTitle = title.isNotEmpty() }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = modifier.height(32.dp))
 
 
 //        if (showResult) {
@@ -247,7 +247,7 @@ fun RecordScreen(navController: NavHostController) {
         if (/*isConnect.value && !showResult*/isRecording.value && isStopwatch.value) {
             Column {
                 LottieAnimation(
-                    modifier = Modifier
+                    modifier = modifier
                         .fillMaxHeight(0.4f)
                         .fillMaxWidth(),
                     composition = composition,
@@ -259,7 +259,7 @@ fun RecordScreen(navController: NavHostController) {
 
             ProcessWavFileData2(filePath, context)
         } else if (isLoad) {
-            CircularProgressIndicator(modifier = Modifier
+            CircularProgressIndicator(modifier = modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 24.dp))
         } else {
@@ -267,7 +267,7 @@ fun RecordScreen(navController: NavHostController) {
 
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = modifier.height(16.dp))
 
 //        STOPWATCH
         Text(
@@ -276,13 +276,13 @@ fun RecordScreen(navController: NavHostController) {
             fontSize = 48.sp,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            modifier = Modifier
+            modifier = modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(bottom = 16.dp)
         )
 
         timeCode = System.currentTimeMillis()
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+        Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             if (!isRecording.value){
 
                 IconButton(
@@ -309,7 +309,7 @@ fun RecordScreen(navController: NavHostController) {
                             }
                         } else isErrorTitle = true
                     },
-                    modifier = Modifier
+                    modifier = modifier
                         .size(86.dp)
                         .clip(shape = CircleShape),
                     colors = IconButtonDefaults.iconButtonColors(
@@ -319,7 +319,7 @@ fun RecordScreen(navController: NavHostController) {
                     Icon(
                         imageVector = Icons.Filled.Mic,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier = modifier
                             .size(48.dp),
                         tint = primary
                     )
@@ -347,7 +347,7 @@ fun RecordScreen(navController: NavHostController) {
 
 
                     },
-                    modifier = Modifier
+                    modifier = modifier
                         .size(86.dp)
                         .clip(shape = CircleShape),
                     colors = IconButtonDefaults.iconButtonColors(
@@ -357,7 +357,7 @@ fun RecordScreen(navController: NavHostController) {
                     Icon(
                         imageVector = Icons.Filled.StopCircle,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier = modifier
                             .size(48.dp),
                         tint = primary
                     )
@@ -367,7 +367,7 @@ fun RecordScreen(navController: NavHostController) {
 
         if (showResult) {
             Log.e("newBT showresult", formatedTitle.toString())
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
             val date = getCurrentTime()
             Text(text = "Recorded result", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(text = "Filename       : $formatedTitle")
@@ -375,7 +375,7 @@ fun RecordScreen(navController: NavHostController) {
 
             Text(text = "Last modified  : $date")
             Text(text = "Duration       : ${stopWatch.formattedTime}")
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
 
             var isButtonEnabled by remember { mutableStateOf(false) }
             val textLoad = if (isButtonEnabled) "Lihat Detail" else "Processing audio..."
@@ -397,23 +397,23 @@ fun RecordScreen(navController: NavHostController) {
                     containerColor = primary,
                     contentColor = Color.White
                 ),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = /*"Lihat detail"*/textLoad, fontWeight = FontWeight.Bold)
                 Icon(
                     painter = painterResource(id = R.drawable.ic_next_arrow),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = modifier.size(24.dp)
                 )
             }
 
 
         } else if (isLoad) {
-            CircularProgressIndicator(modifier = Modifier
+            CircularProgressIndicator(modifier = modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 56.dp))
         }
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = modifier.weight(1f))
         ModalBottomSheetM3(context, isConnect, stopWatch, isStopwatch, isRecording, bluetoothViewModel)
     }
 }
