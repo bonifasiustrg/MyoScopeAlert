@@ -132,6 +132,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
     var isLoad by remember {
         mutableStateOf(false)
     }
+    var isButtonEnabled by remember { mutableStateOf(false) }
 
     @Suppress("DEPRECATION") val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -254,11 +255,20 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                     iterations = LottieConstants.IterateForever,
                 )
             }
-        } else if (showResult) {
+        } else if (showResult && isButtonEnabled) {
 //            val filePath = "${musicDir.absolutePath}/$formatedTitle"
+            val files = musicDir.listFiles()
+            val wavFiles = files?.filter { it.extension == "wav" }
+            val sortedWavFiles = wavFiles?.sortedWith(compareBy { it.lastModified() })?.last()
+            val filePath = "${musicDir.absolutePath}/${sortedWavFiles?.name}"
+            Log.e("filepath", filePath)
 
-            ProcessWavFileData2(filePath, context)
-        } else if (isLoad) {
+            if (sortedWavFiles!!.exists()) {
+                ProcessWavFileData2(filePath, context)
+            } else {
+                SetUpChart(ctx = context)
+            }
+        } else if (isLoad && !isButtonEnabled) {
             CircularProgressIndicator(modifier = modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 24.dp))
@@ -377,7 +387,6 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             Text(text = "Duration       : ${stopWatch.formattedTime}")
             Spacer(modifier = modifier.height(16.dp))
 
-            var isButtonEnabled by remember { mutableStateOf(false) }
             val textLoad = if (isButtonEnabled) "Lihat Detail" else "Processing audio..."
 
             LaunchedEffect(Unit) {

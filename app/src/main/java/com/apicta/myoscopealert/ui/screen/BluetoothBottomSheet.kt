@@ -83,7 +83,8 @@ fun ColumnScope.ModalBottomSheetM3(
     stopWatch: StopWatch,
     isStopwatch: MutableState<Boolean>,
     isRecording: MutableState<Boolean>,
-    bluetoothViewModel: BluetoothViewModel
+    bluetoothViewModel: BluetoothViewModel,
+    modifier: Modifier = Modifier
 ) {
     // Bluetooth object
     val bluetooth: Bluetooth? = Bluetooth(ctx)
@@ -97,14 +98,14 @@ fun ColumnScope.ModalBottomSheetM3(
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xBFFFC107)
         ),
-        modifier = Modifier
+        modifier = modifier
             .align(Alignment.CenterHorizontally)
             .padding(bottom = 16.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.BluetoothSearching,
             contentDescription = null,
-            modifier = Modifier
+            modifier = modifier
                 .size(32.dp)
                 .padding(end = 4.dp),
             tint = primary
@@ -120,7 +121,7 @@ fun ColumnScope.ModalBottomSheetM3(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     BottomSheetDefaults.DragHandle()
                     Text(text = "Connect Bluetooth", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = modifier.height(10.dp))
                     Divider()
                 }
             }
@@ -137,7 +138,8 @@ fun ColumnScope.ModalBottomSheetM3(
                 isStopwatch,
                 isRecording,
                 bluetoothViewModel,
-                ctx
+                ctx,
+                modifier
             )
         }
     }
@@ -153,7 +155,8 @@ fun BottomSheetContent(
     isStopwatch: MutableState<Boolean>,
     isRecording: MutableState<Boolean>,
     bluetoothViewModel: BluetoothViewModel,
-    context: Context
+    context: Context,
+    modifier: Modifier
 ) {
     val listDetectDevicesString = remember { mutableListOf<String?>() }
     val listDetectBluetoothDevices = remember { mutableListOf<BluetoothDevice?>() }
@@ -164,13 +167,13 @@ fun BottomSheetContent(
     var isScan by remember {mutableStateOf(false)}
 
     Column(
-        Modifier
+        modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
 //        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -186,10 +189,10 @@ fun BottomSheetContent(
 //            }) {
 //                Text(text = "Turn On")
 //            }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = modifier.height(8.dp))
             if (isScan) {
                 LottieAnimation(
-                    modifier = Modifier
+                    modifier = modifier
                         .size(48.dp)
                         .clickable { isScan = false },
                     composition = composition,
@@ -202,13 +205,13 @@ fun BottomSheetContent(
                         bluetooth!!.startDetectNearbyDevices()
                         isScan = true
                     },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = "Scan devices")
                 }
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = modifier.height(8.dp))
 
 
         /*SCANNING*/
@@ -278,7 +281,7 @@ fun BottomSheetContent(
         LazyColumn {
             items(listPairedBluetoothDevices) {
                 ListItem(
-                    modifier = Modifier.clickable {
+                    modifier = modifier.clickable {
 //                        getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
                         isDialogVisible.value = true
 //                        val position = listDetectDevicesString.indexOf(it?.name)
@@ -334,7 +337,7 @@ fun BottomSheetContent(
             text = "No paired device detected",
             color = Color.Gray
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = modifier.height(8.dp))
 
         Text(text = "Available Devices", fontSize = 20.sp)
         Log.e("list bottomsheet", listDetectDevicesString.toString())
@@ -344,7 +347,7 @@ fun BottomSheetContent(
             items(listDetectBluetoothDevices) {
                 if (it != null) {
                     ListItem(
-                        modifier = Modifier.clickable {
+                        modifier = modifier.clickable {
                             val position = listDetectDevicesString.indexOf(it.name)
                             if (bluetooth.requestPairDevice(/*listDetectBluetoothDevices[position]*/
                                     it
@@ -374,18 +377,18 @@ fun BottomSheetContent(
             text = "No available device detected",
             color = Color.Gray
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = modifier.height(8.dp))
 
 
 
         Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = modifier.align(Alignment.CenterHorizontally),
             onClick = onHideButtonClick
         ) {
             Text(text = "Kembali")
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = modifier.height(32.dp))
     }
 }
 

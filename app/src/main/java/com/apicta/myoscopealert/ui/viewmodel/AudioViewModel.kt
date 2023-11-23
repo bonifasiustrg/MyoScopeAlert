@@ -43,8 +43,9 @@ class AudioViewModel @Inject constructor(
     var currentSelectedAudio by savedStateHandle.saveable { mutableStateOf(audioDummy) }
 //    var audioList by savedStateHandle.saveable { mutableStateOf(listOf<Audio>()) }
 
-    private val _audioListState = mutableStateOf<List<Audio>>(emptyList())
-    val audioList: List<Audio> get() = _audioListState.value
+    private val _audioListState = MutableStateFlow<List<Audio>>(emptyList())
+    val audioList: StateFlow<List<Audio>> get() = _audioListState
+    val audioListSearch: StateFlow<List<Audio>> get() = _audioListState
 
     private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.Initial)
     val uiState: StateFlow<UIState> = _uiState.asStateFlow()
@@ -62,7 +63,7 @@ class AudioViewModel @Inject constructor(
                     is JetAudioState.Playing -> isPlaying = mediaState.isPlaying
                     is JetAudioState.Progress -> calculateProgressValue(mediaState.progress)
                     is JetAudioState.CurrentPlaying -> {
-                        currentSelectedAudio = audioList[mediaState.mediaItemIndex]
+                        currentSelectedAudio = audioList.value[mediaState.mediaItemIndex]
                     }
 
                     is JetAudioState.Ready -> {
@@ -84,13 +85,13 @@ class AudioViewModel @Inject constructor(
 //            audioList = audio
             _audioListState.value = audio
             Log.e("AudioViewModel list vm", audio.toString())
-            Log.d("AudioViewModel", "Number of items in audio list: ${audioList.size}")
+            Log.d("AudioViewModel", "Number of items in audio list: ${audioList.value.size}")
             setMediaItems()
         }
     }
 
     private fun setMediaItems() {
-        audioList.map { audio ->
+        audioList.value.map { audio ->
             MediaItem.Builder()
                 .setUri(audio.uri)
                 .setMediaMetadata(
@@ -104,6 +105,15 @@ class AudioViewModel @Inject constructor(
         }.also {
             audioServiceHandler.setMediaItemList(it)
         }
+    }
+
+    // Fungsi untuk melakukan filtering berdasarkan query
+    fun filterAudioList(query: String):List<Audio> {
+        val filteredList = _audioListState.value.filter { audio ->
+            audio.displayName!!.contains(query, ignoreCase = true)
+            // Sesuaikan dengan kondisi atau properti audio yang ingin Anda gunakan untuk filtering
+        }
+        return filteredList
     }
 
     private fun calculateProgressValue(currentProgress: Long) {

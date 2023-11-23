@@ -434,10 +434,12 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
 
-            yAxis?.setAxisMaximum(0.008f)
-            yAxis?.setAxisMinimum(-0.005f)
-//            if (isZooming) {
-//            }
+            yAxis?.setAxisMaximum(0.05f)
+            yAxis?.setAxisMinimum(-0.03f)
+            if (isZooming) {
+                yAxis?.setAxisMaximum(0.008f)
+                yAxis?.setAxisMinimum(-0.005f)
+            }
             // Customize right Y-axis properties to hide labels
             val rightYAxis = signalView.axisRight
             rightYAxis?.setDrawLabels(false)
@@ -795,8 +797,8 @@ fun ProcessWavFileData3(wavFilePath: String, ctx: Context, isZooming: Boolean = 
             rightYAxis?.setDrawLabels(false)
             rightYAxis?.setDrawGridLines(false)
 
-            yAxis?.setAxisMaximum(0.006f)
-            yAxis?.setAxisMinimum(-0.002f)
+            yAxis?.setAxisMaximum(0.009f)
+            yAxis?.setAxisMinimum(-0.006f)
 //            if (isZooming) {
 //            }
             signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
