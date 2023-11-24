@@ -79,7 +79,7 @@ class AudioViewModel @Inject constructor(
         }
     }
 
-    private fun loadAudioData() {
+    fun loadAudioData() {
         viewModelScope.launch {
             val audio = repository.getAudioData()
 //            audioList = audio

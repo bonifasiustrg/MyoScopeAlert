@@ -78,6 +78,8 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.models.FileModel
+import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData2
+import com.apicta.myoscopealert.ui.screen.common.SetUpChart
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
@@ -109,7 +111,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
     val context = LocalContext.current
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
 
-    var title by rememberSaveable { mutableStateOf("RecordName")}
+    var title by rememberSaveable { mutableStateOf("")}
     var formatedTitle by remember {
         mutableStateOf(title)
     }
@@ -197,7 +199,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                             },
             placeholder = {
                 Text(
-                    text = "Masukkan Nama File",
+                    text = "Type Filename",
                     color = Color.LightGray,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = poppins,
@@ -379,21 +381,18 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             Log.e("newBT showresult", formatedTitle.toString())
             Spacer(modifier = modifier.height(16.dp))
             val date = getCurrentTime()
-            Text(text = "Recorded result", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = "Recorded result", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Text(text = "Filename       : $formatedTitle")
-            Log.e("filename1", formatedTitle)
-
-            Text(text = "Last modified  : $date")
+            Text(text = "Last modified  : $date", fontSize = 13.sp)
             Text(text = "Duration       : ${stopWatch.formattedTime}")
             Spacer(modifier = modifier.height(16.dp))
 
-            val textLoad = if (isButtonEnabled) "Lihat Detail" else "Processing audio..."
+            val textLoad = if (isButtonEnabled) "Show Detail" else "Processing audio..."
 
             LaunchedEffect(Unit) {
                 delay((25000)/*.random().toLong()*/)
                 isButtonEnabled = true
             }
-//            val scope = rememberCoroutineScope()\
             Button(
                 enabled = isButtonEnabled,
                 onClick = {

@@ -150,27 +150,27 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
 
             ProfileItem(
                 icon = Icons.Default.House,
-                label = "Alamat",
+                label = "Address",
                 value = profileResponse?.data?.profile?.address.toString()
             )
             ProfileItem(
                 icon = Icons.Default.Call,
-                label = "No Telp",
+                label = "Phone",
                 value = profileResponse?.data?.profile?.phone.toString()
             )
             ProfileItem(
                 icon = Icons.Default.Face,
-                label = "Umur",
+                label = "Age",
                 value = profileResponse?.data?.profile?.age.toString()
             )
             ProfileItem(
                 icon = Icons.Default.Male,
-                label = "Jenis Kelamin",
+                label = "Gender",
                 value = profileResponse?.data?.profile?.gender.toString()
             )
             ProfileItem(
                 icon = Icons.Default.MonitorHeart,
-                label = "Pemeriksaan Terakhir",
+                label = "Latest Recording Result",
                 value = profileResponse?.data?.profile?.condition.toString()
             )
             ProfileItem(

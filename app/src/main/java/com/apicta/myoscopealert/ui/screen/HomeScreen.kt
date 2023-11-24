@@ -1,7 +1,5 @@
 package com.apicta.myoscopealert.ui.screen
 
-import android.content.Intent
-import android.net.http.UrlRequest.Status
 import android.os.Build
 import android.os.Environment
 import android.util.Log
@@ -12,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,20 +18,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Pending
-import androidx.compose.material.icons.filled.Sick
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -46,6 +38,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,18 +59,20 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.graphs.BottomBarScreen
-import com.apicta.myoscopealert.models.FileModel
+import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData3
+import com.apicta.myoscopealert.ui.screen.common.SetUpChart
+import com.apicta.myoscopealert.ui.screen.common.ShimmerCardStatistic
 import com.apicta.myoscopealert.ui.screen.common.StatusCard
 import com.apicta.myoscopealert.ui.theme.MyoScopeAlertTheme
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.greenIcon
 import com.apicta.myoscopealert.ui.theme.greenIconSec
 import com.apicta.myoscopealert.ui.theme.hover
-import com.apicta.myoscopealert.ui.theme.hoverSec
 import com.apicta.myoscopealert.ui.theme.orangeIcon
 import com.apicta.myoscopealert.ui.theme.orangeIconSec
 import com.apicta.myoscopealert.ui.theme.poppins
@@ -85,8 +80,8 @@ import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.redIcon
 import com.apicta.myoscopealert.ui.theme.redIconSec
 import com.apicta.myoscopealert.ui.theme.secondary
-import com.apicta.myoscopealert.ui.theme.terniary
-import java.io.File
+import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -94,6 +89,17 @@ import java.util.Date
 @Composable
 fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val viewModel: DiagnosesViewModel = hiltViewModel()
+    val storedToken by viewModel.userToken.collectAsState()
+    Log.e("usertoken", "$storedToken")
+
+    runBlocking {
+        viewModel.getPatientStatistic(storedToken!!)
+//        viewModel.getLatestDiagnose(storedToken!!)
+    }
+    val statisticResponse by viewModel.patientStatisticResponse.collectAsState()
+//    val latestDiagnoseResponse by viewModel.patientLatestDiagnoseResponse.collectAsState()
+
 
     val isVerified by remember {
         mutableStateOf(true)
@@ -103,12 +109,11 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
     }
 
     var expanded by remember { mutableStateOf(false) }
-    val musicDir =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
 
     val files = musicDir.listFiles()
     val wavFiles = files?.filter { it.extension == "wav" }
-    val sortedWavFiles = wavFiles?.sortedWith(compareBy { it.lastModified() })?.last()
+    val sortedWavFiles = wavFiles?.sortedWith(compareBy { it.lastModified() })?.lastOrNull()
     val filePath = "${musicDir.absolutePath}/${sortedWavFiles?.name}"
     Log.e("filepath", filePath)
     MyoScopeAlertTheme {
@@ -120,7 +125,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
 
         ) {
             Text(
-                text = "Hallo,",
+                text = "Hello,",
                 modifier = modifier.padding(top = 16.dp),
                 fontWeight = FontWeight.Bold
             )
@@ -134,47 +139,59 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 color = hover,
                 modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
             )
-
             Box() {
-                Column {
-                    Row(modifier.fillMaxWidth()) {
-                        StatusCard(
-                            0,
-                            Icons.Filled.Verified,
-                            "Verified",
-                            hover,
-                            cardsecondary,
-                            modifier
-                        )
-                        Spacer(modifier = modifier.width(12.dp))
-                        StatusCard(
-                            3,
-                            Icons.Filled.HealthAndSafety,
-                            "Normal",
-                            greenIcon,
-                            greenIconSec,
-                            modifier
-                        )
+                ShimmerCardStatistic(
+                    isLoading = statisticResponse == null,
+                    contentAfterLoading = {
+                        Column {
+                            Row(modifier.fillMaxWidth()) {
+                                StatusCard(
+                                    statisticResponse!!.data.totalVerified,
+                                    Icons.Filled.Verified,
+                                    "Verified",
+                                    hover,
+                                    cardsecondary,
+                                    modifier
+                                )
+                                Spacer(modifier = modifier.width(12.dp))
+                                StatusCard(
+                                    statisticResponse!!.data.totalPatientNormal,
+                                    Icons.Filled.HealthAndSafety,
+                                    "Normal",
+                                    greenIcon,
+                                    greenIconSec,
+                                    modifier
+                                )
+                            }
+                            Spacer(modifier = modifier.height(12.dp))
+                            Row(modifier.fillMaxWidth()) {
+                                StatusCard(
+                                    statisticResponse!!.data.totalUnverified,
+                                    Icons.Filled.Pending,
+                                    "Unverified",
+                                    orangeIcon,
+                                    orangeIconSec,
+                                    modifier
+                                )
+                                Spacer(modifier = modifier.width(12.dp))
+                                StatusCard(statisticResponse!!.data.totalPatientMi, Icons.Filled.Warning, "MI", redIcon, redIconSec, modifier)
+                            }
+                        }
                     }
-                    Spacer(modifier = modifier.height(12.dp))
-                    Row(modifier.fillMaxWidth()) {
-                        StatusCard(
-                            4,
-                            Icons.Filled.Pending,
-                            "Pending",
-                            orangeIcon,
-                            orangeIconSec,
-                            modifier
-                        )
-                        Spacer(modifier = modifier.width(12.dp))
-                        StatusCard(1, Icons.Filled.Warning, "MI", redIcon, redIconSec, modifier)
-                    }
-                }
+                )
+
             }
+//            if (statisticResponse != null) {
+//            } else {
+//                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+//                    CircularProgressIndicator()
+//                }
+//            }
 
             Spacer(modifier = modifier.height(16.dp))
 
 
+//            val lastRecord = latestDiagnoseResponse?.data?.diagnoses?.lastOrNull()
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             val timestamp: Long = sortedWavFiles?.lastModified() ?: 10000L
 
@@ -186,13 +203,13 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Rekaman Terakhir",
+                    text = "Recent Recording",
                     fontSize = 20.sp,
                     fontFamily = poppins,
                     fontWeight = FontWeight.ExtraBold
                 )
                 Text(
-                    text = "Selengkapnya",
+                    text = "Show more",
                     fontSize = 13.sp,
                     color = Color.Gray,
                     modifier = modifier.clickable {
@@ -235,7 +252,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                             .padding(end = 4.dp),
                         tint = orangeIcon
                     )
-                    Text(text = /*"30 Oktober 2023"*/formattedDate, fontSize = 14.sp)
+                    Text(text = formattedDate/*lastRecord.createdAt*/, fontSize = 14.sp)
                 }
 
                 if (/*File(filePath)*/sortedWavFiles!!.exists()) {
@@ -249,7 +266,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Kesehatan Jantung", fontSize = 14.sp)
+                    Text(text = "Heart Health Status", fontSize = 14.sp)
                     Box(
                         modifier = modifier
                             .background(
@@ -260,7 +277,11 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     ) {
                         if (heartStatus) {
                             Text(
-                                text = "Normal",
+                                text = "Normal"/*it.diagnoses.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.getDefault()
+                                    ) else it.toString()
+                                }*/,
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.End,
                                 color = Color.White,
@@ -268,13 +289,16 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                             )
                         } else {
                             Text(
-                                text = "MI",
+                                text = "MI"/*it.diagnoses.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.getDefault()
+                                    ) else it.toString()
+                                }*/,
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.End,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
                                 fontFamily = poppins
-
                             )
                         }
                     }
@@ -294,7 +318,8 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 ) {
                     Text(text = annotatedString, fontSize = 14.sp)
                     Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.checkicon /*else R.drawable.ic_close*/),
+                        imageVector = ImageVector.vectorResource(
+                            id = if (isVerified) R.drawable.checkicon else R.drawable.ic_close),
                         contentDescription = null,
                         tint = greenIcon,
                         modifier = modifier.size(20.dp)
@@ -309,7 +334,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Catatan ", style = MaterialTheme.typography.titleMedium.copy(
+                        text = "Note ", style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = poppins,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.ExtraBold
@@ -335,7 +360,9 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 }
                 if (expanded) {
                     Text(
-                        text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
+                        text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
+//                        text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
+//                        text = it.notes,
                         fontFamily = poppins,
                         fontSize = 14.sp
 
@@ -357,18 +384,19 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     contentDescription = null,
                     modifier = modifier
 //                    .padding(start = 16.dp, top = 16.dp, end = 4.dp, bottom = 0.dp)
-                        .size(160.dp)
+                        .size(140.dp)
                         .align(Alignment.Bottom),
                     contentScale = ContentScale.FillHeight
                 )
                 Column(modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 16.dp)) {
                     Text(
-                        text = "Bagaimana perasaan Anda?",
+//                        text = "Bagaimana perasaan Anda?",
+                        text = "How do you feel?",
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 12.sp
+                        fontSize = 16.sp
                     )
                     Text(
-                        text = "Mari mulai rekam jantung anda, untuk mengetahui kesehatan jantung anda",
+                        text = "Let's start recording your heart, to find out your heart health.",
                         fontSize = 13.sp,
                         lineHeight = 20.sp
                     )
@@ -380,7 +408,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                         colors = ButtonDefaults.buttonColors(primary),
                         modifier = modifier.fillMaxWidth()
                     ) {
-                        Text(text = "Mulai Rekam")
+                        Text(text = "Record Heartbeat")
                     }
                 }
             }

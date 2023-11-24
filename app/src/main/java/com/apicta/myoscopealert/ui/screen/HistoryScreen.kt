@@ -63,6 +63,7 @@ import com.apicta.myoscopealert.ui.theme.terniary
 import com.apicta.myoscopealert.ui.viewmodel.AudioViewModel
 import com.apicta.myoscopealert.ui.viewmodel.UIEvents
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.S)
@@ -107,15 +108,19 @@ fun HistoryScreen(
     }
 
     fun onQueryChanged(query: String): List<Audio> {
-        return viewModel.filterAudioList(query)
+        return runBlocking { viewModel.filterAudioList(query) }
     }
-
+    runBlocking {
+        viewModel.loadAudioData()
+    }
     val audioListState by viewModel.audioList.collectAsState()
+
     var audioListSearch by remember {
         mutableStateOf<List<Audio>>(emptyList())
     }
-    LaunchedEffect(key1 = audioListState) {
-        delay(1500)
+
+    LaunchedEffect(audioListState) {
+        delay(1200)
         isLoading = false
     }
     Scaffold(modifier = modifier,
@@ -141,7 +146,7 @@ fun HistoryScreen(
             Column {
                 Spacer(modifier = modifier.height(8.dp))
                 Text(
-                    text = "Riwayat Rekaman",
+                    text = "Recording History",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = modifier.align(Alignment.CenterHorizontally)

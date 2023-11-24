@@ -3,6 +3,8 @@ package com.apicta.myoscopealert.network
 
 import com.apicta.myoscopealert.data.PredictResponse
 import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.models.diagnose.PatientLatestDiagnoseReponse
+import com.apicta.myoscopealert.models.diagnose.PatientStatisticResponse
 import com.apicta.myoscopealert.models.user.LogoutResponse
 import com.apicta.myoscopealert.models.user.ProfileResponse
 import com.apicta.myoscopealert.models.user.SignInRequest
@@ -32,6 +34,14 @@ interface UserApi {
     suspend fun profile(
         @Header("Authorization") token: String
     ): Response<ProfileResponse>
+    @GET("patient/dashboard/total-statistic")
+    suspend fun patientStatistic(
+        @Header("Authorization") token: String
+    ): Response<PatientStatisticResponse>
+    @GET("patient/dashboard/latest-diagnose")
+    suspend fun patientLatesDiagnose(
+        @Header("Authorization") token: String
+    ): Response<PatientLatestDiagnoseReponse>
 
     @GET("patient/diagnoses")
     suspend fun diagnoses(

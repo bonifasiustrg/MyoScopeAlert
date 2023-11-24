@@ -124,7 +124,7 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
             ) {
 
                 Text(
-                    text = "Masuk",
+                    text = "Login",
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth(),

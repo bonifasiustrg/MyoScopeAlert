@@ -7,6 +7,8 @@ import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.data.PredictResponse
 import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
 import com.apicta.myoscopealert.data.repository.DiagnosesRepository
+import com.apicta.myoscopealert.models.diagnose.PatientLatestDiagnoseReponse
+import com.apicta.myoscopealert.models.diagnose.PatientStatisticResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,6 +92,75 @@ class DiagnosesViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("PredictActivity", "Error during API call: ${e.message}", e)
                 _predictResponse.value = null
+            }
+        }
+    }
+
+    private val _patientStatisticResponse = MutableStateFlow<PatientStatisticResponse?>(null)
+    val patientStatisticResponse: StateFlow<PatientStatisticResponse?> = _patientStatisticResponse
+
+    fun getPatientStatistic(token: String) {
+        if (token.isBlank()) {
+            // Token belum tersedia, tidak perlu melakukan request
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val response = repository.patientStatistic(token)
+
+                if (response.isSuccessful) {
+                    val rawResponse = response.body()
+                    if (rawResponse != null) {
+
+                        Log.e("PatientStatisticVM", "profile nya ${rawResponse.status}")
+                        _patientStatisticResponse.value = rawResponse
+                    } else {
+                        Log.e("PatientStatisticVM", "Response body is null")
+                        _patientStatisticResponse.value = null
+                    }
+                } else {
+                    Log.e("PatientStatisticVM", "Request failed with code ${response.code()}")
+                    Log.e("PatientStatisticVM", "Response: ${response.errorBody()?.string()}")
+                    _patientStatisticResponse.value = null
+                }
+            } catch (e: Exception) {
+                Log.e("PatientStatisticVM", "Error during API call: ${e.message}", e)
+                _patientStatisticResponse.value = null
+            }
+        }
+    }
+    private val _patientLatestDiagnoseResponse = MutableStateFlow<PatientLatestDiagnoseReponse?>(null)
+    val patientLatestDiagnoseResponse: StateFlow<PatientLatestDiagnoseReponse?> = _patientLatestDiagnoseResponse
+
+    fun getLatestDiagnose(token: String) {
+        if (token.isBlank()) {
+            // Token belum tersedia, tidak perlu melakukan request
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val response = repository.patientLatestDiagnose(token)
+
+                if (response.isSuccessful) {
+                    val rawResponse = response.body()
+                    if (rawResponse != null) {
+
+                        Log.e("LatestDiagnoseVM", "profile nya ${rawResponse.status}")
+                        _patientLatestDiagnoseResponse.value = rawResponse
+                    } else {
+                        Log.e("LatestDiagnoseVM", "Response body is null")
+                        _patientLatestDiagnoseResponse.value = null
+                    }
+                } else {
+                    Log.e("LatestDiagnoseVM", "Request failed with code ${response.code()}")
+                    Log.e("LatestDiagnoseVM", "Response: ${response.errorBody()?.string()}")
+                    _patientLatestDiagnoseResponse.value = null
+                }
+            } catch (e: Exception) {
+                Log.e("LatestDiagnoseVM", "Error during API call: ${e.message}", e)
+                _patientLatestDiagnoseResponse.value = null
             }
         }
     }

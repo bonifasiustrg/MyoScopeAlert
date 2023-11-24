@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HealthAndSafety
+import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -34,9 +38,14 @@ import androidx.compose.ui.unit.sp
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.greenIcon
+import com.apicta.myoscopealert.ui.theme.greenIconSec
+import com.apicta.myoscopealert.ui.theme.hover
+import com.apicta.myoscopealert.ui.theme.orangeIcon
+import com.apicta.myoscopealert.ui.theme.orangeIconSec
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.redIcon
+import com.apicta.myoscopealert.ui.theme.redIconSec
 import com.apicta.myoscopealert.ui.theme.terniary
 import java.util.Date
 
@@ -100,6 +109,36 @@ fun ShimmerListItem(
         contentAfterLoading()
     }
 }
+
+@Composable
+fun ShimmerCardStatistic(
+    isLoading: Boolean,
+    contentAfterLoading: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if(isLoading) {
+
+        Column {
+            Row(modifier.fillMaxWidth()) {
+                StatusCardShimmer()
+                Spacer(modifier = modifier.width(12.dp))
+                StatusCardShimmer()
+            }
+            Spacer(modifier = modifier.height(12.dp))
+            Row(modifier.fillMaxWidth()) {
+                StatusCardShimmer()
+
+                Spacer(modifier = modifier.width(12.dp))
+                StatusCardShimmer()
+
+            }
+        }
+
+    } else {
+        contentAfterLoading()
+    }
+}
+
 
 fun Modifier.shimmerEffect(): Modifier = composed {
     var size by remember {
