@@ -57,6 +57,7 @@ import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.MainActivity
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.models.user.AccountInfo
 import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.terniary
@@ -70,22 +71,24 @@ import kotlinx.coroutines.runBlocking
 @Composable
 fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreManager) {
     val context = LocalContext.current
-    var storedToken by remember { mutableStateOf<String?>(null) }
-    Log.d("ProfileScreen1", "Stored Token: $storedToken")
+    var /*storedToken*/accountInfo by remember { mutableStateOf<AccountInfo?>(null) }
+    Log.d("ProfileScreen1", "Stored Token: ${accountInfo?.token}/*storedToken*/")
     val scope = rememberCoroutineScope()
 
     val isLoading = remember { mutableStateOf(false) }
     // Ambil token jika belum diinisialisasi
-    if (storedToken == null) {
+    if (accountInfo?.token == null) {
         runBlocking {
-            storedToken = dataStoreManager.getAuthToken.first()
-            Log.d("ProfileScreen runblocking", "Stored Token: $storedToken")
+//            storedToken = dataStoreManager.getAuthToken
+            accountInfo = dataStoreManager.getAuthToken.first()
+            Log.d("ProfileScreen runblocking", "Stored Token: ${accountInfo?.token} userId ${accountInfo?.userId} /*storedToken*/")
         }
     }
 
 
     val viewModel = hiltViewModel<UserViewModel>()
-    viewModel.performProfile(storedToken!!)
+//    viewModel.performProfile(/*storedToken!!*/accountInfo?.token.toString())
+    viewModel.performProfile(accountInfo!!)
     val profileResponse by viewModel.profileResponse.collectAsState()
 
 
@@ -136,7 +139,8 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
                 contentDescription = null
             )
             Text(
-                text = profileResponse?.data?.profile?.fullname.toString(),
+//                text = profileResponse?.data?.profile?.fullname.toString(),
+                text = profileResponse?.data?.name.toString(),
                 fontFamily = poppins,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 28.sp,
@@ -148,35 +152,38 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
 //            Text(text = "Address", fontWeight = FontWeight.Bold)
 //            Text(text = profileResponse?.data?.profile?.address.toString())
 
-            ProfileItem(
-                icon = Icons.Default.House,
-                label = "Address",
-                value = profileResponse?.data?.profile?.address.toString()
-            )
+//            ProfileItem(
+//                icon = Icons.Default.House,
+//                label = "Address",
+//                value = profileResponse?.data?.profile?.address.toString()
+//            )
             ProfileItem(
                 icon = Icons.Default.Call,
                 label = "Phone",
-                value = profileResponse?.data?.profile?.phone.toString()
+//                value = profileResponse?.data?.profile?.phone.toString()
+                value = profileResponse?.data?.phone.toString()
             )
-            ProfileItem(
-                icon = Icons.Default.Face,
-                label = "Age",
-                value = profileResponse?.data?.profile?.age.toString()
-            )
+//            ProfileItem(
+//                icon = Icons.Default.Face,
+//                label = "Age",
+//                value = profileResponse?.data?.profile?.age.toString()
+//            )
             ProfileItem(
                 icon = Icons.Default.Male,
                 label = "Gender",
-                value = profileResponse?.data?.profile?.gender.toString()
+//                value = profileResponse?.data?.profile?.gender.toString()
+                value = profileResponse?.data?.gender.toString()
             )
-            ProfileItem(
-                icon = Icons.Default.MonitorHeart,
-                label = "Latest Recording Result",
-                value = profileResponse?.data?.profile?.condition.toString()
-            )
+//            ProfileItem(
+//                icon = Icons.Default.MonitorHeart,
+//                label = "Latest Recording Result",
+//                value = profileResponse?.data?.profile?.condition.toString()
+//            )
             ProfileItem(
                 icon = Icons.Default.Email,
                 label = "Email",
-                value = profileResponse?.data?.user?.email.toString()
+//                value = profileResponse?.data?.user?.email.toString()
+                value = profileResponse?.data?.email.toString()
             )
 //            Spacer(modifier = Modifier.height(8.dp))
 //            Text(text = "Phones", fontWeight = FontWeight.Bold)
@@ -222,7 +229,7 @@ fun ProfileScreen(navController: NavHostController, dataStoreManager: DataStoreM
             modifier = Modifier.align(CenterHorizontally),
             onClick = {
                 isLoading.value = true
-                viewModel.performLogout(storedToken!!)
+                viewModel.performLogout(/*storedToken!!*/accountInfo?.token!!)
                 scope.launch {
                     delay(1000)
                     val intent = Intent(context, MainActivity::class.java)

@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun RootNavigationGraph(navController: NavHostController, dataStoreManager: DataStoreManager, onServiceStart: () -> Unit) {
-    val storedToken = runBlocking { dataStoreManager.getAuthToken.first() }
+    val storedToken = runBlocking { dataStoreManager.getAuthToken.first()?.token }
     Log.e("token app navigation", storedToken.toString())
 
     NavHost(

@@ -5,9 +5,11 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -85,6 +87,7 @@ import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.terniary
 import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
+import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -97,18 +100,37 @@ import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FileDetail(
     filename: String?,
-    fileDate: String?,
+    itemId: Int?,
+//    fileDate: String?,
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: DiagnosesViewModel = hiltViewModel(),
+    viewModelProfile: UserViewModel = hiltViewModel()
 ) {
-    val viewModel: DiagnosesViewModel = hiltViewModel()
-    val storedToken by viewModel.userToken.collectAsState()
-    Log.e("usertoken", "$storedToken")
+
+//    val storedToken by viewModel.userToken.collectAsState()
+    val accountInfo by viewModel.accountInfo.collectAsState()
+    Log.e("usertoken", "$accountInfo.token/*storedToken*/")
+    Log.e("item id detail screen", "$itemId")
+
+    if (itemId != -1) {
+
+        viewModel.singleDiagnose(token = accountInfo!!.token.toString(), userId = accountInfo!!.userId!!, itemId = itemId)
+    }
+    val singleDiagnoseResponse by viewModel.singleDiagnoseResponse.collectAsState()
+    Log.e("history response", singleDiagnoseResponse.toString())
+    val isVerified = if (singleDiagnoseResponse?.detection?.verified == "yes") true else false
+
+    viewModelProfile.performProfile(/*storedToken!!*/accountInfo!!)
+    val profileResponse by viewModelProfile.profileResponse.collectAsState()
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -136,6 +158,14 @@ fun FileDetail(
 //        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
 //    ).value
 
+//    val dateTimeString =  singleDiagnoseResponse?.detection?.created_at.toString()
+//
+//    // Parsing ISO 8601 format
+//    val dateTime = LocalDateTime.parse(dateTimeString.substring(0, 19))
+//
+//    // Format ke bentuk umum: dd-MM-yyyy HH:mm:ss
+//    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+//    val formattedDateTime = dateTime.format(formatter)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -160,9 +190,9 @@ fun FileDetail(
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            Text(text = "Doctor         : Saparudin ", color = Color.White)
-            Text(text = "Date           : $fileDate", color = Color.White)
-        }
+//            Text(text = "Doctor         : Saparudin ", color = Color.White)
+//            Text(text = "Date           : $fileDate", color = Color.White)
+            Text(text = "Date           : tanggal", color = Color.White)}
         Spacer(modifier = modifier.height(24.dp))
 
         Text(
@@ -182,7 +212,7 @@ fun FileDetail(
 //            shape = CircleShape,
             onClick = {
                 isZooming = !isZooming
-                Log.e("zoom", isZooming.toString())
+                Log.e("zoom status", isZooming.toString())
             },
             modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
@@ -243,16 +273,33 @@ fun FileDetail(
 //        }
 //        Spacer(modifier = modifier.height(4.dp))
 
-        val isVerified by remember {
-            mutableStateOf(true)
-        }
+//        var isVerified by remember {
+//            mutableStateOf(false)
+//        }
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = terniary
             ),
             modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            CardContent(if (filename != "Record17Oct.wav") isVerified else false)
+
+//            CardContent(if (filename != "Record17Oct.wav") isVerified else false)
+            if (itemId != -1) {
+
+
+                CardContent(isVerified, note = singleDiagnoseResponse?.detection?.notes.toString())
+            } else {
+//                Text(text = if (itemId != -1) isVerified.toString() else "wav is not uploaded yet", color = Color.White)
+//                Text(text = if (itemId != -1) singleDiagnoseResponse?.detection?.notes.toString() else "Tidak ada catatan dari dokter", color = Color.White)
+                Card(modifier = Modifier.align(Alignment.CenterHorizontally), colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )) {
+                    Text(text = "File wav belum dikirim, klik Analyze terlebih dahulu", color = Color.Red, textAlign = TextAlign.Center, fontSize = 14.sp, modifier = Modifier.fillMaxWidth())
+                    Text(text = "Tidak ada catatan dokter", color = Color.Gray, fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+
+                }
+
+            }
         }
 
         Spacer(modifier = modifier.height(6.dp))
@@ -266,18 +313,33 @@ fun FileDetail(
         val predictResponse by viewModel.predictResponse.collectAsState()
 //        LaunchedEffect(predictResponse) {
 //            // Set isPredicting menjadi false saat nilai predictResponse berubah
-//            isLoading.value == false
+//            !isLoading.value
 //        }
 
         if (predictResponse != null) {
             isLoading.value = false
+//            viewModel.sendWav(filePath, condition = predictResponse!!.result.toString().lowercase(), token = accountInfo!!.token.toString())
+//            Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
+            if (itemId == -1) {
+                LaunchedEffect(key1 = predictResponse) {
+                    viewModel.sendWav(
+                        filePath,
+                        condition = predictResponse!!.result.toString().lowercase(),
+                        token = accountInfo!!.token.toString()
+                    )
+                    Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
+                }
+            }
 
             Box(
                 modifier = modifier
                     .padding(8.dp)
                     .clip(RoundedCornerShape(50.dp))
                     .background(
-                        if (predictResponse!!.result == 0) Color(0xFF72D99D) else Color(
+//                        if (predictResponse!!.data.result == 0) Color(0xFF72D99D) else Color(
+//                            0xFFFF6F6F
+//                        )
+                        if (predictResponse!!.result == "Normal") Color(0xFF72D99D) else Color(
                             0xFFFF6F6F
                         )
                     )
@@ -288,7 +350,7 @@ fun FileDetail(
             ) {
                 Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        text = if (predictResponse!!.result == 0) "Normal Heart" else "Myocardial Infarction",
+                        text = if (predictResponse!!.result == "Normal") "Normal Heart" else "Myocardial Infarction",
                         style = TextStyle(
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold,
@@ -297,7 +359,8 @@ fun FileDetail(
                     )
 
                     Icon(
-                        imageVector = if (predictResponse!!.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+//                        imageVector = if (predictResponse!!.data.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+                        imageVector = if (predictResponse!!.result == "Normal") Icons.Outlined.CheckCircle else Icons.Outlined.Close,
                         contentDescription = null,
                         tint = Color.White
                     )
@@ -338,14 +401,33 @@ fun FileDetail(
                         scope.launch {
                             // Sekarang variabel 'body' adalah objek MultipartBody.Part yang dapat Anda gunakan untuk mengirim file dalam permintaan API.
 //                            viewModel.performPrediction(/*token, */body)
-                            viewModel.performPredict(filePath, storedToken!!)
-//                            delay(1500)
-//                            delay(2000)
+//                            profileResponse?.data?.profile?.id?.let {
+//                                viewModel.performPredict(filePath, storedToken!!,
+//                                    it
+//                                )
+//                            }
 
-                            Log.e(
-                                "prediksi",
-                                "Hasil Prediksi -> ${predictResponse?.result}"
-                            )
+                            /*profileResponse?.data?.id.let {
+                                viewModel.performPredict(filePath, storedToken!!,
+                                    it
+                                )
+                            }*/
+//                            delay(1500)
+
+//                            viewModel.diagnoseHistory()
+//                            viewModel.diagnoseHistory()
+                            viewModel.performPredict(filePath)
+//                            viewModel.sendWav(filePath, accountInfo.token, )
+                            delay(2000)
+
+//                            Log.e(
+//                                "prediksi",
+//                                "Hasil Prediksi -> ${predictResponse?.data?.result}"
+//                            )
+//                            Log.e(
+//                                "prediksi",
+//                                "Hasil Prediksi -> ${predictResponse?.data?.filename}"
+//                            )
                         }
 
                         Log.e("DiagnosesViewModel", "File sended at path: $filePath")

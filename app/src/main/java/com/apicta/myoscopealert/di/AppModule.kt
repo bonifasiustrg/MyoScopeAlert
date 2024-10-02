@@ -12,6 +12,8 @@ import com.apicta.myoscopealert.network.Retro
 import com.apicta.myoscopealert.network.UserApi
 import com.apicta.myoscopealert.data.repository.DiagnosesRepository
 import com.apicta.myoscopealert.data.repository.UserRepository
+import com.apicta.myoscopealert.network.MLApi
+import com.apicta.myoscopealert.network.RetroML
 import com.apicta.myoscopealert.notification.JetAudioNotificationManager
 import com.apicta.myoscopealert.service.JetAudioServiceHandler
 import dagger.Module
@@ -33,7 +35,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserApi(): UserApi {
+    fun provideUserApi(): MLApi {
+        return RetroML.getRetroMLlientInstance().create(MLApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMLApi(): UserApi {
         return Retro.getRetroClientInstance().create(UserApi::class.java)
     }
 //    @Provides
@@ -49,8 +57,8 @@ object AppModule {
     }
     @Provides
     @Singleton
-    fun provideDiagnosesRepository(userApi: UserApi): DiagnosesRepository {
-        return DiagnosesRepository(userApi)
+    fun provideDiagnosesRepository(userApi: UserApi, mlApi: MLApi): DiagnosesRepository {
+        return DiagnosesRepository(userApi, mlApi)
     }
 //    @Provides
 //    @Singleton

@@ -85,17 +85,18 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         }
 
         composable(
-            route = "detail/{fileName}/{date}",
+            route = "detail/{fileName}/{itemId}",
             arguments = listOf(
                 navArgument("fileName") { type = NavType.StringType },
-                navArgument("date") { type = NavType.StringType }
+                navArgument("itemId") { type = NavType.IntType }
             )
         ) { backStackEntry ->
             // Dapatkan nilai fileName dari argumen navigasi
             val fileName = backStackEntry.arguments?.getString("fileName")
-            val fileDate = backStackEntry.arguments?.getString("date")
+//            val fileDate = backStackEntry.arguments?.getString("date")
+            val itemId = backStackEntry.arguments?.getInt("itemId")
 
-            FileDetail(fileName, fileDate, /*dataStoreManager,*/ navController)
+            FileDetail(filename = fileName, itemId = itemId, /*dataStoreManager,*/ navController)
         }
 
 //        detailsNavGraph(navController = navController)

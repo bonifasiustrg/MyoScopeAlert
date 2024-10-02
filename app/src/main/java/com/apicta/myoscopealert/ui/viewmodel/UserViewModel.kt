@@ -8,6 +8,9 @@ import com.apicta.myoscopealert.data.DataStoreManager
 import com.apicta.myoscopealert.models.user.ProfileResponse
 import com.apicta.myoscopealert.models.user.SignInResponse
 import com.apicta.myoscopealert.data.repository.UserRepository
+import com.apicta.myoscopealert.models.user.AccountInfo
+import com.apicta.myoscopealert.models.user.LoginResponse
+import com.apicta.myoscopealert.models.user.PatientProfileResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,14 +24,15 @@ class UserViewModel @Inject constructor(
     private val repository: UserRepository,
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
+
     val isLoginSuccess =  mutableStateOf(false)
 
     // Create a State object to hold the login status
-    private val _loginResponse = MutableStateFlow<SignInResponse?>(null)
-    val loginResponse: StateFlow<SignInResponse?> = _loginResponse
+    private val _loginResponse = MutableStateFlow<LoginResponse?>(null)
+    val loginResponse: StateFlow<LoginResponse?> = _loginResponse
 
-    private val _profileResponse = MutableStateFlow<ProfileResponse?>(null)
-    val profileResponse: StateFlow<ProfileResponse?> = _profileResponse
+    private val _profileResponse = MutableStateFlow</*ProfileResponse*/PatientProfileResponse?>(null)
+    val profileResponse: StateFlow</*ProfileResponse*/PatientProfileResponse?> = _profileResponse
 
     private val _tokenSaved = MutableStateFlow<Boolean>(false)
     val tokenSaved: StateFlow<Boolean> = _tokenSaved
@@ -43,13 +47,17 @@ class UserViewModel @Inject constructor(
                 if (response.isSuccessful) {
                     val rawResponse = response.body()
                     if (rawResponse != null) {
-                        val token = rawResponse.data?.accessToken ?: ""
+//                        val token = rawResponse.data?.accessToken ?: ""
+                        val token = rawResponse.token ?: ""
+                        val userId = rawResponse.data?.id ?: 0
                         _loginResponse.value = rawResponse
-                        Log.e("token perform login", rawResponse.data?.accessToken ?: "Token not available")
+                        Log.e("token perform login", rawResponse.token ?: "Token not available")
                         Log.e("status login", "Login Successfully")
                         isLoginSuccess.value = true
                         viewModelScope.launch {
-                            dataStoreManager.setUserToken(token)
+                            dataStoreManager.setUserToken(/*token, userId*/AccountInfo(
+                                token, userId
+                            ))
                             _tokenSaved.value = true // Token telah disimpan
                         }
                     } else {
@@ -80,7 +88,7 @@ class UserViewModel @Inject constructor(
                     val rawResponse = response.body()
                     if (rawResponse != null) {
 
-                        Log.e("LogoutActivity", "logout nya ${rawResponse.success}")
+                        Log.e("LogoutActivity", "logout nya ${rawResponse}")
                         viewModelScope.launch {
                             dataStoreManager.clearUserToken()
                             Log.e("status", "token cleared ${dataStoreManager.getAuthToken.first()}")
@@ -98,7 +106,7 @@ class UserViewModel @Inject constructor(
         }
     }
 
-    fun performProfile(token: String) {
+    fun performProfile(/*token: String*/accountInfo: AccountInfo) {
 //        viewModelScope.launch {
 //            try {
 //                val response = repository.profile(token)
@@ -113,14 +121,17 @@ class UserViewModel @Inject constructor(
 //            }
 //        }
 
-        if (token.isBlank()) {
+//        if (token.isBlank()) {
+        if (accountInfo.token!!.isBlank()) {
             // Token belum tersedia, tidak perlu melakukan request
             return
         }
 
         viewModelScope.launch {
             try {
-                val response = repository.profile(token)
+                val response = repository.profile(/*token*/
+                    accountInfo
+                )
 
                 if (response.isSuccessful) {
                     val rawResponse = response.body()
@@ -134,7 +145,7 @@ class UserViewModel @Inject constructor(
                     }
                 } else {
                     Log.e("ProfileActivity", "Request failed with code ${response.code()}")
-                    Log.e("ProfileActivity", "Response: ${response.errorBody()?.string()}")
+//                    Log.e("ProfileActivity", "Response: ${response.errorBody()?.string()}")
                     _profileResponse.value = null
                 }
             } catch (e: Exception) {

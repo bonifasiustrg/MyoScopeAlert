@@ -3,7 +3,10 @@ package com.apicta.myoscopealert.data.repository
 
 import android.util.Log
 import com.apicta.myoscopealert.models.diagnose.PatientDiagnoseResponse
+import com.apicta.myoscopealert.models.user.AccountInfo
+import com.apicta.myoscopealert.models.user.LoginResponse
 import com.apicta.myoscopealert.models.user.LogoutResponse
+import com.apicta.myoscopealert.models.user.PatientProfileResponse
 import com.apicta.myoscopealert.models.user.ProfileResponse
 import com.apicta.myoscopealert.models.user.SignInRequest
 import com.apicta.myoscopealert.models.user.SignInResponse
@@ -12,7 +15,7 @@ import retrofit2.Response
 
 class UserRepository(private val userApi: UserApi) {
 
-    suspend fun login(email: String, password: String): Response<SignInResponse> {
+    suspend fun login(email: String, password: String): Response<LoginResponse> {
         val signInRequest = SignInRequest()
         signInRequest.email = email
         signInRequest.password = password
@@ -27,8 +30,12 @@ class UserRepository(private val userApi: UserApi) {
         return userApi.logout("Bearer $token")
     }
 
-    suspend fun profile(token: String): Response<ProfileResponse> {
-        val respon = userApi.profile("Bearer $token")
+    suspend fun profile(/*token: String, userId: Int*/ accountInfo: AccountInfo): Response<PatientProfileResponse> {
+        val respon = userApi.profile("Bearer ${accountInfo.token}", accountInfo.userId!!)
+
+//        Log.e("profile repo", "$accountInfo")
+//        val respon = userApi.profile("Bearer 26|PQ3YoF7G49aClij2oPjZx2PZMQupQsfQx7zgDduWf8c0e1ff", /*accountInfo.userId!!*/4)
+//        Log.e("profile repo", "token: Bearer 26|PQ3YoF7G49aClij2oPjZx2PZMQupQsfQx7zgDduWf8c0e1ff, id: 4")
         Log.e("profile repo", respon.body().toString())
         return respon
     }

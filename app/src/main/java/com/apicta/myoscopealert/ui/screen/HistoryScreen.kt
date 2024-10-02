@@ -1,6 +1,7 @@
 package com.apicta.myoscopealert.ui.screen
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -44,24 +46,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.apicta.myoscopealert.audiopicker.FilePickerDialog
 import com.apicta.myoscopealert.audiopicker.PickerConfig
 import com.apicta.myoscopealert.audiopicker.PickerType
 import com.apicta.myoscopealert.audiopicker.PickerUtils.printToLog
+import com.apicta.myoscopealert.downloader.AndroidDownloader
 import com.apicta.myoscopealert.models.Audio
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.theme.terniary
 import com.apicta.myoscopealert.ui.viewmodel.AudioViewModel
+import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
 import com.apicta.myoscopealert.ui.viewmodel.UIEvents
+import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -71,9 +78,20 @@ import kotlinx.coroutines.runBlocking
 fun HistoryScreen(
     navController: NavHostController,
     onServiceStart: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    diagnosesViewModel: DiagnosesViewModel = hiltViewModel(),
+    viewModel: AudioViewModel = hiltViewModel()
 ) {
-    val viewModel: AudioViewModel = hiltViewModel()
+
+
+//    viewModel.performProfile(/*storedToken!!*/accountInfo?.token.toString())
+    diagnosesViewModel.diagnoseHistory()
+    val historyResponse by diagnosesViewModel.diagnoseHistoryResponse.collectAsState()
+    Log.e("history response", historyResponse.toString())
+
+
+
+//    val viewModel: AudioViewModel = hiltViewModel()
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val items = remember {
@@ -201,6 +219,7 @@ fun HistoryScreen(
                             modifier = modifier
                                 .verticalScroll(rememberScrollState())
                         ) {
+
                             items.forEach {
                                 Row(modifier = modifier
                                     .padding(all = 14.dp)
@@ -252,7 +271,8 @@ fun HistoryScreen(
 //                    viewModel.onUiEvents(UIEvents.SeekToNext)
 //                }
                 modifier = modifier,
-                isLoading = isLoading
+                isLoading = isLoading,
+                historyData = historyResponse?.data
             )
             if (isShowing.value) FilePickerDialog(
                 config = config.value,

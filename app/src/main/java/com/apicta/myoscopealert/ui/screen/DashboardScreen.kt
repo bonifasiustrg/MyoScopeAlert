@@ -62,6 +62,7 @@ fun DashboardScreen(
     onServiceStart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+//    val token by dataStoreManager.getAuthToken.collectAsState(initial = "")
     val token by dataStoreManager.getAuthToken.collectAsState(initial = "")
     Log.e("Dashboard token classtate", "Stored Token: $token")
     val context = LocalContext.current
@@ -132,8 +133,8 @@ fun DashboardScreen(
         bottomBar = { BottomBar(navController = navController, modifier = modifier) }
         ) {
         Surface(modifier = modifier.padding(it)) {
-            MainNavGraph(navController = navController, dataStoreManager = dataStoreManager,
-                { onServiceStart() })
+            MainNavGraph(navController = navController, dataStoreManager = dataStoreManager
+            ) { onServiceStart() }
         }
     }
 }
@@ -167,8 +168,7 @@ fun BottomBar(navController: NavHostController, modifier:Modifier) {
                 AddItem(
                     screen = screen,
                     currentDestination = currentDestination,
-                    navController = navController,
-                    selectedItemIndex = selectedItemIndex
+                    navController = navController
                 )
             }
         }
@@ -179,8 +179,7 @@ fun BottomBar(navController: NavHostController, modifier:Modifier) {
 fun RowScope.AddItem(
     screen: BottomBarScreen,
     currentDestination: NavDestination?,
-    navController: NavHostController,
-    selectedItemIndex: MutableState<Int>
+    navController: NavHostController
 ) {
     NavigationBarItem(
         icon = {

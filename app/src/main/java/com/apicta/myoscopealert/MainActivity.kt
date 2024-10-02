@@ -38,6 +38,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.apicta.myoscopealert.data.DataStoreManager
+import com.apicta.myoscopealert.downloader.AndroidDownloader
 import com.apicta.myoscopealert.graphs.RootNavigationGraph
 import com.apicta.myoscopealert.service.JetAudioService
 import com.apicta.myoscopealert.ui.screen.FileDetail
@@ -56,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var dataStoreManager: DataStoreManager
 
     var isServiceRunning = false
-
 
     @OptIn(ExperimentalPermissionsApi::class)
     @RequiresApi(Build.VERSION_CODES.S)
@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     RootNavigationGraph(navController = rememberNavController(), dataStoreManager,
                         { startService() })
+
                 }
             }
         }

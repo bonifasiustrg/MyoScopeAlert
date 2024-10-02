@@ -83,11 +83,17 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
 
-            yAxis?.setAxisMaximum(0.05f)
-            yAxis?.setAxisMinimum(-0.03f)
+
+//            yAxis?.setAxisMaximum(0.05f)
+//            yAxis?.setAxisMinimum(-0.03f)
+
+            yAxis?.setAxisMaximum(0.008f)
+            yAxis?.setAxisMinimum(-0.005f)
             if (isZooming) {
                 yAxis?.setAxisMaximum(0.008f)
                 yAxis?.setAxisMinimum(-0.005f)
+                Log.e("zoom aktif yaksis min max", "-0.03f, 0.05f --> -0.005f, 0.008f")
+
             }
             // Customize right Y-axis properties to hide labels
             val rightYAxis = signalView.axisRight
@@ -163,9 +169,13 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 
             if (isZooming) {
                 // now modify viewport
-                signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
+                signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
                 signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
+                Log.e("zoom aktif", "range data 800")
             }
+
+            signalView.setVisibleXRangeMaximum(1000F) // allow 20 values to be displayed at once on the x-axis, not more
+            signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
 
             Log.e("processwav", "Refresh signalview")
             // Refresh the chart
@@ -208,7 +218,7 @@ fun SetUpChart(ctx: Context) {
 }
 
 @Composable
-fun CardContent(isVerified: Boolean, modifier: Modifier = Modifier) {
+fun CardContent(isVerified: Boolean, note: String?,  modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = modifier
@@ -231,12 +241,12 @@ fun CardContent(isVerified: Boolean, modifier: Modifier = Modifier) {
             Row {
 
                 Text(
-                    text = "Doctor's Verification Results",
+                    text = "Doctor's Verification",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = poppins
 
-                    )
+                    )   
                 )
                 Spacer(modifier = modifier.width(4.dp))
                 Box(
@@ -270,7 +280,8 @@ fun CardContent(isVerified: Boolean, modifier: Modifier = Modifier) {
             Spacer(modifier = modifier.height(8.dp))
             if (expanded) {
                 Text(
-                    text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
+//                    text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
+                    text = if (note.isNullOrEmpty()) "Tidak ada catatan dari dokter" else note,
                     fontFamily = poppins,
                     fontSize = 13.sp
                 )

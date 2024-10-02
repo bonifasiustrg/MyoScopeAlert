@@ -81,24 +81,36 @@ import com.apicta.myoscopealert.ui.theme.redIcon
 import com.apicta.myoscopealert.ui.theme.redIconSec
 import com.apicta.myoscopealert.ui.theme.secondary
 import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
+import com.apicta.myoscopealert.utils.calculateStatisctic
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Date
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    diagnosesViewModel: DiagnosesViewModel = hiltViewModel(),
+) {
     val context = LocalContext.current
     val viewModel: DiagnosesViewModel = hiltViewModel()
-    val storedToken by viewModel.userToken.collectAsState()
+//    val storedToken by viewModel.userToken.collectAsState()
+    val storedToken by viewModel.accountInfo.collectAsState()
     Log.e("usertoken", "$storedToken")
 
     runBlocking {
-        viewModel.getPatientStatistic(storedToken!!)
+        viewModel.getPatientStatistic(storedToken?.token!!)
+        viewModel.getPatientStatistic(storedToken?.token!!)
+        diagnosesViewModel.diagnoseHistory()
+
 //        viewModel.getLatestDiagnose(storedToken!!)
     }
     val statisticResponse by viewModel.patientStatisticResponse.collectAsState()
 //    val latestDiagnoseResponse by viewModel.patientLatestDiagnoseResponse.collectAsState()
+//    viewModel.performProfile(/*storedToken!!*/accountInfo?.token.toString())
+    val historyResponse by diagnosesViewModel.diagnoseHistoryResponse.collectAsState()
+    Log.e("history response", historyResponse.toString())
 
 
     val isVerified by remember {
@@ -130,7 +142,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Eugene Wehner",
+                text = "Hikmal",
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 28.sp
             )
@@ -139,42 +151,59 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 color = hover,
                 modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
             )
+
+            val total = historyResponse?.data?.size
+            val statistic = historyResponse?.let { calculateStatisctic(it, total!!) }
             Box() {
                 ShimmerCardStatistic(
-                    isLoading = statisticResponse == null,
+                    isLoading = false/*statisticResponse == null*/,
                     contentAfterLoading = {
                         Column {
                             Row(modifier.fillMaxWidth()) {
-                                StatusCard(
-                                    statisticResponse!!.data.totalVerified,
-                                    Icons.Filled.Verified,
-                                    "Verified",
-                                    hover,
-                                    cardsecondary,
-                                    modifier
-                                )
+                                statistic?.let {
+                                    StatusCard(
+                                        it.verified/*statisticResponse!!.data.totalVerified*/,
+                                        Icons.Filled.Verified,
+                                        "Verified",
+                                        hover,
+                                        cardsecondary,
+                                        modifier
+                                    )
+                                }
                                 Spacer(modifier = modifier.width(12.dp))
-                                StatusCard(
-                                    statisticResponse!!.data.totalPatientNormal,
-                                    Icons.Filled.HealthAndSafety,
-                                    "Normal",
-                                    greenIcon,
-                                    greenIconSec,
-                                    modifier
-                                )
+                                statistic?.let {
+                                    StatusCard(
+                                        it.normal/*statisticResponse!!.data.totalPatientNormal*/,
+                                        Icons.Filled.HealthAndSafety,
+                                        "Normal",
+                                        greenIcon,
+                                        greenIconSec,
+                                        modifier
+                                    )
+                                }
                             }
                             Spacer(modifier = modifier.height(12.dp))
                             Row(modifier.fillMaxWidth()) {
-                                StatusCard(
-                                    statisticResponse!!.data.totalUnverified,
-                                    Icons.Filled.Pending,
-                                    "Unverified",
-                                    orangeIcon,
-                                    orangeIconSec,
-                                    modifier
-                                )
+                                statistic?.let {
+                                    StatusCard(
+                                        it.unverified/*statisticResponse!!.data.totalUnverified*/,
+                                        Icons.Filled.Pending,
+                                        "Unverified",
+                                        orangeIcon,
+                                        orangeIconSec,
+                                        modifier
+                                    )
+                                }
                                 Spacer(modifier = modifier.width(12.dp))
-                                StatusCard(statisticResponse!!.data.totalPatientMi, Icons.Filled.Warning, "MI", redIcon, redIconSec, modifier)
+                                statistic?.let {
+                                    StatusCard(/*statisticResponse!!.data.totalPatientMi*/it.mi,
+                                        Icons.Filled.Warning,
+                                        "MI",
+                                        redIcon,
+                                        redIconSec,
+                                        modifier
+                                    )
+                                }
                             }
                         }
                     }
@@ -255,10 +284,12 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     Text(text = formattedDate/*lastRecord.createdAt*/, fontSize = 14.sp)
                 }
 
-                if (/*File(filePath)*/sortedWavFiles!!.exists()) {
-                    ProcessWavFileData3(filePath, context)
-                } else {
-                    SetUpChart(ctx = context)
+                if (sortedWavFiles != null) {
+                    if (/*File(filePath)*/sortedWavFiles.exists()) {
+                        ProcessWavFileData3(filePath, context)
+                    } else {
+                        SetUpChart(ctx = context)
+                    }
                 }
 
                 Spacer(modifier = modifier.height(8.dp))
@@ -319,7 +350,8 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     Text(text = annotatedString, fontSize = 14.sp)
                     Icon(
                         imageVector = ImageVector.vectorResource(
-                            id = if (isVerified) R.drawable.checkicon else R.drawable.ic_close),
+                            id = if (isVerified) R.drawable.checkicon else R.drawable.ic_close
+                        ),
                         contentDescription = null,
                         tint = greenIcon,
                         modifier = modifier.size(20.dp)
@@ -360,9 +392,10 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                 }
                 if (expanded) {
                     Text(
-                        text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
+//                        text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
 //                        text = "Setelah memeriksa grafik gelombang suara detak jantung pasien, saya mengkonfirmasi bahwa tidak terdapat indikasi penyakit Myocardial infarction. Kondisi jantung pasien terlihat sehat dan stabil berdasarkan analisis grafik yang telah kami verifikasi.",
 //                        text = it.notes,
+                        text = "Tidak ada pesan dari dokter",
                         fontFamily = poppins,
                         fontSize = 14.sp
 
@@ -412,7 +445,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
                     }
                 }
             }
-//            Spacer(modifier = modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
 //
 //            Row(
 //                modifier

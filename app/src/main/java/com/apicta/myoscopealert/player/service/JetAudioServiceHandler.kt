@@ -70,6 +70,8 @@ class JetAudioServiceHandler @Inject constructor(
                     (exoPlayer.duration * playerEvent.newProgress).toLong()
                 )
             }
+
+            else -> {}
         }
     }
 
