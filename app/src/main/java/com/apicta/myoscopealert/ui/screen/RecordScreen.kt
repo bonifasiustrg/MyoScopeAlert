@@ -2,11 +2,7 @@ package com.apicta.myoscopealert.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
-import android.bluetooth.BluetoothSocket
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
@@ -14,7 +10,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,11 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,21 +30,18 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.SettingsRemote
 import androidx.compose.material.icons.filled.StopCircle
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,27 +67,22 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
-import com.apicta.myoscopealert.models.FileModel
-import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData2
+import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData
 import com.apicta.myoscopealert.ui.screen.common.SetUpChart
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
 import com.apicta.myoscopealert.utils.BluetoothSocketHolder
-import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
 import com.apicta.myoscopealert.utils.ThreadConnected
 import com.apicta.myoscopealert.utils.checkBtPermission
-import com.apicta.myoscopealert.utils.convertIntArrayToWav
-import com.apicta.myoscopealert.utils.fileListDir
 import com.apicta.myoscopealert.utils.getCurrentTime
 import com.psp.bluetoothlibrary.Bluetooth
-import com.psp.bluetoothlibrary.BluetoothListener
 import com.psp.bluetoothlibrary.Connection
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
-import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.UUID
 import kotlin.properties.Delegates
 
@@ -106,12 +91,12 @@ import kotlin.properties.Delegates
 fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     val bluetoothViewModel: BluetoothViewModel = viewModel()
     var myThreadConnected: ThreadConnected? = null
-    var timeCode by Delegates.notNull<Long>()
+//    var timeCode by Delegates.notNull<Long>()
 
     val context = LocalContext.current
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
 
-    var title by rememberSaveable { mutableStateOf("")}
+    var title by rememberSaveable { mutableStateOf("record")}
     var formatedTitle by remember {
         mutableStateOf(title)
     }
@@ -145,10 +130,25 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                     if (profile == BluetoothProfile.HEADSET){
                         val devices = proxy.connectedDevices
                         for (device in devices){
-                            if (checkBtPermission(context)){
-                                val deviceName = device.name
-//                                    binding.deviceName.text = deviceName
-                                Toast.makeText(context, deviceName, Toast.LENGTH_SHORT).show()
+                            if (devices.isNotEmpty()) {
+                                val device = devices.first()
+                                if (ActivityCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.BLUETOOTH_CONNECT
+                                    ) != PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    // TODO: Consider calling
+                                    //    ActivityCompat#requestPermissions
+                                    // here to request the missing permissions, and then overriding
+                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                    //                                          int[] grantResults)
+                                    // to handle the case where the user grants the permission. See the documentation
+                                    // for ActivityCompat#requestPermissions for more details.
+                                    return
+                                }
+                                Toast.makeText(context, "Connected to ${device.name}", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "No devices connected", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -176,7 +176,8 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             appContext?.let {
                 bluetooth.turnOnWithPermission(it)
                 Log.e("turn on bt", "call func")
-                // With user permission
+
+
             }
             Log.e("newBT check permission", "Bluetooth is not enabled")
         }
@@ -191,7 +192,6 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             .padding(top = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-
         TextField(
             value = title,
             onValueChange = { title = it
@@ -266,7 +266,9 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             Log.e("filepath", filePath)
 
             if (sortedWavFiles!!.exists()) {
-                ProcessWavFileData2(filePath, context)
+//                ProcessWavFileData2(filePath, context)
+                ProcessWavFileData(filePath, context, false)
+
             } else {
                 SetUpChart(ctx = context)
             }
@@ -293,22 +295,30 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                 .padding(bottom = 16.dp)
         )
 
-        timeCode = System.currentTimeMillis()
         Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
             if (!isRecording.value){
 
                 IconButton(
                     onClick = {
                         stopWatch.reset()
-                        if (title != "") {
+                        if (title.isNotEmpty()) {
                             val socket = BluetoothSocketHolder.getBluetoothSocket()
 
                             if (socket != null){
-                                formatedTitle = "$title-$timeCode.wav"
+                                val currentTimeMillis = System.currentTimeMillis()
+                                val date = Date(currentTimeMillis)
+
+                                // Format tanggal ke yyyyMMddhhmmss
+                                val formatter = SimpleDateFormat("yyyyMMddHHmmss") // gunakan HH untuk 24 jam format
+                                val formattedDate = formatter.format(date)
+                                formatedTitle = "M-$formattedDate-$title.wav"
                                 Log.e("filename0", formatedTitle)
 
                                 myThreadConnected = ThreadConnected(socket, true, context, formatedTitle)
                                 myThreadConnected!!.start()
+
+
                                 isConnect.value = true
                                 stopWatch.start()
                                 isRecording.value = true
@@ -318,6 +328,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                             } else {
                                 Log.e("newBT", "Connect to  your device first!")
                                 Toast.makeText(context, "Connect to  your device first!", Toast.LENGTH_LONG).show()
+
                             }
                         } else isErrorTitle = true
                     },
@@ -351,6 +362,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                         scope.launch {
                             isLoad = true
                             myThreadConnected?.cancel()
+
                             delay(2000)
                             showResult = true
                             isLoad = false
@@ -399,7 +411,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
 //                    val fm = "$title-${System.currentTimeMillis()}.wav"
                     // Delay for 4 to 8 seconds (4000 to 8000 milliseconds)
                     Log.e("filename2", formatedTitle)
-                    navController.navigate("detail/$formatedTitle/$date")
+                    navController.navigate("detail/$formatedTitle/-1")
 
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = primary,
@@ -423,5 +435,6 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
         }
         Spacer(modifier = modifier.weight(1f))
         ModalBottomSheetM3(context, isConnect, stopWatch, isStopwatch, isRecording, bluetoothViewModel)
+
     }
 }

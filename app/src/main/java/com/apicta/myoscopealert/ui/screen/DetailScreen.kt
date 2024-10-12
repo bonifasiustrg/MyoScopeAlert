@@ -100,6 +100,7 @@ import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -192,7 +193,7 @@ fun FileDetail(
             )
 //            Text(text = "Doctor         : Saparudin ", color = Color.White)
 //            Text(text = "Date           : $fileDate", color = Color.White)
-            Text(text = "Date           : tanggal", color = Color.White)}
+            Text(text = "Date           : ${LocalDate.now()}", color = Color.White)}
         Spacer(modifier = modifier.height(24.dp))
 
         Text(
@@ -378,6 +379,7 @@ fun FileDetail(
             onClick = {
 //                isPredicting = true
                 if (isBack) {
+                    navController.popBackStack()
                     navController.navigate(BottomBarScreen.History.route) {
                         // Pop up to the start destination of the graph
                         popUpTo(navController.graph.startDestinationId) {
@@ -399,35 +401,25 @@ fun FileDetail(
                     // Periksa apakah file ada
                     if (file.exists()) {
                         scope.launch {
-                            // Sekarang variabel 'body' adalah objek MultipartBody.Part yang dapat Anda gunakan untuk mengirim file dalam permintaan API.
-//                            viewModel.performPrediction(/*token, */body)
-//                            profileResponse?.data?.profile?.id?.let {
-//                                viewModel.performPredict(filePath, storedToken!!,
-//                                    it
-//                                )
-//                            }
+                            try {
+                                viewModel.performPredict(filePath)
+                                delay(3500)
 
-                            /*profileResponse?.data?.id.let {
-                                viewModel.performPredict(filePath, storedToken!!,
-                                    it
-                                )
-                            }*/
-//                            delay(1500)
+                                if (itemId == -1) {
+                                    navController.navigate(BottomBarScreen.History.route) {
+                                        // Menghapus semua layar sebelumnya, termasuk History jika ada
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = false // Ini memastikan layar baru akan selalu dibuat
+                                        restoreState = false     // Ini memastikan state lama tidak dipulihkan
+                                    }
+                                }
 
-//                            viewModel.diagnoseHistory()
-//                            viewModel.diagnoseHistory()
-                            viewModel.performPredict(filePath)
-//                            viewModel.sendWav(filePath, accountInfo.token, )
-                            delay(2000)
-
-//                            Log.e(
-//                                "prediksi",
-//                                "Hasil Prediksi -> ${predictResponse?.data?.result}"
-//                            )
-//                            Log.e(
-//                                "prediksi",
-//                                "Hasil Prediksi -> ${predictResponse?.data?.filename}"
-//                            )
+                            } catch (e: Exception) {
+                                // Tampilkan pesan error atau tangani sesuai kebutuhan
+                                Log.e("PredictionError", "Error performing prediction", e)
+                            }
                         }
 
                         Log.e("DiagnosesViewModel", "File sended at path: $filePath")
@@ -452,11 +444,11 @@ fun FileDetail(
             modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
             if (!isPredicting && !isBack) {
-                Text(text = "Analyze", modifier.padding(end = 4.dp))
+                Text(text = if (itemId != -1) "Re-predict" else "Predict", modifier.padding(end = 4.dp))
                 Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
             } else {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, modifier.padding(end = 4.dp))
-                Text(text = "Back")
+                Text(text = "See all history")
             }
         }
 

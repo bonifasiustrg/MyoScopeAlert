@@ -53,6 +53,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        mlModelBinding = true
 
     }
     composeOptions {
@@ -68,6 +69,15 @@ android {
 }
 
 dependencies {
+//    implementation("com.google.code.gson:gson:2.10.1")
+//    implementation("om.github.aurbano:JWave:1.0.0")
+
+//    implementation("org.tensorflow:tensorflow-lite:2.20.0") // Pastikan versi sesuai
+    // Jika Anda menggunakan model dengan metadata atau fitur tambahan:
+//    implementation("org.tensorflow:tensorflow-lite-support:0.4.0")
+    // Opsional, untuk akselerasi GPU
+//    implementation("org.tensorflow:tensorflow-lite-gpu:2.20.0")
+
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -97,6 +107,11 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.44")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+//    implementation("org.tensorflow:tensorflow-lite-support:0.1.0")
+//    implementation("org.tensorflow:tensorflow-lite-metadata:0.1.0")
+//    implementation("org.tensorflow:tensorflow-lite-gpu:2.3.0")
+//    implementation("com.google.ai.edge.litert:litert:1.0.1")
+
 //    implementation("androidx.wear.compose:compose-material3:1.0.0-alpha11")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
