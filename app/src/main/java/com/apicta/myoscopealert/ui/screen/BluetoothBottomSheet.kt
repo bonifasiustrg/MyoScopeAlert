@@ -218,10 +218,10 @@ fun BottomSheetContent(
         // Bluetooth discovery #START
         bluetooth!!.setOnDiscoveryStateChangedListener { state ->
             if (state == Bluetooth.DISCOVERY_STARTED) {
-                Log.e("newBT BTBottomSheet", "Discovery started")
+                Log.e("newBT BTBottomSheet", "Memulai pencarian perangkat")
             }
             if (state == Bluetooth.DISCOVERY_FINISHED) {
-                Log.e("newBT BTBottomSheet", "Discovery finished")
+                Log.e("newBT BTBottomSheet", "Pencarian perangkat selesai")
             }
         }
         // Bluetooth discovery #END

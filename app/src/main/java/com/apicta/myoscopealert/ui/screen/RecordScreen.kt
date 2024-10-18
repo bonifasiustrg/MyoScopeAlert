@@ -158,7 +158,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                 override fun onServiceDisconnected(profile: Int) {
 //                        binding.deviceName.text = "Disconnected"
 
-                    Toast.makeText(context, "Disconnected", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Stetoscope not connected", Toast.LENGTH_SHORT).show()
 
 
                 }
@@ -402,7 +402,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             val textLoad = if (isButtonEnabled) "Show Detail" else "Processing audio..."
 
             LaunchedEffect(Unit) {
-                delay((25000)/*.random().toLong()*/)
+                delay((12000)/*.random().toLong()*/)
                 isButtonEnabled = true
             }
             Button(
@@ -420,11 +420,16 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
                 modifier = modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = /*"Lihat detail"*/textLoad, fontWeight = FontWeight.Bold)
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_next_arrow),
-                    contentDescription = null,
-                    modifier = modifier.size(24.dp)
-                )
+                if (isButtonEnabled) {
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_next_arrow),
+                        contentDescription = null,
+                        modifier = modifier.size(24.dp)
+                    )
+                } else {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                }
             }
 
 

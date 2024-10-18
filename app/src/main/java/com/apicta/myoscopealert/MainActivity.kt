@@ -71,21 +71,7 @@ class MainActivity : AppCompatActivity() {
 //            // Dapatkan lokasi default package untuk penyimpanan file-file eksternal
 //            val packageLocation = context.getExternalFilesDir(null)
             MyoScopeAlertTheme {
-                val permissionState = rememberPermissionState(
-                    permission = Manifest.permission.READ_MEDIA_AUDIO
-                )
-                val lifecycleOwner = LocalLifecycleOwner.current
-                DisposableEffect(key1 = lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_RESUME) {
-                            permissionState.launchPermissionRequest()
-                        }
-                    }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                    }
-                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

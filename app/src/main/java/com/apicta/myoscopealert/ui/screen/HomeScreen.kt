@@ -64,6 +64,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.graphs.BottomBarScreen
+import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData
 import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData3
 import com.apicta.myoscopealert.ui.screen.common.SetUpChart
 import com.apicta.myoscopealert.ui.screen.common.ShimmerCardStatistic
@@ -269,24 +270,25 @@ fun HomeScreen(
                     .padding(16.dp)
 
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = modifier.padding(bottom = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Event,
-                        contentDescription = null,
-                        modifier = modifier
-                            .size(24.dp)
-                            .padding(end = 4.dp),
-                        tint = orangeIcon
-                    )
-                    Text(text = formattedDate/*lastRecord.createdAt*/, fontSize = 14.sp)
-                }
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = modifier.padding(bottom = 4.dp)
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.Event,
+//                        contentDescription = null,
+//                        modifier = modifier
+//                            .size(24.dp)
+//                            .padding(end = 4.dp),
+//                        tint = orangeIcon
+//                    )
+//                    Text(text = formattedDate/*lastRecord.createdAt*/, fontSize = 14.sp)
+//                }
 
                 if (sortedWavFiles != null) {
                     if (/*File(filePath)*/sortedWavFiles.exists()) {
-                        ProcessWavFileData3(filePath, context)
+//                        ProcessWavFileData3(filePath, context)
+                        ProcessWavFileData(filePath, context)
                     } else {
                         SetUpChart(ctx = context)
                     }
@@ -338,10 +340,10 @@ fun HomeScreen(
                 }
                 Spacer(modifier = modifier.height(4.dp))
                 val annotatedString = buildAnnotatedString {
-                    append("Verified by")
-                    withStyle(style = SpanStyle(color = hover, fontWeight = FontWeight.ExtraBold)) {
-                        append(" Dokter Saparudin")
-                    }
+                    append("Verification status")
+//                    withStyle(style = SpanStyle(color = hover, fontWeight = FontWeight.ExtraBold)) {
+//                        append(" Dokter Saparudin")
+//                    }
                 }
                 Row(
                     modifier.fillMaxWidth(),

@@ -49,6 +49,7 @@
         android:supportsRtl="true"
         android:theme="@style/App.Starting.Theme"
         android:hardwareAccelerated="true"
+        android:largeHeap="true"
         tools:targetApi="33">
         <activity
             android:name=".MainActivity"

@@ -44,6 +44,7 @@ import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.terniary
+import com.apicta.myoscopealert.utils.ThreadConnected.Companion.SAMPLE_RATE
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -56,7 +57,8 @@ import java.io.IOException
 @Composable
 fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false, modifier: Modifier = Modifier) {
 //    val SAMPLE_RATE = 8000
-    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
+//    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
+    val SAMPLE_RATE = SAMPLE_RATE /*The speed and weight of audio*/
     val SHRT_MAX = 32767 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
 //    val SHRT_MAX = 255
     Column(
@@ -87,14 +89,14 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 //            yAxis?.setAxisMaximum(0.05f)
 //            yAxis?.setAxisMinimum(-0.03f)
 
-            yAxis?.setAxisMaximum(0.008f)
-            yAxis?.setAxisMinimum(-0.005f)
-            if (isZooming) {
-                yAxis?.setAxisMaximum(0.008f)
-                yAxis?.setAxisMinimum(-0.005f)
-                Log.e("zoom aktif yaksis min max", "-0.03f, 0.05f --> -0.005f, 0.008f")
-
-            }
+            yAxis?.setAxisMaximum(0.04f)
+            yAxis?.setAxisMinimum(-0.025f)
+//            if (isZooming) {
+//                yAxis?.setAxisMaximum(0.008f)
+//                yAxis?.setAxisMinimum(-0.005f)
+//                Log.e("zoom aktif yaksis min max", "-0.03f, 0.05f --> -0.005f, 0.008f")
+//
+//            }
             // Customize right Y-axis properties to hide labels
             val rightYAxis = signalView.axisRight
             rightYAxis?.setDrawLabels(false)
@@ -167,14 +169,14 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 
             // moveViewToX(...) also calls invalidate()
 
-            if (isZooming) {
-                // now modify viewport
-                signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
-                signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
-                Log.e("zoom aktif", "range data 800")
-            }
+//            if (isZooming) {
+//                // now modify viewport
+//                signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
+//                signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
+//                Log.e("zoom aktif", "range data 800")
+//            }
 
-            signalView.setVisibleXRangeMaximum(1000F) // allow 20 values to be displayed at once on the x-axis, not more
+            signalView.setVisibleXRangeMaximum(6000F) // allow 20 values to be displayed at once on the x-axis, not more
             signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
 
             Log.e("processwav", "Refresh signalview")

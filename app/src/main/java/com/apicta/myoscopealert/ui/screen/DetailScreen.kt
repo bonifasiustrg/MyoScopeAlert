@@ -1,21 +1,12 @@
 package com.apicta.myoscopealert.ui.screen
 
 
-import android.content.Context
-import android.media.AudioFormat
-import android.media.AudioRecord
-import android.media.MediaPlayer
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,18 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -49,12 +34,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,36 +55,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.apicta.myoscopealert.R
-import com.apicta.myoscopealert.databinding.SignalChartBinding
+import com.apicta.myoscopealert.ai.HeartbeatViewModel
 import com.apicta.myoscopealert.graphs.BottomBarScreen
 import com.apicta.myoscopealert.ui.screen.common.CardContent
 import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData
-import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.terniary
 import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
-import com.apicta.myoscopealert.ui.viewmodel.UserViewModel
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.BufferedInputStream
-import java.io.DataInputStream
 import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -114,7 +81,8 @@ fun FileDetail(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: DiagnosesViewModel = hiltViewModel(),
-    viewModelProfile: UserViewModel = hiltViewModel()
+    heartbeatViewModel: HeartbeatViewModel = viewModel(),
+//    viewModelProfile: UserViewModel = hiltViewModel()
 ) {
 
 //    val storedToken by viewModel.userToken.collectAsState()
@@ -130,8 +98,8 @@ fun FileDetail(
     Log.e("history response", singleDiagnoseResponse.toString())
     val isVerified = if (singleDiagnoseResponse?.detection?.verified == "yes") true else false
 
-    viewModelProfile.performProfile(/*storedToken!!*/accountInfo!!)
-    val profileResponse by viewModelProfile.profileResponse.collectAsState()
+//    viewModelProfile.performProfile(/*storedToken!!*/accountInfo!!)
+//    val profileResponse by viewModelProfile.profileResponse.collectAsState()
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -147,6 +115,7 @@ fun FileDetail(
     val isPlaying = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
+    val loadingPredict = remember { mutableStateOf(false) }
 
 //    val mediaPlayer = remember {
 //        MediaPlayer().apply {
@@ -317,6 +286,127 @@ fun FileDetail(
 //            !isLoading.value
 //        }
 
+
+        if (loadingPredict.value) {
+            CircularProgressIndicator(modifier = modifier.align(Alignment.CenterHorizontally))
+        }
+        // Convert LiveData to State
+        val prediction by heartbeatViewModel.prediction.collectAsState()
+
+        if (prediction != null) {
+            loadingPredict.value = false
+//            viewModel.sendWav(filePath, condition = predictResponse!!.result.toString().lowercase(), token = accountInfo!!.token.toString())
+//            Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
+//            if (itemId == -1) {
+//                LaunchedEffect(key1 = predictResponse) {
+//                    viewModel.sendWav(
+//                        filePath,
+//                        condition = predictResponse!!.result.toString().lowercase(),
+//                        token = accountInfo!!.token.toString()
+//                    )
+//                    Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
+//                }
+//            }
+
+            Box(
+                modifier = modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(
+//                        if (predictResponse!!.data.result == 0) Color(0xFF72D99D) else Color(
+//                            0xFFFF6F6F
+//                        )
+                        if (prediction == "Normal") Color(0xFF72D99D) else Color(
+                            0xFFFF6F6F
+                        )
+                    )
+                    .padding(vertical = 14.dp, horizontal = 64.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+
+            ) {
+                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = if (prediction == "Normal") "Normal Heart" else "Myocardial Infarction",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    )
+
+                    Icon(
+//                        imageVector = if (predictResponse!!.data.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+                        imageVector = if (prediction == "Normal") Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+            Spacer(modifier = modifier.height(16.dp))
+        } else {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+            Text(
+                text = "No prediction yet",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            }
+        }
+        Button(
+            onClick = {
+                loadingPredict.value = true
+//                isLoading.value = true
+
+//                isPredicting = true
+                /*FUNGSI PREDICT*/
+                val file = File(filePath)
+
+                // Periksa apakah file ada
+                if (file.exists()) {
+                    scope.launch {
+                        try {
+//                            viewModel.performPredict(filePath)
+//                            delay(3500)
+//                            val audioData = FloatArray(1000) // Placeholder
+//                            heartbeatViewModel.predictHeartbeat(audioData)
+//                            val wavFilePath = "/storage/emulated/0/Music/record-1728633564320.wav"
+                            heartbeatViewModel.predictHeartbeatFromPath(/*wavFilePath*/filePath)
+                            Log.e("Prediction", "Prediction result: $prediction")
+
+                        } catch (e: Exception) {
+                            // Tampilkan pesan error atau tangani sesuai kebutuhan
+                            Log.e("PredictionError", "Error performing prediction", e)
+                        }
+                    }
+
+                    Log.e("Heartbeat", "File sended at path: $filePath")
+                    Toast.makeText(context, "Analyzing your heartbeat...", Toast.LENGTH_SHORT)
+                        .show()
+//                    isBack = true
+//                    isPredicting = false
+                } else {
+                    // Handle kesalahan jika file tidak ditemukan
+                    Log.e("Heartbeat", "File not found at path: $filePath")
+                    Toast.makeText(
+                        context,
+                        "File not found at path: $filePath",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            },
+            colors = ButtonDefaults.buttonColors(Color.Magenta),
+            modifier = modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(text = "Predict (Offline)")
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        if (isLoading.value) {
+            CircularProgressIndicator(modifier = modifier.align(Alignment.CenterHorizontally))
+        }
         if (predictResponse != null) {
             isLoading.value = false
 //            viewModel.sendWav(filePath, condition = predictResponse!!.result.toString().lowercase(), token = accountInfo!!.token.toString())
@@ -369,11 +459,6 @@ fun FileDetail(
             }
             Spacer(modifier = modifier.height(16.dp))
         }
-        if (isLoading.value) {
-            CircularProgressIndicator(modifier = modifier.align(Alignment.CenterHorizontally))
-        }
-
-
         Button(
 //            enabled = !isPredicting,
             onClick = {

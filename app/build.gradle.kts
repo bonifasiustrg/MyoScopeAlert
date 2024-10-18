@@ -62,21 +62,39 @@ android {
     packaging {
         resources {
 //            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += listOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
-
+            excludes += listOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties", "META-INF/DEPENDENCIES", "META-INF/LICENSE.md", "META-INF/LICENSE-notice.md")
         }
     }
+
 }
 
 dependencies {
-//    implementation("com.google.code.gson:gson:2.10.1")
-//    implementation("om.github.aurbano:JWave:1.0.0")
+    /*WAV Feature Extraction*/
+//    implementation("com.github.wendykierp:JTransforms:3.1")
+//    implementation("org.apache.commons:commons-math3:3.6.1")
+//    implementation("com.github.wendux:Wavelet:1.0.1") // Untuk Wavelet Transform
+//    implementation("com.github.JorenSix:TarsosDSP:2.4")
+//    implementation("be.tarsos.dsp:core:2.5")
+//    implementation("be.tarsos.dsp:jvm:2.5")
+    // Audio processing
+//    implementation("com.github.psambit9791:jdsp:3.0.0")
+    implementation("com.github.psambit9791:jdsp:0.4.0") {
+        exclude(group = "org.apache.maven.surefire", module = "common-java5")
+        exclude(group = "org.apache.maven.surefire", module = "surefire-api")
+    }
 
-//    implementation("org.tensorflow:tensorflow-lite:2.20.0") // Pastikan versi sesuai
-    // Jika Anda menggunakan model dengan metadata atau fitur tambahan:
-//    implementation("org.tensorflow:tensorflow-lite-support:0.4.0")
-    // Opsional, untuk akselerasi GPU
-//    implementation("org.tensorflow:tensorflow-lite-gpu:2.20.0")
+    implementation("org.apache.commons:commons-math3:3.6.1")
+
+    // Fast Fourier Transform
+    implementation("com.github.wendykierp:JTransforms:3.1")
+
+
+
+    /*TFLITE MODEL*/
+    implementation("org.tensorflow:tensorflow-lite:2.8.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.1.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.3.0")
 
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
 
@@ -84,6 +102,7 @@ dependencies {
 
     /*BLUETOOTH*/
     implementation("com.github.prasad-psp:Android-Bluetooth-Library:1.0.2")
+//    implementation("com.github.prasad-psp:Android-Bluetooth-Library:1.0.4")
 
     
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
@@ -107,16 +126,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.44")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-//    implementation("org.tensorflow:tensorflow-lite-support:0.1.0")
-//    implementation("org.tensorflow:tensorflow-lite-metadata:0.1.0")
-//    implementation("org.tensorflow:tensorflow-lite-gpu:2.3.0")
-//    implementation("com.google.ai.edge.litert:litert:1.0.1")
 
-//    implementation("androidx.wear.compose:compose-material3:1.0.0-alpha11")
+
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
-//    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
-//    kapt("androidx.hilt:hilt-compiler:1.0.0")
 
     //RETROFIT
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -129,7 +142,6 @@ dependencies {
     // Compose
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-
     //Splash Api
     implementation("androidx.core:core-splashscreen:1.0.1")
 
@@ -143,6 +155,7 @@ dependencies {
     implementation("androidx.media3:media3-ui:$media3_version")
     implementation("androidx.media3:media3-session:$media3_version")
     implementation("androidx.legacy:legacy-support-v4:1.0.0") // Needed MediaSessionCompat.Token
+
     // Glide
     implementation("com.github.bumptech.glide:glide:4.15.1")
     implementation ("com.google.accompanist:accompanist-permissions:0.30.0")

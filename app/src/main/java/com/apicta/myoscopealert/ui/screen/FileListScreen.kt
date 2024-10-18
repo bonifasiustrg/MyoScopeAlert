@@ -332,7 +332,7 @@ fun ColumnScope.FileListScreen(
                                                 color = Color.White,
                                                 fontFamily = poppins
                                             )
-                                        } else if (it?.condition == "MI Detected") {
+                                        } else if (it?.condition?.lowercase() == "mi detected") {
                                             Text(
                                                 text = "MI",
                                                 fontSize = 10.sp,

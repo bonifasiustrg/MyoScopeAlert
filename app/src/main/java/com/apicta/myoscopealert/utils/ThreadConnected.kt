@@ -11,6 +11,8 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.apicta.myoscopealert.utils.Wav.adjustVolumeWithCompression
+import com.apicta.myoscopealert.utils.Wav.slowDownAudio
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -58,11 +60,11 @@ class ThreadConnected(
             val elapsedTime = currentTime - startTime
             val elapsedTimeFloat = millisToSeconds(elapsedTime)
 
-            if (elapsedTimeFloat >= 30.0){
+            if (elapsedTimeFloat >= 12/*30.0*/){
                 startTime = currentTime
                 Log.e("newBT " + TAG, "pcgArray: ${ArrayReceiver.pcgArray}")
                 Log.e("newBT " + TAG, "nilai maksimum: ${ArrayReceiver.pcgArray.maxOrNull()}")
-                Log.e("newBT " + TAG, "timeArray: ${ArrayReceiver.timeArray}")
+//                Log.e("newBT " + TAG, "timeArray: ${ArrayReceiver.timeArray}")
                 isOn = false
 
                 val contentValues = ContentValues()
@@ -89,7 +91,14 @@ class ThreadConnected(
 //                file.createNewFile()
 
                 data = byteArrayOutputStream.toByteArray()
-                val wavData: ByteArray = Wav.generateWavHeader(data, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
+                val gainFactor = 5.0f // Coba nilai yang lebih tinggi
+//                val slowdownFactor = 1f // Nilai > 1 akan memperlambat audio
+                val adjustedAudioData = adjustVolumeWithCompression(data, gainFactor)
+//                val slowedAudioData = slowDownAudio(adjustedAudioData, slowdownFactor)
+//                val adjustedSampleRate = (SAMPLE_RATE / slowdownFactor).toInt()
+
+//                val wavData: ByteArray = Wav.generateWavHeader(slowedAudioData, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
+                val wavData: ByteArray = Wav.generateWavHeader(adjustedAudioData, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
 
                 try {
                     val outputStream: OutputStream = contentResolver?.openOutputStream(uri!!)!!
@@ -113,7 +122,7 @@ class ThreadConnected(
 
 
             val receivedInt = ByteBuffer.wrap(mmBuffer, 0, numBytes).order(ByteOrder.LITTLE_ENDIAN).int
-            Log.e("newBT Bluetooth record", "received: ${receivedInt.toFloat()}")
+            Log.e("newBT threadconnected", "received: ${receivedInt.toFloat()}")
             ArrayReceiver.pcgArray.add(receivedInt.toFloat())
             ArrayReceiver.timeArray.add(elapsedTimeFloat)
 
@@ -132,13 +141,17 @@ class ThreadConnected(
     }
 
     companion object{
-        private const val TAG = "Record Patient Screen vm"
+        private const val TAG = "Thread connected"
         private const val REQUEST_PERMISSION = 1
         const val SAMPLE_RATE = 24000
+//        const val SAMPLE_RATE = 44100
+//        const val SAMPLE_RATE = 22050
+//        const val SAMPLE_RATE = 16000
         const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         // encoding float ok but time not ok
         //
         const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
+//        const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
         val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
 //        private const val BUFFER_SIZE = 1024
     }
