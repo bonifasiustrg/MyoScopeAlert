@@ -58,8 +58,8 @@ import java.io.IOException
 fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false, modifier: Modifier = Modifier) {
 //    val SAMPLE_RATE = 8000
 //    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
-    val SAMPLE_RATE = SAMPLE_RATE /*The speed and weight of audio*/
-    val SHRT_MAX = 32767 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
+//    val SAMPLE_RATE = SAMPLE_RATE /*The speed and weight of audio*/
+    val SHRT_MAX = 24000 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
 //    val SHRT_MAX = 255
     Column(
         modifier
@@ -89,8 +89,8 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 //            yAxis?.setAxisMaximum(0.05f)
 //            yAxis?.setAxisMinimum(-0.03f)
 
-            yAxis?.setAxisMaximum(0.04f)
-            yAxis?.setAxisMinimum(-0.025f)
+            yAxis?.setAxisMaximum(0.030f)
+            yAxis?.setAxisMinimum(-0.020f)
 //            if (isZooming) {
 //                yAxis?.setAxisMaximum(0.008f)
 //                yAxis?.setAxisMinimum(-0.005f)
@@ -176,8 +176,16 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 //                Log.e("zoom aktif", "range data 800")
 //            }
 
-            signalView.setVisibleXRangeMaximum(6000F) // allow 20 values to be displayed at once on the x-axis, not more
-            signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
+//            signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
+//            signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
+//            val initialVisibleRange = dataPoints.size / 4f // Misalnya setengah data
+            val initialVisibleRange = 20000f // Ganti 100 dengan jumlah data yang diinginkan
+
+            signalView.setVisibleXRangeMaximum(initialVisibleRange) // Sesuaikan X-axis agar seluruh data terlihat
+            signalView.setVisibleXRangeMinimum(10f)
+            signalView.moveViewToX(0f)
+//            yAxis.setAxisMinimum(dataPoints.minOrNull() ?: -0.010f)
+//            yAxis.setAxisMaximum(dataPoints.maxOrNull() ?: 0.050f)
 
             Log.e("processwav", "Refresh signalview")
             // Refresh the chart

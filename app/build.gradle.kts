@@ -18,7 +18,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.8"
+        versionName = "1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -44,12 +44,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17" // or "11" / "1.8" / "17"
 
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
+//    kotlin {
+//        jvmToolchain(17)
+//    }
+
     buildFeatures {
         compose = true
         viewBinding = true
@@ -65,6 +67,12 @@ android {
             excludes += listOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties", "META-INF/DEPENDENCIES", "META-INF/LICENSE.md", "META-INF/LICENSE-notice.md")
         }
     }
+//    kapt {
+//        javacOptions {
+//            correctErrorTypes = true
+//            option("-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+//        }
+//    }
 
 }
 
@@ -126,6 +134,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.44")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation(files("C:\\Users\\kesain\\Downloads\\TarsosDSP-2.4.jar"))
+    implementation(files("C:\\Users\\kesain\\Downloads\\jwave-1.0.0.jar"))
 
 
     kapt("com.google.dagger:hilt-android-compiler:2.44")

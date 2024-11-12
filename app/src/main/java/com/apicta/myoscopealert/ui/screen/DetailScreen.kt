@@ -66,6 +66,7 @@ import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.terniary
 import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
+import com.apicta.myoscopealert.utils.applyLowPassFilter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -365,7 +366,17 @@ fun FileDetail(
                 // Periksa apakah file ada
                 if (file.exists()) {
                     scope.launch {
+
                         try {
+//                                if (itemId == -1) {
+//                                    // Apply the low-pass filter to the file if itemId is -1
+//                                    val tempFile = File(context.cacheDir, "temp_filtered.wav")
+//                                    applyLowPassFilter(file, tempFile)
+//
+//                                    // Replace the original file with the filtered file
+//                                    tempFile.copyTo(file, overwrite = true)
+//                                    tempFile.delete() // Clean up the temporary file
+//                                }
 //                            viewModel.performPredict(filePath)
 //                            delay(3500)
 //                            val audioData = FloatArray(1000) // Placeholder
@@ -487,22 +498,20 @@ fun FileDetail(
                     if (file.exists()) {
                         scope.launch {
                             try {
+
+
                                 viewModel.performPredict(filePath)
                                 delay(3500)
 
                                 if (itemId == -1) {
                                     navController.navigate(BottomBarScreen.History.route) {
-                                        // Menghapus semua layar sebelumnya, termasuk History jika ada
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            inclusive = true
-                                        }
-                                        launchSingleTop = false // Ini memastikan layar baru akan selalu dibuat
-                                        restoreState = false     // Ini memastikan state lama tidak dipulihkan
+                                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                        launchSingleTop = false
+                                        restoreState = false
                                     }
                                 }
 
                             } catch (e: Exception) {
-                                // Tampilkan pesan error atau tangani sesuai kebutuhan
                                 Log.e("PredictionError", "Error performing prediction", e)
                             }
                         }
@@ -536,6 +545,7 @@ fun FileDetail(
                 Text(text = "See all history")
             }
         }
+
 
 
     }

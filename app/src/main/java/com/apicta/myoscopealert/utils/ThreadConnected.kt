@@ -1,7 +1,6 @@
 package com.apicta.myoscopealert.utils
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.ContentValues
 import android.content.Context
@@ -12,14 +11,141 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.apicta.myoscopealert.utils.Wav.adjustVolumeWithCompression
-import com.apicta.myoscopealert.utils.Wav.slowDownAudio
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import com.apicta.myoscopealert.wav.AudioLowPassFilter
+//import be.tarsos.dsp.AudioEvent
+//import be.tarsos.dsp.AudioProcessor
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.UUID
+
+//@SuppressLint("MissingPermission")
+//class ThreadConnected(
+//    socket: BluetoothSocket,
+//    switch: Boolean,
+//    private val context: Context,
+//    private val title: String
+//) : Thread() {
+//
+//    private val mmSocket = socket
+//    private val mmInStream: InputStream = socket.inputStream
+//    private val mmBuffer: ByteArray = ByteArray(BUFFER_SIZE)
+//    private val byteArrayOutputStream = ByteArrayOutputStream()
+//    private lateinit var data: ByteArray
+//
+//    private var isOn = switch
+//    private var startTime: Long = 0
+//
+//    // Define filter parameters
+//    private val filterOrder = 2
+//    private val cutoffFreq = 3.0 // Adjust cutoff frequency as needed
+//    private val sampleRate = SAMPLE_RATE
+//    private val firCoefficients = createLowPassFIR(filterOrder, cutoffFreq, sampleRate)
+//    private val firFilterProcessor = FIRFilterProcessor(firCoefficients)
+//
+//    @RequiresApi(Build.VERSION_CODES.S)
+//    override fun run() {
+//        var numBytes: Int
+//
+//        while (isOn) {
+//            try {
+//                numBytes = mmInStream.read(mmBuffer)
+//                byteArrayOutputStream.write(mmBuffer, 0, numBytes)
+//            } catch (e: IOException) {
+//                Log.e("newBT Bluetooth record", "Input stream was disconnected", e)
+//                break
+//            }
+//
+//            val currentTime = System.currentTimeMillis()
+//            if (startTime == 0L) startTime = currentTime
+//            val elapsedTimeFloat = millisToSeconds(currentTime - startTime)
+//
+//            if (elapsedTimeFloat >= 12) {
+//                saveAudioFile()
+//                isOn = false
+//            }
+//
+//            // Process audio data through the FIR filter
+//            val audioData = ByteBuffer.wrap(mmBuffer, 0, numBytes).order(ByteOrder.LITTLE_ENDIAN).float
+//            firFilterProcessor.processAudio(audioData)
+//            ArrayReceiver.pcgArray.add(audioData.toFloat())
+//            ArrayReceiver.timeArray.add(elapsedTimeFloat)
+//        }
+//    }
+//
+//    private fun saveAudioFile() {
+//        val contentValues = ContentValues().apply {
+//            put(MediaStore.MediaColumns.DISPLAY_NAME, title)
+//            put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
+//        }
+//
+//        val contentResolver = context.contentResolver
+//        val uri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
+//        data = byteArrayOutputStream.toByteArray()
+//        val wavData = Wav.generateWavHeader(data, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
+//
+//        uri?.let {
+//            contentResolver.openOutputStream(uri)?.use { outputStream ->
+//                outputStream.write(wavData)
+//            }
+//        }
+//    }
+//
+//    fun cancel() {
+//        try {
+//            mmSocket.close()
+//        } catch (e: IOException) {
+//            Log.e("Bluetooth record", "Could not close the connect socket", e)
+//        }
+//    }
+//
+//    fun millisToSeconds(millis: Long): Float {
+//        return (millis / 1000.0).toFloat().let { "%.3f".format(it).toFloat() }
+//    }
+//
+//    companion object {
+//        private const val TAG = "Thread connected"
+//        const val SAMPLE_RATE = 24000
+//        const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+//        const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
+//        val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+//    }
+//
+//    private fun createLowPassFIR(order: Int, cutoffFreq: Double, sampleRate: Int): DoubleArray {
+//        val coefficients = DoubleArray(order + 1)
+//        val fc = cutoffFreq / sampleRate
+//        for (i in 0..order) {
+//            coefficients[i] = if (i == order / 2) {
+//                2 * Math.PI * fc
+//            } else {
+//                Math.sin(2 * Math.PI * fc * (i - order / 2)) / (i - order / 2) *
+//                        (0.54 - 0.46 * Math.cos(2 * Math.PI * i / order))
+//            }
+//        }
+//        return coefficients
+//    }
+//
+//    inner class FIRFilterProcessor(private val coefficients: DoubleArray) : AudioProcessor {
+//        private val buffer = DoubleArray(coefficients.size)
+//        private var bufferIndex = 0
+//
+//        fun processAudio(audioSample: Float): Float {
+//            buffer[bufferIndex] = audioSample.toDouble()
+//            var output = 0.0
+//
+//            var index = bufferIndex
+//            for (j in coefficients.indices) {
+//                output += coefficients[j] * buffer[index]
+//                index = if (index == 0) buffer.size - 1 else index - 1
+//            }
+//
+//            bufferIndex = (bufferIndex + 1) % buffer.size
+//            return output.toFloat()
+//        }
+//
+//        override fun process(audioEvent: AudioEvent?): Boolean = true
+//        override fun processingFinished() {}
+//    }
+//}
 
 
 @SuppressLint("MissingPermission")
@@ -91,7 +217,7 @@ class ThreadConnected(
 //                file.createNewFile()
 
                 data = byteArrayOutputStream.toByteArray()
-                val gainFactor = 5.0f // Coba nilai yang lebih tinggi
+                val gainFactor = 3.0f // Coba nilai yang lebih tinggi
 //                val slowdownFactor = 1f // Nilai > 1 akan memperlambat audio
                 val adjustedAudioData = adjustVolumeWithCompression(data, gainFactor)
 //                val slowedAudioData = slowDownAudio(adjustedAudioData, slowdownFactor)
@@ -100,24 +226,46 @@ class ThreadConnected(
 //                val wavData: ByteArray = Wav.generateWavHeader(slowedAudioData, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
                 val wavData: ByteArray = Wav.generateWavHeader(adjustedAudioData, CHANNEL_CONFIG, SAMPLE_RATE, AUDIO_FORMAT)
 
+                val filteredWavData = AudioLowPassFilter.applyLowPassFilter(
+                    wavData = wavData,
+                    sampleRate = SAMPLE_RATE,
+                    cutoffFreq = 1000.0,  // Gunakan 1000 Hz sebagai cutoff untuk menghilangkan noise tinggi
+                    order = 128  // Order yang lebih tinggi untuk transisi yang lebih tajam
+                )
+
                 try {
                     val outputStream: OutputStream = contentResolver?.openOutputStream(uri!!)!!
-//                    val outputStream: FileOutputStream = FileOutputStream(file)
-                    if (desiredByteCount <= wavData.size){
-//                                outputStream.write(wavData)
-                        outputStream.write(wavData, 0, desiredByteCount)
-                        Log.e("newBT " + TAG, "run: execute A")
+                    if (desiredByteCount <= filteredWavData.size) {
+                        outputStream.write(filteredWavData, 0, desiredByteCount)
+                        Log.e("newBT " + TAG, "run: execute A with filtered data")
                     } else {
-                        outputStream.write(wavData)
-                        Log.e("newBT " + TAG, "run: execute B")
+                        outputStream.write(filteredWavData)
+                        Log.e("newBT " + TAG, "run: execute B with filtered data")
                     }
                     outputStream.close()
-                    Log.e("newBT save" + TAG, "File saved to: $uri")
-//                    Log.e("newBT save" + TAG, "File saved to: $filePath")
-//                    Toast.makeText(context, "File saved to: $uri", Toast.LENGTH_SHORT).show()
-                } catch (e: IOException){
+                    Log.e("newBT save" + TAG, "Filtered File saved to: $uri")
+                } catch (e: IOException) {
                     e.printStackTrace()
                 }
+
+//                try {
+//                    val outputStream: OutputStream = contentResolver?.openOutputStream(uri!!)!!
+////                    val outputStream: FileOutputStream = FileOutputStream(file)
+//                    if (desiredByteCount <= wavData.size){
+////                                outputStream.write(wavData)
+//                        outputStream.write(wavData, 0, desiredByteCount)
+//                        Log.e("newBT " + TAG, "run: execute A")
+//                    } else {
+//                        outputStream.write(wavData)
+//                        Log.e("newBT " + TAG, "run: execute B")
+//                    }
+//                    outputStream.close()
+//                    Log.e("newBT save" + TAG, "File saved to: $uri")
+////                    Log.e("newBT save" + TAG, "File saved to: $filePath")
+////                    Toast.makeText(context, "File saved to: $uri", Toast.LENGTH_SHORT).show()
+//                } catch (e: IOException){
+//                    e.printStackTrace()
+//                }
             }
 
 
@@ -156,33 +304,3 @@ class ThreadConnected(
 //        private const val BUFFER_SIZE = 1024
     }
 }
-
-
-//    private fun updateChart() {
-//        val dataValues: ArrayList<Entry> = ArrayList()
-//        for ((time, audio) in ArrayReceiver.timeArray.zip(ArrayReceiver.pcgArray)) {
-//            if (time <= 10.0){
-//                dataValues.add(Entry(time, audio))
-//            }
-//        }
-//
-//        val lineDataset1 = LineDataSet(dataValues, "PCG")
-//        lineDataset1.setDrawCircles(false)
-//
-//        val dataset: ArrayList<ILineDataSet> = ArrayList()
-//        dataset.add(lineDataset1)
-//
-//        binding.signalView.xAxis.isEnabled = false
-//        binding.signalView.axisLeft.isEnabled = false
-//        binding.signalView.axisRight.isEnabled = false
-//
-//        binding.signalView.xAxis.axisMinimum = 0f
-//        binding.signalView.xAxis.axisMaximum = 10f
-//
-//        val data = LineData(dataset)
-//        binding.signalView.data = data
-//        binding.signalView.notifyDataSetChanged()
-//        binding.signalView.invalidate()
-//    }
-
-

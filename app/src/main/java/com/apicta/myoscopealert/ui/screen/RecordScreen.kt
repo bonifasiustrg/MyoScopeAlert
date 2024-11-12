@@ -352,23 +352,20 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
 
                 IconButton(
                     onClick = {
-//                    connection.disconnect()
-
+                        // Pauses stopwatch and recording flags
                         stopWatch.pause()
                         isStopwatch.value = false
                         isRecording.value = false
 
-
+                        // Initiates loading indication and delays to show results
                         scope.launch {
                             isLoad = true
-                            myThreadConnected?.cancel()
+                            myThreadConnected?.cancel() // Safely stop the Bluetooth thread
 
-                            delay(2000)
+                            delay(2000) // Delay to ensure data processing completes
                             showResult = true
                             isLoad = false
                         }
-
-
 
                     },
                     modifier = modifier
@@ -402,7 +399,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
             val textLoad = if (isButtonEnabled) "Show Detail" else "Processing audio..."
 
             LaunchedEffect(Unit) {
-                delay((12000)/*.random().toLong()*/)
+                delay((15000)/*.random().toLong()*/)
                 isButtonEnabled = true
             }
             Button(

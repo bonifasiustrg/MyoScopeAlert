@@ -102,7 +102,6 @@ fun HomeScreen(
 
     runBlocking {
         viewModel.getPatientStatistic(storedToken?.token!!)
-        viewModel.getPatientStatistic(storedToken?.token!!)
         diagnosesViewModel.diagnoseHistory()
 
 //        viewModel.getLatestDiagnose(storedToken!!)
