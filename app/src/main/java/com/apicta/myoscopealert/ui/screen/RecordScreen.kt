@@ -261,7 +261,7 @@ fun RecordScreen(navController: NavHostController, modifier: Modifier = Modifier
 //            val filePath = "${musicDir.absolutePath}/$formatedTitle"
             val files = musicDir.listFiles()
             val wavFiles = files?.filter { it.extension == "wav" }
-            val sortedWavFiles = wavFiles?.sortedWith(compareBy { it.lastModified() })?.last()
+            val sortedWavFiles = wavFiles?.sortedWith(compareBy { it.lastModified() })?.takeIf { it.isNotEmpty() }?.last()
             val filePath = "${musicDir.absolutePath}/${sortedWavFiles?.name}"
             Log.e("filepath", filePath)
 
