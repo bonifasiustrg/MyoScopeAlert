@@ -44,7 +44,7 @@ import com.apicta.myoscopealert.databinding.SignalChartBinding
 import com.apicta.myoscopealert.ui.theme.cardsecondary
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.terniary
-import com.apicta.myoscopealert.utils.ThreadConnected.Companion.SAMPLE_RATE
+import com.apicta.myoscopealert.bt.ThreadConnected.Companion.SAMPLE_RATE
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -76,8 +76,8 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             xAxis?.setDrawGridLines(false)
             val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
-            yAxis?.setAxisMaximum(0.1f)
-            yAxis?.setAxisMinimum(-0.1f)
+            yAxis?.setAxisMaximum(0.4f)
+            yAxis?.setAxisMinimum(-0.25f)
             val rightYAxis = signalView.axisRight
             rightYAxis?.setDrawLabels(false)
             rightYAxis?.setDrawGridLines(false)

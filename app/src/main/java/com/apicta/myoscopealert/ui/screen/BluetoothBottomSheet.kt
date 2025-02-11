@@ -1,19 +1,14 @@
 package com.apicta.myoscopealert.ui.screen
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
@@ -27,12 +22,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.SettingsRemote
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,23 +47,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.apicta.myoscopealert.R
 import com.apicta.myoscopealert.ui.theme.primary
-import com.apicta.myoscopealert.ui.viewmodel.BluetoothViewModel
+import com.apicta.myoscopealert.bt.BluetoothViewModel
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
-import com.apicta.myoscopealert.utils.ThreadConnectBTDevice
-import com.apicta.myoscopealert.utils.ThreadConnected
-import com.apicta.myoscopealert.utils.checkBtPermission
+import com.apicta.myoscopealert.bt.ThreadConnectBTDevice
 import com.psp.bluetoothlibrary.Bluetooth
 import kotlinx.coroutines.launch
 
@@ -79,11 +66,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColumnScope.ModalBottomSheetM3(
-    ctx: Context, isConnect: MutableState<Boolean>,
+    ctx: Context,
     stopWatch: StopWatch,
     isStopwatch: MutableState<Boolean>,
     isRecording: MutableState<Boolean>,
     bluetoothViewModel: BluetoothViewModel,
+    showResult: Boolean,
     modifier: Modifier = Modifier
 ) {
     // Bluetooth object
@@ -93,24 +81,26 @@ fun ColumnScope.ModalBottomSheetM3(
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(/*skipPartiallyExpanded = true*/)
 
-    Button(
-        onClick = { openBottomSheet = true },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xBFFFC107)
-        ),
-        modifier = modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(bottom = 16.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Filled.BluetoothSearching,
-            contentDescription = null,
+    if (!showResult) {
+        Button(
+            onClick = { openBottomSheet = true },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xBFFFC107)
+            ),
             modifier = modifier
-                .size(32.dp)
-                .padding(end = 4.dp),
-            tint = primary
-        )
-        Text(text = "Connect Device", color = Color.Black)
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.BluetoothSearching,
+                contentDescription = null,
+                modifier = modifier
+                    .size(32.dp)
+                    .padding(end = 4.dp),
+                tint = primary
+            )
+            Text(text = "Connect Device", color = Color.Black)
+        }
     }
 
     if (openBottomSheet) {
@@ -133,7 +123,6 @@ fun ColumnScope.ModalBottomSheetM3(
                     }
                 },
                 bluetooth = bluetooth,
-                isConnect,
                 stopWatch,
                 isStopwatch,
                 isRecording,
@@ -150,7 +139,6 @@ fun ColumnScope.ModalBottomSheetM3(
 fun BottomSheetContent(
     onHideButtonClick: () -> Unit,
     bluetooth: Bluetooth?,
-    isConnect: MutableState<Boolean>,
     stopWatch: StopWatch,
     isStopwatch: MutableState<Boolean>,
     isRecording: MutableState<Boolean>,
@@ -279,59 +267,68 @@ fun BottomSheetContent(
 
         Text(text = "Paired Devices", fontSize = 20.sp)
         LazyColumn {
-            items(listPairedBluetoothDevices) {
+            items(listPairedBluetoothDevices) { device ->
                 ListItem(
                     modifier = modifier.clickable {
-//                        getPairedDevices(bluetooth, context, listPaired, listPairedBluetoothDevices)
-                        isDialogVisible.value = true
-//                        val position = listDetectDevicesString.indexOf(it?.name)
-//
-//                        if (bluetooth.unpairDevice(listPairedBluetoothDevices[position])) {
-//                            Log.e("newBT BTBottomSheet", "Unpair successfully $it")
-//                            listPairedDevicesString.removeAt(position)
-//                            listPairedBluetoothDevices.removeAt(position)
-//                        } else {
-//                            Log.d("newBT BTBottomSheet", "Unpair failed")
-//                        }
-                    },
-                    headlineContent = {
-                        if (it != null) {
-                            Text(text = it.name)
+                        if (device != null) {
+                            // Pastikan permission Bluetooth Connect diberikan
+                            if (ActivityCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.BLUETOOTH_CONNECT
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ) {
+                                return@clickable
+                            }
+
+                            Toast.makeText(context, "Connecting to ${device.name}..", Toast.LENGTH_SHORT).show()
+
+                            // Membuat thread untuk menghubungkan Bluetooth
+                            val threadConnectBTDevice = ThreadConnectBTDevice(device, context, onConnected = {
+                                Log.e("newBT thread", "Connected to $it")
+                            })
+                            threadConnectBTDevice.start()
+
+                            Log.e("newBT thread connect", "onClick: ${threadConnectBTDevice.name}")
+
+                            // Simpan nama perangkat yang terhubung di ViewModel
+                            bluetoothViewModel.setBluetoothName(device.name)
                         }
                     },
+                    headlineContent = { Text(text = device?.name ?: "Unknown Device") },
                     leadingContent = {
                         Icon(imageVector = Icons.Default.SettingsRemote, contentDescription = null)
                     }
                 )
             }
         }
-        if (isDialogVisible.value) {
-            DeviceSelectionDialog(
-                listPaired = listPairedDevicesString,
-                listPairedBluetoothDevices = listPairedBluetoothDevices,
-//                onDeviceSelected = { deviceAddress ->
-//                    if (connection.connect(
-//                            deviceAddress,
-//                            true,
-//                            connectionListener,
-//                            receiveListener
-//                        )
-//                    ) {
-//                        Log.e("newBT", "Start connection process")
-//                        Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
-//
-//                    } else {
-//                        Log.e("newBT","Start connection process failed")
-//                        Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
-//                    }
-//                },
-                onDismiss = { isDialogVisible.value = false },
-                isDialogVisible = isDialogVisible,
-                context,
-                bluetoothViewModel,
-                onHideButtonClick
-            )
-        }
+
+//        if (isDialogVisible.value) {
+//            DeviceSelectionDialog(
+//                listPaired = listPairedDevicesString,
+//                listPairedBluetoothDevices = listPairedBluetoothDevices,
+////                onDeviceSelected = { deviceAddress ->
+////                    if (connection.connect(
+////                            deviceAddress,
+////                            true,
+////                            connectionListener,
+////                            receiveListener
+////                        )
+////                    ) {
+////                        Log.e("newBT", "Start connection process")
+////                        Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
+////
+////                    } else {
+////                        Log.e("newBT","Start connection process failed")
+////                        Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
+////                    }
+////                },
+//                onDismiss = { isDialogVisible.value = false },
+//                isDialogVisible = isDialogVisible,
+//                context,
+//                bluetoothViewModel,
+//                onHideButtonClick
+//            )
+//        }
 
         if (listPairedBluetoothDevices.isEmpty()) Text(
             text = "No paired device detected",
@@ -387,7 +384,7 @@ fun BottomSheetContent(
         ) {
             Text(text = "Kembali")
         }
-        
+
         Spacer(modifier = modifier.height(32.dp))
     }
 }
@@ -443,89 +440,91 @@ fun getPairedDevices(
     }
 }
 
-@Composable
-fun DeviceSelectionDialog(
-    listPaired: MutableList<String?>,
-    listPairedBluetoothDevices: MutableList<BluetoothDevice?>,
-//    onDeviceSelected: (String) -> Unit,
-    onDismiss: () -> Unit,
-    isDialogVisible: MutableState<Boolean>,
-    context: Context,
-    bluetoothViewModel: BluetoothViewModel,
-    onHideButtonClick: () -> Unit,
-
-) {
-    lateinit var threadConnectBTDevice: ThreadConnectBTDevice
-    AlertDialog(
-        onDismissRequest = { isDialogVisible.value = false },
-        confirmButton = { /*isDialogVisible.value = false*/ },
-        title = { Text(text = "Select device") },
-        text = {
-            Log.e("newBT alert", listPaired.toString())
-            Log.e("newBT alert", listPairedBluetoothDevices.toString())
-            LazyColumn {
-                items(items = listPairedBluetoothDevices) { /*pairedDevice*/device ->
-                    ListItem(
-                        modifier = Modifier.clickable {
-
-//                            onDeviceSelected(device[1])
-
-                            if (ActivityCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.BLUETOOTH_CONNECT
-                                ) != PackageManager.PERMISSION_GRANTED
-                            ) {
-                                // TODO: Consider calling
-                                //    ActivityCompat#requestPermissions
-                                // here to request the missing permissions, and then overriding
-                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                //                                          int[] grantResults)
-                                // to handle the case where the user grants the permission. See the documentation
-                                // for ActivityCompat#requestPermissions for more details.
-                                return@clickable
-                            }
-                            Toast.makeText(
-                                context,
-                                "Connecting to ${device?.name}..",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            threadConnectBTDevice = ThreadConnectBTDevice(device!!, context)
-                            threadConnectBTDevice.start()
-                            Log.e("newBT thread connect", "onClick: ${threadConnectBTDevice.name}")
-                            bluetoothViewModel.setBluetoothName(device.name)
-
-                            onDismiss()
-                            onHideButtonClick()
-                        },
-                        headlineContent = { Text(text = /*device[0]*/device!!.name) },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Default.SettingsRemote,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-            }
-
-            if (listPaired.isEmpty()) {
-                Column {
-
-                    Text(
-                        text = "No paired device detected",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "Please check bluetooth connection",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = Color.Red
-                    )
-                }
-            }
-        },
-    )
-}
+//@Composable
+//fun DeviceSelectionDialog(
+//    listPaired: MutableList<String?>,
+//    listPairedBluetoothDevices: MutableList<BluetoothDevice?>,
+////    onDeviceSelected: (String) -> Unit,
+//    onDismiss: () -> Unit,
+//    isDialogVisible: MutableState<Boolean>,
+//    context: Context,
+//    bluetoothViewModel: BluetoothViewModel,
+//    onHideButtonClick: () -> Unit,
+//
+//) {
+//    lateinit var threadConnectBTDevice: ThreadConnectBTDevice
+//    AlertDialog(
+//        onDismissRequest = { isDialogVisible.value = false },
+//        confirmButton = { /*isDialogVisible.value = false*/ },
+//        title = { Text(text = "Select device") },
+//        text = {
+//            Log.e("newBT alert", listPaired.toString())
+//            Log.e("newBT alert", listPairedBluetoothDevices.toString())
+//            LazyColumn {
+//                items(items = listPairedBluetoothDevices) { /*pairedDevice*/device ->
+//                    ListItem(
+//                        modifier = Modifier.clickable {
+//
+////                            onDeviceSelected(device[1])
+//
+//                            if (ActivityCompat.checkSelfPermission(
+//                                    context,
+//                                    Manifest.permission.BLUETOOTH_CONNECT
+//                                ) != PackageManager.PERMISSION_GRANTED
+//                            ) {
+//                                // TODO: Consider calling
+//                                //    ActivityCompat#requestPermissions
+//                                // here to request the missing permissions, and then overriding
+//                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                                //                                          int[] grantResults)
+//                                // to handle the case where the user grants the permission. See the documentation
+//                                // for ActivityCompat#requestPermissions for more details.
+//                                return@clickable
+//                            }
+//                            Toast.makeText(
+//                                context,
+//                                "Connecting to ${device?.name}..",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                            threadConnectBTDevice = ThreadConnectBTDevice(device!!, context, onConnected = {
+//                                Log.e("newBT thread", "Connected to $it")
+//                            })
+//                            threadConnectBTDevice.start()
+//                            Log.e("newBT thread connect", "onClick: ${threadConnectBTDevice.name}")
+//                            bluetoothViewModel.setBluetoothName(device.name)
+//
+//                            onDismiss()
+//                            onHideButtonClick()
+//                        },
+//                        headlineContent = { Text(text = /*device[0]*/device!!.name) },
+//                        leadingContent = {
+//                            Icon(
+//                                imageVector = Icons.Default.SettingsRemote,
+//                                contentDescription = null
+//                            )
+//                        }
+//                    )
+//                }
+//            }
+//
+//            if (listPaired.isEmpty()) {
+//                Column {
+//
+//                    Text(
+//                        text = "No paired device detected",
+//                        modifier = Modifier.fillMaxWidth(),
+//                        textAlign = TextAlign.Center,
+//                        fontSize = 16.sp
+//                    )
+//                    Text(
+//                        text = "Please check bluetooth connection",
+//                        modifier = Modifier.fillMaxWidth(),
+//                        textAlign = TextAlign.Center,
+//                        fontSize = 14.sp,
+//                        color = Color.Red
+//                    )
+//                }
+//            }
+//        },
+//    )
+//}

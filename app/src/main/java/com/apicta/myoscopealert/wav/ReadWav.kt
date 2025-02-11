@@ -1,7 +1,6 @@
-package com.apicta.myoscopealert
+package com.apicta.myoscopealert.wav
 
 import android.content.Context
-import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException

@@ -2,6 +2,8 @@ package com.apicta.myoscopealert.ui.screen
 
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
@@ -82,6 +84,31 @@ fun HistoryScreen(
     diagnosesViewModel: DiagnosesViewModel = hiltViewModel(),
     viewModel: AudioViewModel = hiltViewModel()
 ) {
+//    val permissions = listOf(
+//        android.Manifest.permission.READ_MEDIA_AUDIO,
+//        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+//        android.Manifest.permission.RECORD_AUDIO,
+//        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+//    )
+//
+//    val launcher = rememberLauncherForActivityResult(
+//        ActivityResultContracts.RequestMultiplePermissions()
+//    ) { permissionsMap: Map<String, Boolean> ->
+//        permissionsMap.entries.forEach {
+//            if (it.value) {
+//                // Permission Accepted: Do something
+//                Log.d("ExampleScreen", "${it.key} PERMISSION GRANTED")
+//            } else {
+//                // Permission Denied: Do something
+//                Log.d("ExampleScreen", "${it.key} PERMISSION DENIED")
+//            }
+//        }
+//    }
+//
+//// Request permissions when the screen is composed or at a point when you want to ask for them
+//    LaunchedEffect(Unit) {
+//        launcher.launch(permissions.toTypedArray())
+//    }
 
 
 //    viewModel.performProfile(/*storedToken!!*/accountInfo?.token.toString())

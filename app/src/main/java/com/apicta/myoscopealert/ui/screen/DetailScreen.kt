@@ -65,9 +65,7 @@ import com.apicta.myoscopealert.ui.screen.common.ProcessWavFileData
 import com.apicta.myoscopealert.ui.theme.poppins
 import com.apicta.myoscopealert.ui.theme.primary
 import com.apicta.myoscopealert.ui.theme.terniary
-import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel
-import com.apicta.myoscopealert.utils.applyLowPassFilter
-import kotlinx.coroutines.delay
+import com.apicta.myoscopealert.ui.viewmodel.DiagnosesViewModel import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate

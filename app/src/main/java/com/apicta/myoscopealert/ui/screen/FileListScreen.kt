@@ -81,6 +81,8 @@ fun ColumnScope.FileListScreen(
     isLoading: Boolean,
     historyData: List<DiagnoseHistoryResponse.Data?>?
 ) {
+    val reversedHistoryData = historyData?.toMutableList()?.apply { reverse() } ?: emptyList()
+
     val ctx = LocalContext.current
     val downloader = AndroidDownloader(ctx)
     var openController by remember {
@@ -221,23 +223,7 @@ fun ColumnScope.FileListScreen(
 //            key = { _, item -> item.id.toString() }
 //        ) { index, file ->
         if (historyData != null) {
-            items(historyData.reversed()){
-//                Text(text = it?.condition.toString())
-//                Text(text = historyData[it]?.created_at.toString())
-//                Text(text = historyData[it]?.heartwave.toString())
-//                Text(text = it?.id.toString())
-//                Text(text = historyData[it]?.notes.toString())
-//                Text(text = historyData[it]?.patient_id.toString())
-//                Text(text = historyData[it]?.updated_at.toString())
-//                Text(text = historyData[it]?.verified.toString())
-
-//                FloatingActionButton(onClick = {
-////                                downloader.downloadFile("https://pl-coding.com/wp-content/uploads/2022/04/pic-squared.jpg")
-//                    downloader.downloadFile("https://miocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
-//
-//                }) {
-//                    Text(text = "Download tes..")
-//                }
+            items(historyData.asReversed()){
                 val fileName = it?.heartwave?.substringAfterLast("/")
                 downloader.downloadFile("https://miocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
 
@@ -393,7 +379,7 @@ fun ColumnScope.FileListScreen(
                 val historyFileName = history?.heartwave?.substringAfterLast("/")
                 audio.displayName == historyFileName
             } ?: false
-        }.reversed()  //descendent sort
+        }.toMutableList().asReversed()
         itemsIndexed(filteredAudioList,
             key = { _, item -> item.id.toString() }
         ) { index, file ->

@@ -13,6 +13,19 @@ class WaveletTransform {
     private val c2 = (3 - sqrt(3.0)) / (4 * sqrt(2.0))
     private val c3 = (1 - sqrt(3.0)) / (4 * sqrt(2.0))
 
+//    fun transform(data: FloatArray, level: Int): List<FloatArray> {
+//        var workingData = data.copyOf()
+//        val coefficients = mutableListOf<FloatArray>()
+//
+//        for (l in 0 until level) {
+//            val (approximation, detail) = decompose(workingData)
+//            coefficients.add(detail)
+//            workingData = approximation
+//        }
+//        coefficients.add(workingData)
+//        return coefficients.reversed()
+//    }
+
     fun transform(data: FloatArray, level: Int): List<FloatArray> {
         var workingData = data.copyOf()
         val coefficients = mutableListOf<FloatArray>()
@@ -23,7 +36,10 @@ class WaveletTransform {
             workingData = approximation
         }
         coefficients.add(workingData)
-        return coefficients.reversed()
+        // Membalikkan list secara manual
+        val reversedCoeffs = coefficients.toMutableList()
+        reversedCoeffs.reverse()
+        return reversedCoeffs
     }
 
     private fun decompose(data: FloatArray): Pair<FloatArray, FloatArray> {

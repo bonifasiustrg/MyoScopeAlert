@@ -5,7 +5,7 @@ import kotlin.math.log2
 import kotlin.math.pow
 import android.content.Context
 import android.net.Uri
-import com.apicta.myoscopealert.readWavFile
+import com.apicta.myoscopealert.wav.readWavFile
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import kotlin.math.*
 

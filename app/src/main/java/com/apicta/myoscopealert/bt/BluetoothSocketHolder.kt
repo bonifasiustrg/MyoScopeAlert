@@ -1,8 +1,6 @@
-package com.apicta.myoscopealert.utils
+package com.apicta.myoscopealert.bt
 
 import android.bluetooth.BluetoothSocket
-import android.media.AudioFormat
-import android.util.Log
 
 object BluetoothSocketHolder {
     private var bluetoothSocket: BluetoothSocket? = null

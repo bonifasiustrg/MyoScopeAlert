@@ -1,4 +1,4 @@
-package com.apicta.myoscopealert.utils
+package com.apicta.myoscopealert.bt
 
 object ArrayReceiver {
 

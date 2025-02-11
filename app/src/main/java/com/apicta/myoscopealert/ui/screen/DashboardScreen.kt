@@ -67,67 +67,50 @@ fun DashboardScreen(
     Log.e("Dashboard token classtate", "Stored Token: $token")
     val context = LocalContext.current
 
-//    val launcher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            // Permission Accepted: Do something
-//            Log.d("ExampleScreen","PERMISSION GRANTED")
-//
-//        } else {
-//            // Permission Denied: Do something
-//            Log.d("ExampleScreen","PERMISSION DENIED")
-//        }
-//    }
-
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionsMap: Map<String, Boolean> ->
         permissionsMap.entries.forEach {
             if (it.value) {
                 // Permission Accepted: Do something
-                Log.d("ExampleScreen","${it.key} PERMISSION GRANTED")
+                Log.d("ExampleScreen", "${it.key} PERMISSION GRANTED")
             } else {
                 // Permission Denied: Do something
-                Log.d("ExampleScreen","${it.key} PERMISSION DENIED")
+                Log.d("ExampleScreen", "${it.key} PERMISSION DENIED")
             }
         }
     }
+
     SideEffect {
-        // Check permission
+        // List of permissions that you want to request
         val permissions = arrayOf(
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN
+            android.Manifest.permission.READ_MEDIA_AUDIO,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.RECORD_AUDIO,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            android.Manifest.permission.INTERNET,
+            android.Manifest.permission.BLUETOOTH,
+            android.Manifest.permission.BLUETOOTH_ADMIN,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.BLUETOOTH_CONNECT,
+            android.Manifest.permission.BLUETOOTH_SCAN
         )
+
+        // Filter permissions that are not granted
         val permissionNotGranted = permissions.filter {
             ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
         }
+
         if (permissionNotGranted.isNotEmpty()) {
-            // Asking for permission
+            // Asking for permissions if any of them is not granted
             launcher.launch(permissionNotGranted.toTypedArray())
         } else {
-            // Some works that require permission
-            Log.d("ExampleScreen","Code requires permission")
+            // Some work that requires the permissions
+            Log.d("ExampleScreen", "All required permissions are granted. Proceeding with tasks.")
         }
     }
 
-
-//    SideEffect {
-//
-//        when (PackageManager.PERMISSION_GRANTED) {
-//            ContextCompat.checkSelfPermission(
-//                context,
-//                Manifest.permission.BLUETOOTH_SCAN
-//            ) -> {
-//                // Some works that require permission
-//                Log.d("ExampleScreen","Code requires permission")
-//            }
-//            else -> {
-//                // Asking for permission
-//                launcher.launch(Manifest.permission.BLUETOOTH_SCAN)
-//            }
-//        }
-//    }
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController, modifier = modifier) }
