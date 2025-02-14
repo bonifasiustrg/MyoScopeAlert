@@ -54,16 +54,21 @@ import java.io.FileInputStream
 import java.io.IOException
 
 @Composable
-fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false, modifier: Modifier = Modifier) {
+fun ProcessWavFileData(
+    wavFilePath: String,
+    ctx: Context,
+    isZooming: Boolean = false,
+    modifier: Modifier = Modifier
+) {
     val SHRT_MAX = 32767 // Untuk 16-bit PCM audio sample
     Column(
-        modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
     ) {
         AndroidViewBinding(
             factory = SignalChartBinding::inflate,
-            modifier = modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
+            modifier = Modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
         ) {
             signalView.description?.isEnabled = false
             signalView.setTouchEnabled(true)
@@ -71,7 +76,7 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
             signalView.setDrawGridBackground(false)
 
-            // Customize X-axis and Y-axis properties
+            // Set properti sumbu
             val xAxis = signalView.xAxis
             xAxis?.setDrawGridLines(false)
             val yAxis = signalView.axisLeft
@@ -82,12 +87,15 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             rightYAxis?.setDrawLabels(false)
             rightYAxis?.setDrawGridLines(false)
 
-            // Buffer size for WAV data reading
-            val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
+            // Membaca file WAV
+            val bufferSize = AudioRecord.getMinBufferSize(
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_FLOAT
+            )
             val wavData = ByteArray(bufferSize)
             val dataPoints = ArrayList<Float>()
 
-            // Read the WAV file in chunks
             val inputStream = FileInputStream(wavFilePath)
             val bufferedInputStream = BufferedInputStream(inputStream)
             val dataInputStream = DataInputStream(bufferedInputStream)
@@ -95,7 +103,6 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             try {
                 var bytesRead = dataInputStream.read(wavData, 0, bufferSize)
                 while (bytesRead != -1) {
-                    // Convert PCM data to amplitude values and normalize
                     for (i in 0 until bytesRead / 2) {
                         val sample = wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
                         val amplitude = sample.toFloat() / SHRT_MAX.toFloat()
@@ -108,31 +115,28 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
             } finally {
                 dataInputStream.close()
             }
-
-            // Close the WAV file after reading
             inputStream.close()
 
-            // Convert data points to chart-friendly format (Entry objects)
+            // Konversi data ke Entry untuk chart
             val audioData = ArrayList<Entry>()
             for (i in dataPoints.indices) {
-                val entry = Entry(i.toFloat(), dataPoints[i])
-                audioData.add(entry)
+                audioData.add(Entry(i.toFloat(), dataPoints[i]))
             }
 
-            // Set up the LineDataSet for the chart
+            // Konfigurasi dataset chart
             val dataSet = LineDataSet(audioData, "Heart Beat Wave (zoom for detail)")
             dataSet.color = R.color.green
             dataSet.setDrawCircles(false)
             val lineData = LineData(dataSet)
             signalView.data = lineData
 
-            // Set the visible range of the X-axis (zooming behavior)
+            // Set range sumbu X
             val initialVisibleRange = 20000f
             signalView.setVisibleXRangeMaximum(initialVisibleRange)
             signalView.setVisibleXRangeMinimum(10f)
             signalView.moveViewToX(0f)
 
-            // Refresh the chart
+            // Refresh chart
             signalView.invalidate()
         }
     }
@@ -140,17 +144,12 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 
 //@Composable
 //fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = false, modifier: Modifier = Modifier) {
-////    val SAMPLE_RATE = 8000
-////    val SAMPLE_RATE = 24000 /*The speed and weight of audio*/
-////    val SAMPLE_RATE = SAMPLE_RATE /*The speed and weight of audio*/
-//    val SHRT_MAX = 24000 /*The range of values for a 16-bit PCM audio sample is from -32768 to 32767.*/
-////    val SHRT_MAX = 255
+//    val SHRT_MAX = 32767 // Untuk 16-bit PCM audio sample
 //    Column(
 //        modifier
 //            .fillMaxWidth()
 //            .padding(horizontal = 4.dp)
 //    ) {
-//
 //        AndroidViewBinding(
 //            factory = SignalChartBinding::inflate,
 //            modifier = modifier.background(color = terniary, shape = RoundedCornerShape(32.dp))
@@ -161,56 +160,36 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 //            signalView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.white))
 //            signalView.setDrawGridBackground(false)
 //
-//            // Customize X-axis properties if needed
+//            // Customize X-axis and Y-axis properties
 //            val xAxis = signalView.xAxis
 //            xAxis?.setDrawGridLines(false)
-//
-//            // Customize Y-axis properties if needed
 //            val yAxis = signalView.axisLeft
 //            yAxis?.setDrawGridLines(false)
-//
-//
-////            yAxis?.setAxisMaximum(0.05f)
-////            yAxis?.setAxisMinimum(-0.03f)
-//
-//            yAxis?.setAxisMaximum(0.030f)
-//            yAxis?.setAxisMinimum(-0.020f)
-////            if (isZooming) {
-////                yAxis?.setAxisMaximum(0.008f)
-////                yAxis?.setAxisMinimum(-0.005f)
-////                Log.e("zoom aktif yaksis min max", "-0.03f, 0.05f --> -0.005f, 0.008f")
-////
-////            }
-//            // Customize right Y-axis properties to hide labels
+//            yAxis?.setAxisMaximum(0.4f)
+//            yAxis?.setAxisMinimum(-0.25f)
 //            val rightYAxis = signalView.axisRight
 //            rightYAxis?.setDrawLabels(false)
 //            rightYAxis?.setDrawGridLines(false)
-//            // **Memory Efficiency Improvement:** Read the WAV file in chunks instead of loading the entire file into memory at once.
-//            val bufferSize = AudioRecord.getMinBufferSize(
-//                SAMPLE_RATE,
-//                AudioFormat.CHANNEL_IN_MONO,
-//                AudioFormat.ENCODING_PCM_FLOAT
-//            )
+//
+//            // Buffer size for WAV data reading
+//            val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
 //            val wavData = ByteArray(bufferSize)
 //            val dataPoints = ArrayList<Float>()
 //
+//            // Read the WAV file in chunks
 //            val inputStream = FileInputStream(wavFilePath)
 //            val bufferedInputStream = BufferedInputStream(inputStream)
 //            val dataInputStream = DataInputStream(bufferedInputStream)
 //
-//
 //            try {
 //                var bytesRead = dataInputStream.read(wavData, 0, bufferSize)
-//
 //                while (bytesRead != -1) {
-//                    // Process the WAV data and convert it to data points suitable for the chart
-//                    for (i in 0 until bytesRead / 2) { // Assuming 16-bit PCM
-//                        val sample =
-//                            wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
-//                        val amplitude = sample.toFloat() / SHRT_MAX.toFloat() // Normalize amplitude
+//                    // Convert PCM data to amplitude values and normalize
+//                    for (i in 0 until bytesRead / 2) {
+//                        val sample = wavData[i * 2].toInt() and 0xFF or (wavData[i * 2 + 1].toInt() shl 8)
+//                        val amplitude = sample.toFloat() / SHRT_MAX.toFloat()
 //                        dataPoints.add(amplitude)
 //                    }
-//
 //                    bytesRead = dataInputStream.read(wavData, 0, bufferSize)
 //                }
 //            } catch (e: IOException) {
@@ -219,67 +198,35 @@ fun ProcessWavFileData(wavFilePath: String, ctx: Context, isZooming: Boolean = f
 //                dataInputStream.close()
 //            }
 //
-//            // **Memory Leak Prevention:** Close the WAV file after processing it.
+//            // Close the WAV file after reading
 //            inputStream.close()
 //
-////
-////            val minValue = intArray.minOrNull()?.toFloat() ?: 0f
-////            val maxValue = intArray.maxOrNull()?.toFloat() ?: 1f
-////
-////            val normalizedDataPoints = ArrayList<Float>()
-////            for (value in intArray) {
-////                val normalizedValue = (value - minValue) / (maxValue - minValue)
-////                normalizedDataPoints.add(normalizedValue)
-////            }
-//
-//// Convert data points to Entry objects for the chart
+//            // Convert data points to chart-friendly format (Entry objects)
 //            val audioData = ArrayList<Entry>()
-//            // Convert data points to Entry objects for the chart
 //            for (i in dataPoints.indices) {
 //                val entry = Entry(i.toFloat(), dataPoints[i])
 //                audioData.add(entry)
 //            }
 //
-//            // Create a LineDataSet with the audio data
+//            // Set up the LineDataSet for the chart
 //            val dataSet = LineDataSet(audioData, "Heart Beat Wave (zoom for detail)")
 //            dataSet.color = R.color.green
 //            dataSet.setDrawCircles(false)
-//
-//            // Create a LineData object and set the LineDataSet
 //            val lineData = LineData(dataSet)
-//
-//            // Set the LineData object to the chart
 //            signalView.data = lineData
 //
-//            // moveViewToX(...) also calls invalidate()
-//
-////            if (isZooming) {
-////                // now modify viewport
-////                signalView.setVisibleXRangeMaximum(50F) // allow 20 values to be displayed at once on the x-axis, not more
-////                signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
-////                Log.e("zoom aktif", "range data 800")
-////            }
-//
-////            signalView.setVisibleXRangeMaximum(10000F) // allow 20 values to be displayed at once on the x-axis, not more
-////            signalView.moveViewToX(100F) // set the left edge of the chart to x-index 10
-////            val initialVisibleRange = dataPoints.size / 4f // Misalnya setengah data
-//            val initialVisibleRange = 20000f // Ganti 100 dengan jumlah data yang diinginkan
-//
-//            signalView.setVisibleXRangeMaximum(initialVisibleRange) // Sesuaikan X-axis agar seluruh data terlihat
+//            // Set the visible range of the X-axis (zooming behavior)
+//            val initialVisibleRange = 20000f
+//            signalView.setVisibleXRangeMaximum(initialVisibleRange)
 //            signalView.setVisibleXRangeMinimum(10f)
 //            signalView.moveViewToX(0f)
-////            yAxis.setAxisMinimum(dataPoints.minOrNull() ?: -0.010f)
-////            yAxis.setAxisMaximum(dataPoints.maxOrNull() ?: 0.050f)
 //
-//            Log.e("processwav", "Refresh signalview")
 //            // Refresh the chart
 //            signalView.invalidate()
-//
 //        }
-//
-//
 //    }
 //}
+
 
 
 @Composable
@@ -312,7 +259,11 @@ fun SetUpChart(ctx: Context) {
 }
 
 @Composable
-fun CardContent(isVerified: Boolean, note: String?,  modifier: Modifier = Modifier) {
+fun CardContent(
+    isVerified: Boolean,
+    note: String?,
+    modifier: Modifier = Modifier
+) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = modifier
@@ -324,64 +275,47 @@ fun CardContent(isVerified: Boolean, note: String?,  modifier: Modifier = Modifi
                 )
             ),
         verticalAlignment = Alignment.CenterVertically
-
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .weight(1f)
                 .padding(12.dp)
         ) {
-//            Text(text = "Hello, ")
             Row {
-
                 Text(
                     text = "Doctor's Verification",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = poppins
-
-                    )   
+                    )
                 )
-                Spacer(modifier = modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(4.dp))
                 Box(
-                    modifier = modifier
+                    modifier = Modifier
                         .background(
                             color = if (isVerified) Color.Green else Color.Red,
                             shape = RoundedCornerShape(16.dp)
                         )
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                 ) {
-                    if (isVerified) {
-                        Text(
-                            text = "Verified",
-                            fontSize = 10.sp,
-                            textAlign = TextAlign.End,
-                            color = Color.Black,
-                            fontFamily = poppins
-                        )
-                    } else {
-                        Text(
-                            text = "Not verified",
-                            fontSize = 10.sp,
-                            textAlign = TextAlign.End,
-                            color = Color.White,
-                            fontFamily = poppins
-
-                        )
-                    }
+                    Text(
+                        text = if (isVerified) "Verified" else "Not verified",
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.End,
+                        color = if (isVerified) Color.Black else Color.White,
+                        fontFamily = poppins
+                    )
                 }
             }
-            Spacer(modifier = modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             if (expanded) {
                 Text(
-//                    text = "After examining the patient's heartbeat sound wave graph, I confirmed that there was no indication of Myocardial infarction. The patient's heart condition looks healthy and stable based on the graphic analysis that we have verified.",
                     text = if (note.isNullOrEmpty()) "Tidak ada catatan dari dokter" else note,
                     fontFamily = poppins,
                     fontSize = 13.sp
                 )
             }
         }
-
         if (isVerified) {
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(
@@ -392,6 +326,7 @@ fun CardContent(isVerified: Boolean, note: String?,  modifier: Modifier = Modifi
         }
     }
 }
+
 @Composable
 fun ProcessWavFileData2(wavFilePath: String, ctx: Context, isZooming: Boolean = false) {
 //    val SAMPLE_RATE = 8000

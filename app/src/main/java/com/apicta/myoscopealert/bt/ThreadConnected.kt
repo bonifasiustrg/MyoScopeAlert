@@ -334,13 +334,14 @@ class ThreadConnected(
     }
 
     fun cancel() {
-        if (isOn) {
-            sendStopCommand()
-        }
+//        if (isOn) {
+//            sendStopCommand()
+//        }
         try {
+            sendStopCommand()
             isOn = false
             mmSocket.close()
-            byteArrayOutputStream.reset()
+//            byteArrayOutputStream.reset()
             Log.d("ThreadConnected", "Thread dihentikan, data direset")
         } catch (e: IOException) {
             Log.e("ThreadConnected", "Could not close the connect socket", e)

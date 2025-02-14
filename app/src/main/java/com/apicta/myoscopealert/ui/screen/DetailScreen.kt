@@ -97,15 +97,11 @@ fun FileDetail(
     Log.e("history response", singleDiagnoseResponse.toString())
     val isVerified = if (singleDiagnoseResponse?.detection?.verified == "yes") true else false
 
-//    viewModelProfile.performProfile(/*storedToken!!*/accountInfo!!)
-//    val profileResponse by viewModelProfile.profileResponse.collectAsState()
-
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var isBack by remember { mutableStateOf(false) }
 
-//    val filePath = "/storage/emulated/0/Android/data/com.apicta.myoscopealert/files/Recordings/$filename"
 
     val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
     val filePath = "${musicDir.absolutePath}/$filename"
@@ -116,29 +112,9 @@ fun FileDetail(
     var progress by remember { mutableFloatStateOf(0f) }
     val loadingPredict = remember { mutableStateOf(false) }
 
-//    val mediaPlayer = remember {
-//        MediaPlayer().apply {
-//            setDataSource(filePath)
-//            prepare()
-//        }
-//    }
-//    val animatedProgress = animateFloatAsState(
-//        targetValue = progress,
-//        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec, label = ""
-//    ).value
-
-//    val dateTimeString =  singleDiagnoseResponse?.detection?.created_at.toString()
-//
-//    // Parsing ISO 8601 format
-//    val dateTime = LocalDateTime.parse(dateTimeString.substring(0, 19))
-//
-//    // Format ke bentuk umum: dd-MM-yyyy HH:mm:ss
-//    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-//    val formattedDateTime = dateTime.format(formatter)
     Column(
         modifier = modifier
             .fillMaxSize()
-//            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -146,105 +122,43 @@ fun FileDetail(
 
 
         Column(
-            modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(primary)
                 .padding(16.dp)
         ) {
-            Spacer(modifier = modifier.height(16.dp))
-
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "$filename",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-//            Text(text = "Doctor         : Saparudin ", color = Color.White)
-//            Text(text = "Date           : $fileDate", color = Color.White)
-            Text(text = "Date           : ${LocalDate.now()}", color = Color.White)}
-        Spacer(modifier = modifier.height(24.dp))
-
+            Text(
+                text = "Date           : ${LocalDate.now()}",
+                color = Color.White
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Heartbeat Graph", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold,
+            text = "Heartbeat Graph",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold,
             fontFamily = poppins
         )
-        Spacer(modifier = modifier.height(8.dp))
-
-        var isZooming by remember {
-            mutableStateOf(false)
-        }
-//         SetUpChart(context)
+        Spacer(modifier = Modifier.height(8.dp))
+        var isZooming by remember { mutableStateOf(false) }
         ProcessWavFileData(filePath, context, isZooming)
-
-        // Menampilkan progress bar
         IconButton(
-//            shape = CircleShape,
-            onClick = {
-                isZooming = !isZooming
-                Log.e("zoom status", isZooming.toString())
-            },
-            modifier = modifier.align(Alignment.CenterHorizontally)
+            onClick = { isZooming = !isZooming },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Icon(
                 imageVector = if (isZooming) Icons.Default.ZoomOut else Icons.Default.ZoomIn,
                 contentDescription = null,
-                modifier = modifier.size(24.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
-//        LinearProgressIndicator(
-//            progress = animatedProgress,
-//            modifier = modifier
-//                .fillMaxWidth()
-//                .height(24.dp)
-//                .padding(horizontal = 28.dp),
-//            color = Color.Blue.copy(alpha = 0.2f)
-//        )
-//        Button(
-//            shape = CircleShape,
-//            onClick = {
-//                // Mulai atau berhenti memutar audio
-//                if (isPlaying.value) {
-//                    if (mediaPlayer.isPlaying) {
-//                        mediaPlayer.pause()
-//                    }
-//                } else {
-//                    mediaPlayer.start()
-//                    // Memantau progress audio
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        while (isPlaying.value) {
-//                            val currentPosition = mediaPlayer.currentPosition.toFloat()
-//                            val totalDuration = mediaPlayer.duration.toFloat()
-//                            Log.e("progress", "$currentPosition | $totalDuration")
-//                            val progressPercentage = currentPosition / totalDuration
-//                            progress = progressPercentage
-//                            if (progress == 1.0f) {
-//                                isPlaying.value = false
-//                            }
-//                            if (isPlaying.value && mediaPlayer.currentPosition >= mediaPlayer.duration) {
-//                                // Audio telah diputar sampai selesai
-//                                isPlaying.value = false
-//                                // Tampilkan pesan ke pengguna jika diperlukan
-//                            }
-//                            delay(200)
-//
-//                        }
-//                    }
-//                }
-//                isPlaying.value = !isPlaying.value
-//            },
-//            modifier = modifier.padding(top = 16.dp)
-//        ) {
-//            Icon(
-//                imageVector = if (isPlaying.value) Icons.Default.Stop else Icons.Default.PlayArrow,
-//                contentDescription = null,
-//                modifier = modifier.size(32.dp)
-//            )
-//        }
-//        Spacer(modifier = modifier.height(4.dp))
-
-//        var isVerified by remember {
-//            mutableStateOf(false)
-//        }
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = terniary
@@ -280,11 +194,6 @@ fun FileDetail(
 
         )
         val predictResponse by viewModel.predictResponse.collectAsState()
-//        LaunchedEffect(predictResponse) {
-//            // Set isPredicting menjadi false saat nilai predictResponse berubah
-//            !isLoading.value
-//        }
-
 
         if (loadingPredict.value) {
             CircularProgressIndicator(modifier = modifier.align(Alignment.CenterHorizontally))
@@ -294,27 +203,12 @@ fun FileDetail(
 
         if (prediction != null) {
             loadingPredict.value = false
-//            viewModel.sendWav(filePath, condition = predictResponse!!.result.toString().lowercase(), token = accountInfo!!.token.toString())
-//            Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
-//            if (itemId == -1) {
-//                LaunchedEffect(key1 = predictResponse) {
-//                    viewModel.sendWav(
-//                        filePath,
-//                        condition = predictResponse!!.result.toString().lowercase(),
-//                        token = accountInfo!!.token.toString()
-//                    )
-//                    Log.e("pantau condition", predictResponse!!.result.toString().lowercase())
-//                }
-//            }
 
             Box(
                 modifier = modifier
                     .padding(8.dp)
                     .clip(RoundedCornerShape(50.dp))
                     .background(
-//                        if (predictResponse!!.data.result == 0) Color(0xFF72D99D) else Color(
-//                            0xFFFF6F6F
-//                        )
                         if (prediction == "Normal") Color(0xFF72D99D) else Color(
                             0xFFFF6F6F
                         )
@@ -366,20 +260,6 @@ fun FileDetail(
                     scope.launch {
 
                         try {
-//                                if (itemId == -1) {
-//                                    // Apply the low-pass filter to the file if itemId is -1
-//                                    val tempFile = File(context.cacheDir, "temp_filtered.wav")
-//                                    applyLowPassFilter(file, tempFile)
-//
-//                                    // Replace the original file with the filtered file
-//                                    tempFile.copyTo(file, overwrite = true)
-//                                    tempFile.delete() // Clean up the temporary file
-//                                }
-//                            viewModel.performPredict(filePath)
-//                            delay(3500)
-//                            val audioData = FloatArray(1000) // Placeholder
-//                            heartbeatViewModel.predictHeartbeat(audioData)
-//                            val wavFilePath = "/storage/emulated/0/Music/record-1728633564320.wav"
                             heartbeatViewModel.predictHeartbeatFromPath(/*wavFilePath*/filePath)
                             Log.e("Prediction", "Prediction result: $prediction")
 
@@ -408,9 +288,6 @@ fun FileDetail(
             modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = "Predict (Offline)")
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (isLoading.value) {
@@ -543,32 +420,5 @@ fun FileDetail(
                 Text(text = "See all history")
             }
         }
-
-
-
     }
-
-
-//    // Tracking progress audio
-//    LaunchedEffect(key1 = isPlaying.value) {
-//        while (isPlaying.value) {
-//            // Ambil progress audio saat ini
-//            val currentPosition = mediaPlayer.currentPosition / 1000
-//
-//            // Log progress audio
-//            Log.e("AudioPlayer", "Progress: $currentPosition")
-//            Log.e("AudioPlayer", "Progressbar: $progress")
-//
-//            // Tunggu 1 detik
-//            delay(1000)
-//        }
-//    }
-//
-//    DisposableEffect(Unit) {
-//        // Ketika komponen dihancurkan, hentikan pemutaran audio
-//        onDispose {
-//            mediaPlayer.stop()
-//            mediaPlayer.release()
-//        }
-//    }
 }

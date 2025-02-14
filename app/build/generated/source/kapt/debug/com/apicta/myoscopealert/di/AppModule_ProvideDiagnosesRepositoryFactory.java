@@ -20,7 +20,9 @@ import javax.inject.Provider;
 )
 @SuppressWarnings({
     "unchecked",
-    "rawtypes"
+    "rawtypes",
+    "KotlinInternal",
+    "KotlinInternalInJava"
 })
 public final class AppModule_ProvideDiagnosesRepositoryFactory implements Factory<DiagnosesRepository> {
   private final Provider<UserApi> userApiProvider;

@@ -32,53 +32,59 @@ fun MainNavGraph(navController: NavHostController, dataStoreManager: DataStoreMa
         composable(route = BottomBarScreen.Record.route) {
             RecordScreen(navController = navController)
         }
-        composable(route = BottomBarScreen.History.route,
-            enterTransition = {
-                when (initialState.destination.route) {
-                    "detail/{fileName}/{date}" ->
-                        slideIntoContainer(
-                            AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(700)
-                        )
-
-                    else -> null
-                }
-            },
-            exitTransition = {
-                when (targetState.destination.route) {
-                    "detail/{fileName}/{date}" ->
-                        slideOutOfContainer(
-                            AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(700)
-                        )
-
-                    else -> null
-                }
-            },
-            popEnterTransition = {
-                when (initialState.destination.route) {
-                    "detail/{fileName}/{date}" ->
-                        slideIntoContainer(
-                            AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(700)
-                        )
-
-                    else -> null
-                }
-            },
-            popExitTransition = {
-                when (targetState.destination.route) {
-                    "detail/{fileName}/{date}" ->
-                        slideOutOfContainer(
-                            AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(700)
-                        )
-
-                    else -> null
-                }
-            }
-            ) {
-            HistoryScreen(navController = navController/*, storedToken*/, onServiceStart)
+//        composable(route = BottomBarScreen.History.route,
+//            enterTransition = {
+//                when (initialState.destination.route) {
+////                    "detail/{fileName}/{date}" ->
+//                    "detail/{fileName}/{itemId}" ->
+//                    slideIntoContainer(
+//                            AnimatedContentTransitionScope.SlideDirection.Left,
+//                            animationSpec = tween(700)
+//                        )
+//
+//                    else -> null
+//                }
+//
+//            },
+//            exitTransition = {
+//                when (targetState.destination.route) {
+//                    "detail/{fileName}/{date}" ->
+//                        slideOutOfContainer(
+//                            AnimatedContentTransitionScope.SlideDirection.Left,
+//                            animationSpec = tween(700)
+//                        )
+//
+//                    else -> null
+//                }
+//            },
+//            popEnterTransition = {
+//                when (initialState.destination.route) {
+//                    "detail/{fileName}/{date}" ->
+//                        slideIntoContainer(
+//                            AnimatedContentTransitionScope.SlideDirection.Right,
+//                            animationSpec = tween(700)
+//                        )
+//
+//                    else -> null
+//                }
+//            },
+//            popExitTransition = {
+//                when (targetState.destination.route) {
+//                    "detail/{fileName}/{date}" ->
+//                        slideOutOfContainer(
+//                            AnimatedContentTransitionScope.SlideDirection.Right,
+//                            animationSpec = tween(700)
+//                        )
+//
+//                    else -> null
+//                }
+//            }
+//            ) {
+//            HistoryScreen(navController = navController/*, storedToken*/, onServiceStart)
+//        }
+        // Transisi dinonaktifkan sementara di History route
+        composable(route = BottomBarScreen.History.route) {
+            HistoryScreen(navController = navController, onServiceStart = onServiceStart)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController, dataStoreManager)

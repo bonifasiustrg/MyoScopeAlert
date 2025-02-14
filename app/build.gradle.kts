@@ -59,7 +59,8 @@ android {
 
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+//        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
     packaging {
         resources {
@@ -104,7 +105,8 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-metadata:0.1.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.3.0")
 
-    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+//    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation("androidx.compose.runtime:runtime-livedata")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
 
@@ -131,14 +133,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
 
 //    HILT
-    implementation("com.google.dagger:hilt-android:2.44")
+    implementation("com.google.dagger:hilt-android:2.48")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation(files("C:\\Users\\kesain\\Downloads\\TarsosDSP-2.4.jar"))
     implementation(files("C:\\Users\\kesain\\Downloads\\jwave-1.0.0.jar"))
 
 
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     //RETROFIT

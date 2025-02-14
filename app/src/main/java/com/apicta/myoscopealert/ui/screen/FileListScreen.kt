@@ -330,7 +330,7 @@ fun ColumnScope.FileListScreen(
                                             )
                                         } else {
                                             Text(
-                                                text = "null",
+                                                text = "Not yet predicted",
                                                 fontSize = 10.sp,
                                                 textAlign = TextAlign.End,
                                                 fontWeight = FontWeight.Bold,
