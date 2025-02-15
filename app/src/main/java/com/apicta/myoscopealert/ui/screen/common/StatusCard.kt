@@ -59,8 +59,8 @@ fun RowScope.StatusCard(
         Column(modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)) {
-            Text(text = number.toString(), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-            Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(text = number.toString(), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

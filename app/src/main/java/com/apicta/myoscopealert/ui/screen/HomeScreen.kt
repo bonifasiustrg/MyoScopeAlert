@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -136,21 +137,21 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
 
         ) {
-            Text(
-                text = "Hello,",
-                modifier = modifier.padding(top = 16.dp),
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Hikmal",
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 28.sp
-            )
-            Divider(
-                thickness = 1.dp,
-                color = hover,
-                modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
-            )
+//            Text(
+//                text = "Hello,",
+//                modifier = modifier.padding(top = 16.dp),
+//                fontWeight = FontWeight.Bold
+//            )
+//            Text(
+//                text = "Hikmal",
+//                fontWeight = FontWeight.ExtraBold,
+//                fontSize = 28.sp
+//            )
+//            Divider(
+//                thickness = 1.dp,
+//                color = hover,
+//                modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
+//            )
 
             val total = historyResponse?.data?.size
             val statistic = historyResponse?.let { calculateStatisctic(it, total!!) }
@@ -242,10 +243,19 @@ fun HomeScreen(
                     fontSize = 13.sp,
                     color = Color.Gray,
                     modifier = modifier.clickable {
-                        if (sortedWavFiles != null) {
-                            navController.navigate("detail/${sortedWavFiles.name}/${formattedDate}")
+                        navController.navigate(BottomBarScreen.History.route) {
+                            // Pop up to the start destination of the graph
+                            popUpTo(navController.graph.startDestinationId) {
+                                // Pop all inclusive
+                                inclusive = true
+                            }
+                            // Avoid multiple copies of the same destination when re-selecting it
+                            launchSingleTop = true
+                            // Restore state when re-selecting a previously selected item
+                            restoreState = true
                         }
-                    })
+
+                })
             }
             Spacer(modifier = modifier.height(4.dp))
 

@@ -84,41 +84,10 @@ fun HistoryScreen(
     diagnosesViewModel: DiagnosesViewModel = hiltViewModel(),
     viewModel: AudioViewModel = hiltViewModel()
 ) {
-//    val permissions = listOf(
-//        android.Manifest.permission.READ_MEDIA_AUDIO,
-//        android.Manifest.permission.READ_EXTERNAL_STORAGE,
-//        android.Manifest.permission.RECORD_AUDIO,
-//        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-//    )
-//
-//    val launcher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestMultiplePermissions()
-//    ) { permissionsMap: Map<String, Boolean> ->
-//        permissionsMap.entries.forEach {
-//            if (it.value) {
-//                // Permission Accepted: Do something
-//                Log.d("ExampleScreen", "${it.key} PERMISSION GRANTED")
-//            } else {
-//                // Permission Denied: Do something
-//                Log.d("ExampleScreen", "${it.key} PERMISSION DENIED")
-//            }
-//        }
-//    }
-//
-//// Request permissions when the screen is composed or at a point when you want to ask for them
-//    LaunchedEffect(Unit) {
-//        launcher.launch(permissions.toTypedArray())
-//    }
-
-
-//    viewModel.performProfile(/*storedToken!!*/accountInfo?.token.toString())
     diagnosesViewModel.diagnoseHistory()
     val historyResponse by diagnosesViewModel.diagnoseHistoryResponse.collectAsState()
     Log.e("history response", historyResponse.toString())
 
-
-
-//    val viewModel: AudioViewModel = hiltViewModel()
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val items = remember {

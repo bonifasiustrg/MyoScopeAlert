@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -91,142 +92,24 @@ fun ColumnScope.FileListScreen(
     var formattedDate by remember {
         mutableStateOf("")
     }
-    /*if (openController) {
-        BottomBarPlayer(
-            progress = progress,
-            onProgress = onProgress,
-            audio = currentPlayingAudio,
-            onStart = onStart,
-//            onNext = onNext,
-            isAudioPlaying = isAudioPlaying
-        )
-    }*/
+
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-    /*LazyColumn(
-        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)
-    ) {
-        itemsIndexed(audiList,
-            key = { _, item -> item.id.toString() }
-        ) { index, file ->
-            ShimmerListItem(
-                isLoading = isLoading,
-                contentAfterLoading = {
-                    Row(
-                        modifier
-                            .fillMaxWidth()
-                            .clip(shape = RoundedCornerShape(16.dp))
-
-                            .background(
-                                color = cardsecondary,
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .clickable {
-                                navController.navigate("detail/${file.displayName}/${formattedDate}")
-
-                            }
-                            .padding(start = 16.dp, end = 16.dp)
-                    ) {
-
-                        val timestamp: Long = file.dateModified * 1000L // Assuming the timestamp is in seconds, so multiply by 1000 to convert to milliseconds
-
-                        val date = Date(timestamp)
-                        formattedDate = formatter.format(date)
-                        val heartStatus by remember {
-                            mutableStateOf(true)
-                        }
-                        Column(modifier.weight(2f)) {
-                            Text(
-                                text = file.title.toString(),
-                                fontWeight = FontWeight.Bold,
-                                modifier = modifier.padding(vertical = 8.dp)
-                            )
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = modifier.padding(bottom = 8.dp)
-                            ) {
-                                Text(text = formattedDate, fontSize = 12.sp)
-                                Spacer(modifier = modifier.width(4.dp))
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(id = R.drawable.checkicon *//*else R.drawable.ic_close*//*),
-                                    contentDescription = null,
-                                    tint = greenIcon,
-                                    modifier = modifier.size(18.dp)
-                                )
-                                Spacer(modifier = modifier.width(4.dp))
-                                Box(
-                                    modifier = modifier
-                                        .background(
-                                            color = if (heartStatus) greenIcon else redIcon,
-                                            shape = RoundedCornerShape(16.dp)
-                                        )
-                                        .padding(vertical = 4.dp, horizontal = 8.dp)
-                                ) {
-                                    if (heartStatus) {
-                                        Text(
-                                            text = "Normal",
-                                            fontSize = 10.sp,
-                                            textAlign = TextAlign.End,
-                                            color = Color.White,
-                                            fontFamily = poppins
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "MI",
-                                            fontSize = 10.sp,
-                                            textAlign = TextAlign.End,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            fontFamily = poppins
-
-                                        )
-                                    }
-                                }
-
-
-                            }
-                        }
-                        Spacer(modifier = modifier.height(12.dp))
-
-                        IconButton(
-                            onClick = {
-                                openController = true
-                                onItemClick(index)
-                            }, colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = primary,
-                                contentColor = terniary
-                            ),
-                            modifier = modifier.align(Alignment.CenterVertically)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = null,
-                                modifier = modifier
-                                    .size(32.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                        }
-                        Spacer(modifier = modifier.height(8.dp))
-                    }
-                    Spacer(modifier = modifier.height(8.dp))
-                }
-            )
-        }
-    }*/
+    val listState = rememberLazyListState()
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-//        itemsIndexed(audiList,
-//            key = { _, item -> item.id.toString() }
-//        ) { index, file ->
         if (historyData != null) {
             items(historyData.asReversed()){
                 val fileName = it?.heartwave?.substringAfterLast("/")
-                downloader.downloadFile("https://miocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
-
+//                downloader.downloadFile("https://miocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
+                // Trigger download satu kali per fileName
+                LaunchedEffect(key1 = fileName) {
+                    downloader.downloadFile("https://miocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
+                }
                 ShimmerListItem(
                     isLoading = isLoading,
                     contentAfterLoading = {
@@ -242,11 +125,12 @@ fun ColumnScope.FileListScreen(
                                 .clickable {
 //                                    navController.navigate("detail/${file.displayName}/${formattedDate}")
 //                                    navController.navigate("detail/${fileName}/${it?.created_at}")
-                                    if (it != null) {
-                                        navController.navigate("detail/${fileName}/${it.id}")
-                                    } else {
-                                        navController.navigate("detail/${fileName}/-1")
-                                    }
+//                                    if (it != null) {
+//                                        navController.navigate("detail/${fileName}/${it.id}")
+//                                    } else {
+//                                        navController.navigate("detail/${fileName}/-1")
+//                                    }
+                                    navController.navigate("detail/${fileName}/${it?.id ?: -1}")
 
                                 }
                                 .padding(start = 16.dp, end = 16.dp)
@@ -346,24 +230,6 @@ fun ColumnScope.FileListScreen(
                             }
                             Spacer(modifier = modifier.height(12.dp))
 
-//                            IconButton(
-//                                onClick = {
-//                                    openController = true
-//                                    onItemClick(index)
-//                                }, colors = IconButtonDefaults.iconButtonColors(
-//                                    containerColor = primary,
-//                                    contentColor = terniary
-//                                ),
-//                                modifier = modifier.align(Alignment.CenterVertically)
-//                            ) {
-//                                Icon(
-//                                    imageVector = Icons.Filled.PlayArrow,
-//                                    contentDescription = null,
-//                                    modifier = modifier
-//                                        .size(32.dp)
-//                                        .align(Alignment.CenterVertically)
-//                                )
-//                            }
                             Spacer(modifier = modifier.height(8.dp))
                         }
                         Spacer(modifier = modifier.height(8.dp))
@@ -380,12 +246,7 @@ fun ColumnScope.FileListScreen(
                 audio.displayName == historyFileName
             } ?: false
         }.toMutableList().asReversed()
-        itemsIndexed(filteredAudioList,
-            key = { _, item -> item.id.toString() }
-        ) { index, file ->
-//            Log.e("filteraudio", "${file.displayName} ||| ${file.title}")
-//            val fileName = it?.heartwave?.substringAfterLast("/")
-//            downloader.downloadFile("https://m iocardial.humicprototyping.com/myocardial_baru/storage/app/public/heartwaves/$fileName")
+        itemsIndexed(filteredAudioList, key = { _, item -> item.id.toString() }) { index, file ->
 
             ShimmerListItem(
                 isLoading = isLoading,
@@ -426,15 +287,7 @@ fun ColumnScope.FileListScreen(
                                 modifier = modifier.padding(bottom = 8.dp)
                             ) {
                                 Text(text = formattedDate, fontSize = 12.sp)
-//                                val dateTimeString =  it?.created_at.toString()
-//
-//                                // Parsing ISO 8601 format
-//                                val dateTime = LocalDateTime.parse(dateTimeString.substring(0, 19))
-//
-//                                // Format ke bentuk umum: dd-MM-yyyy HH:mm:ss
-//                                val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-//                                val formattedDateTime = dateTime.format(formatter)
-//                                Text(text = formattedDate, fontSize = 12.sp)
+
                                 Spacer(modifier = modifier.width(4.dp))
                                 Icon(
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_close),
@@ -466,24 +319,6 @@ fun ColumnScope.FileListScreen(
                         }
                         Spacer(modifier = modifier.height(12.dp))
 
-//                            IconButton(
-//                                onClick = {
-//                                    openController = true
-//                                    onItemClick(index)
-//                                }, colors = IconButtonDefaults.iconButtonColors(
-//                                    containerColor = primary,
-//                                    contentColor = terniary
-//                                ),
-//                                modifier = modifier.align(Alignment.CenterVertically)
-//                            ) {
-//                                Icon(
-//                                    imageVector = Icons.Filled.PlayArrow,
-//                                    contentDescription = null,
-//                                    modifier = modifier
-//                                        .size(32.dp)
-//                                        .align(Alignment.CenterVertically)
-//                                )
-//                            }
                         Spacer(modifier = modifier.height(8.dp))
                     }
                     Spacer(modifier = modifier.height(8.dp))

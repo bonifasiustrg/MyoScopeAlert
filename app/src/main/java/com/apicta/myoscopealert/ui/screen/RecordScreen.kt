@@ -649,7 +649,7 @@ fun RecordScreen(
                 )
             }
 
-            Spacer(modifier = modifier.height(32.dp))
+            Spacer(modifier = modifier.height(16.dp))
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
