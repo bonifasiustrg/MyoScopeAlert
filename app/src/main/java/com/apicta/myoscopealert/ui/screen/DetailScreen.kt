@@ -280,7 +280,7 @@ fun FileDetail(
                             Log.e("Prediction", "performPredict triggered to send WAV to API")
 
                             // Jika perlu, tambahkan delay untuk menunggu respons API
-                            delay(3500)
+//                            delay(2000)
 
                             // Setelah proses selesai, lakukan navigasi atau perbarui UI sesuai kebutuhan
                             isBack = true
@@ -310,7 +310,7 @@ fun FileDetail(
             colors = ButtonDefaults.buttonColors(Color.Magenta),
             modifier = modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "Predict (Offline)")
+            Text(text = "Predict")
         }
 
         if (isLoading.value) {
@@ -331,42 +331,42 @@ fun FileDetail(
                 }
             }
 
-            Box(
-                modifier = modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(
-//                        if (predictResponse!!.data.result == 0) Color(0xFF72D99D) else Color(
+//            Box(
+//                modifier = modifier
+//                    .padding(8.dp)
+//                    .clip(RoundedCornerShape(50.dp))
+//                    .background(
+////                        if (predictResponse!!.data.result == 0) Color(0xFF72D99D) else Color(
+////                            0xFFFF6F6F
+////                        )
+//                        if (predictResponse!!.result == "Normal") Color(0xFF72D99D) else Color(
 //                            0xFFFF6F6F
 //                        )
-                        if (predictResponse!!.result == "Normal") Color(0xFF72D99D) else Color(
-                            0xFFFF6F6F
-                        )
-                    )
-                    .padding(vertical = 14.dp, horizontal = 64.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-
-            ) {
-                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = if (predictResponse!!.result == "Normal") "Normal Heart" else "Myocardial Infarction",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-                    )
-
-                    Icon(
-//                        imageVector = if (predictResponse!!.data.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
-                        imageVector = if (predictResponse!!.result == "Normal") Icons.Outlined.CheckCircle else Icons.Outlined.Close,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-            Spacer(modifier = modifier.height(16.dp))
+//                    )
+//                    .padding(vertical = 14.dp, horizontal = 64.dp)
+//                    .align(Alignment.CenterHorizontally)
+//                    .fillMaxWidth(0.8f)
+//
+//            ) {
+//                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+//                    Text(
+//                        text = if (predictResponse!!.result == "Normal") "Normal Heart" else "Myocardial Infarction",
+//                        style = TextStyle(
+//                            color = Color.White,
+//                            fontWeight = FontWeight.SemiBold,
+//                            fontSize = 16.sp
+//                        )
+//                    )
+//
+//                    Icon(
+////                        imageVector = if (predictResponse!!.data.result == 0) Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+//                        imageVector = if (predictResponse!!.result == "Normal") Icons.Outlined.CheckCircle else Icons.Outlined.Close,
+//                        contentDescription = null,
+//                        tint = Color.White
+//                    )
+//                }
+//            }
+//            Spacer(modifier = modifier.height(16.dp))
         }
 //        Button(
 ////            enabled = !isPredicting,

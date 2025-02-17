@@ -470,7 +470,9 @@ fun RecordScreen(
     val hasShownNoDeviceSnackbar = remember { mutableStateOf(false) }
 
 //    val bluetoothViewModel: BluetoothViewModel = viewModel()
-    var myThreadConnected: ThreadConnected? = null
+//    var myThreadConnected: ThreadConnected? = null
+    val myThreadConnectedState = remember { mutableStateOf<ThreadConnected?>(null) }
+
 
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.recording))
 
@@ -479,8 +481,7 @@ fun RecordScreen(
     var isErrorTitle by rememberSaveable { mutableStateOf(false) }
     var showResult by remember { mutableStateOf(false) }
     val isRecording = remember { mutableStateOf(false) }
-    val isStopwatch = remember { mutableStateOf(false) }
-    val stopWatch = remember { StopWatch() }
+
 
     // Kode inisialisasi koneksi dan Bluetooth (sesuai dengan kode asli Anda)
     val connection by remember { mutableStateOf(Connection(context)) }
@@ -495,6 +496,13 @@ fun RecordScreen(
     val bluetooth: Bluetooth = Bluetooth(context)
     var isLoad by remember { mutableStateOf(false) }
     var isButtonEnabled by remember { mutableStateOf(false) }
+
+
+    val isStopwatch = remember { mutableStateOf(false) }
+    // Ingat hanya satu instance StopWatch
+    val stopWatch = remember { StopWatch() }
+
+
 
     @Suppress("DEPRECATION") val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -524,16 +532,6 @@ fun RecordScreen(
             context.unregisterReceiver(receiver)
         }
     }
-//    deviceToConnect?.let { device ->
-//        ThreadConnectBTDevice(device, context) { deviceName ->
-//            connectedDeviceName = deviceName // Update nama perangkat setelah koneksi sukses
-//            isConnect = true // Tandai bahwa koneksi berhasil
-//        }.start()
-//    }
-//    deviceToConnect?.let { device ->
-//        ThreadConnectBTDevice(device, context, bluetoothViewModel).start()
-//    }
-
 
     if (checkBtPermission(context)) {
         if (bluetoothAdapter.isEnabled) {
@@ -549,13 +547,6 @@ fun RecordScreen(
                                         Manifest.permission.BLUETOOTH_CONNECT
                                     ) != PackageManager.PERMISSION_GRANTED
                                 ) {
-                                    // TODO: Consider calling
-                                    //    ActivityCompat#requestPermissions
-                                    // here to request the missing permissions, and then overriding
-                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                    //                                          int[] grantResults)
-                                    // to handle the case where the user grants the permission. See the documentation
-                                    // for ActivityCompat#requestPermissions for more details.
                                     return
                                 }
 //                                connectedDeviceName.value =
@@ -585,9 +576,9 @@ fun RecordScreen(
                 Log.e("turn on bt", "call func")
             }
             Log.e("newBT check permission", "Bluetooth is not enabled")
-            scope.launch {
-                snackbarHostState.showSnackbar("Bluetooth is not enabled")
-            }
+//            scope.launch {
+//                snackbarHostState.showSnackbar("Bluetooth is not enabled")
+//            }
         }
     }
 
@@ -655,17 +646,6 @@ fun RecordScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-//                Text(
-//                    text = "Status: ",
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 14.sp,
-//                    color = Color.Black,
-//                    textAlign = TextAlign.Center,
-//                    modifier = modifier
-//                        .align(Alignment.CenterVertically)
-//                        .padding(bottom = 16.dp)
-//                )
-
                 ChipCustom(
                     label = when {
                         isRecording.value -> "Recording..."
@@ -681,12 +661,6 @@ fun RecordScreen(
                 )
             }
 
-
-//        if (showResult) {
-//            SetUpChart(ctx = context)
-//        } else {
-//            SetUpChart(context)
-//        }
             val musicDir =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
             val filePath = "${musicDir.absolutePath}/1700032300811-defaultnamefff.wav"
@@ -730,26 +704,6 @@ fun RecordScreen(
             Spacer(modifier = modifier.height(16.dp))
 
 //        STOPWATCH
-
-            val stopWatch = StopWatch().apply {
-                // Set callback untuk menghentikan perekaman saat mencapai 10 detik
-                onStopRecording = {
-                    stopWatch.pause()
-                    isStopwatch.value = false
-                    isRecording.value = false
-
-                    scope.launch {
-                        isLoad = true
-                        myThreadConnected?.sendStopCommand() // Send stop command
-                        delay(500) // Wait for stop command to be sent
-                        myThreadConnected?.cancel() // Cancel the thread
-                        delay(2000) // Wait for thread cancellation to complete
-                        showResult = true // Show the result after stopping the recording
-                        isLoad = false
-                    }
-                }
-
-            }
             Text(
                 text = stopWatch.formattedTime,
                 fontWeight = FontWeight.Bold,
@@ -761,7 +715,9 @@ fun RecordScreen(
                     .padding(bottom = 16.dp)
             )
 
-
+            LaunchedEffect(isButtonEnabled) {
+//                Log.d("DEBUG", "Recomposing, isButtonEnabled = $isButtonEnabled")
+            }
             Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 if (!isRecording.value && !showResult) {
                     IconButton(
@@ -778,15 +734,19 @@ fun RecordScreen(
                                     formatedTitle = "M-$formattedDate-$title.wav"
                                     Log.e("RecordScreen", "Filename: $formatedTitle")
 
-                                    myThreadConnected =
+                                    myThreadConnectedState.value =
                                         ThreadConnected(
                                             socket,
                                             true,
                                             context,
                                             formatedTitle,
-                                            bluetoothViewModel
+                                            bluetoothViewModel,
+                                            onProcessingFinished = {
+                                                // Callback: proses di ThreadConnected telah selesai
+                                                isButtonEnabled = true
+                                            }
                                         )
-                                    myThreadConnected!!.start()
+                                    myThreadConnectedState.value!!.start()
                                     stopWatch.start()
                                     isRecording.value = true
                                     isStopwatch.value = true
@@ -832,9 +792,9 @@ fun RecordScreen(
 
                             scope.launch {
                                 isLoad = true
-                                myThreadConnected?.sendStopCommand()
-                                delay(500)
-                                myThreadConnected?.cancel()
+                                myThreadConnectedState.value?.sendStopCommand()
+//                                delay(500)
+                                myThreadConnectedState.value?.cancel()
                                 delay(2000)
                                 showResult = true
                                 isLoad = false
@@ -889,10 +849,6 @@ fun RecordScreen(
 
                 val textLoad = if (isButtonEnabled) "Show Detail" else "Processing audio..."
 
-                LaunchedEffect(Unit) {
-                    delay((15000)/*.random().toLong()*/)
-                    isButtonEnabled = true
-                }
                 Button(
                     enabled = isButtonEnabled,
                     onClick = {
@@ -940,6 +896,30 @@ fun RecordScreen(
 
         }
 
+    }
+    // Set callback onStopRecording pada instance yang sama
+    LaunchedEffect(Unit) {
+        stopWatch.onStopRecording = {
+
+            stopWatch.pause()
+            isStopwatch.value = false
+            isRecording.value = false
+            isLoad = true
+
+            scope.launch {
+                myThreadConnectedState.value?.sendStopCommand() // Send stop command
+                delay(500) // Wait for stop command to be sent
+                Log.e("RecordScreen", "Stop command sent, myyThreadConnected: ${myThreadConnectedState.value}")
+                myThreadConnectedState.value?.cancel() // Cancel the thread
+                delay(2000) // Wait for thread cancellation to complete
+                Log.e("RecordScreen", "Thread cancelled")
+
+                showResult = true // Show the result after stopping the recording
+                isButtonEnabled = true
+            }
+            isLoad = false
+
+        }
     }
 
 }

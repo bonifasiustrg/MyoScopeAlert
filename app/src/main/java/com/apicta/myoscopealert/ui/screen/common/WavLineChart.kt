@@ -81,8 +81,8 @@ fun ProcessWavFileData(
             xAxis?.setDrawGridLines(false)
             val yAxis = signalView.axisLeft
             yAxis?.setDrawGridLines(false)
-            yAxis?.setAxisMaximum(0.5f)
-            yAxis?.setAxisMinimum(-0.4f)
+            yAxis?.setAxisMaximum(0.9f)
+            yAxis?.setAxisMinimum(-0.9f)
             val rightYAxis = signalView.axisRight
             rightYAxis?.setDrawLabels(false)
             rightYAxis?.setDrawGridLines(false)

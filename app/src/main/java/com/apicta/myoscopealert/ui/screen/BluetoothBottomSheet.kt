@@ -60,6 +60,7 @@ import com.apicta.myoscopealert.bt.BluetoothViewModel
 import com.apicta.myoscopealert.ui.viewmodel.StopWatch
 import com.apicta.myoscopealert.bt.ThreadConnectBTDevice
 import com.psp.bluetoothlibrary.Bluetooth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -153,7 +154,12 @@ fun BottomSheetContent(
 
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.bluetooth_animation))
     var isScan by remember {mutableStateOf(false)}
-
+    LaunchedEffect(isScan) {
+        if (isScan) {
+            delay(2000L) // tunda selama 2 detik
+            isScan = false
+        }
+    }
     Column(
         modifier
             .padding(horizontal = 16.dp)
@@ -293,6 +299,7 @@ fun BottomSheetContent(
                             // Simpan nama perangkat yang terhubung di ViewModel
                             bluetoothViewModel.setBluetoothName(device.name)
                         }
+                        onHideButtonClick()
                     },
                     headlineContent = { Text(text = device?.name ?: "Unknown Device") },
                     leadingContent = {
@@ -301,34 +308,6 @@ fun BottomSheetContent(
                 )
             }
         }
-
-//        if (isDialogVisible.value) {
-//            DeviceSelectionDialog(
-//                listPaired = listPairedDevicesString,
-//                listPairedBluetoothDevices = listPairedBluetoothDevices,
-////                onDeviceSelected = { deviceAddress ->
-////                    if (connection.connect(
-////                            deviceAddress,
-////                            true,
-////                            connectionListener,
-////                            receiveListener
-////                        )
-////                    ) {
-////                        Log.e("newBT", "Start connection process")
-////                        Toast.makeText(context, "Start connection process", Toast.LENGTH_SHORT).show()
-////
-////                    } else {
-////                        Log.e("newBT","Start connection process failed")
-////                        Toast.makeText(context, "Start connection process failed", Toast.LENGTH_SHORT).show()
-////                    }
-////                },
-//                onDismiss = { isDialogVisible.value = false },
-//                isDialogVisible = isDialogVisible,
-//                context,
-//                bluetoothViewModel,
-//                onHideButtonClick
-//            )
-//        }
 
         if (listPairedBluetoothDevices.isEmpty()) Text(
             text = "No paired device detected",

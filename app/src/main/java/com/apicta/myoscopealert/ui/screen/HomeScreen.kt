@@ -147,11 +147,11 @@ fun HomeScreen(
 //                fontWeight = FontWeight.ExtraBold,
 //                fontSize = 28.sp
 //            )
-//            Divider(
-//                thickness = 1.dp,
-//                color = hover,
-//                modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
-//            )
+            Divider(
+                thickness = 1.dp,
+                color = hover,
+                modifier = modifier.padding(top = 8.dp, bottom = 16.dp)
+            )
 
             val total = historyResponse?.data?.size
             val statistic = historyResponse?.let { calculateStatisctic(it, total!!) }

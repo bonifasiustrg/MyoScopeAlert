@@ -309,6 +309,9 @@ fun LoginScreen(navController: NavHostController, dataStoreManager: DataStoreMan
                                         if (viewModel.isLoginSuccess.value) {
                                             navController.popBackStack()
                                             navController.navigate(Graph.MAIN)
+                                        } else if (viewModel.loginResponse.value == null) {
+                                            delay(5000)
+                                            isLoading.value = false
                                         }
 
                                     }

@@ -31,13 +31,13 @@ class StopWatch {
             lastTimestamp = System.currentTimeMillis()
             this@StopWatch.isActive = true
             while (this@StopWatch.isActive) {
-                delay(10L)
+                delay(15L)
                 timeMillis += System.currentTimeMillis() - lastTimestamp
                 lastTimestamp = System.currentTimeMillis()
                 formattedTime = formatTime(timeMillis)
 
                 // Cek apakah sudah 10 detik (10000 ms)
-                if (timeMillis >= 10000) {
+                if (timeMillis >= 15000) {
                     stop()  // Panggil stop jika mencapai 10 detik
                     onStopRecording?.invoke()  // Panggil callback untuk menghentikan perekaman
                 }

@@ -8,6 +8,8 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -183,7 +185,9 @@ class ThreadConnected(
     private var isOn: Boolean,
     private val context: Context,
     private val title: String,
-    private val bluetoothViewModel: BluetoothViewModel
+    private val bluetoothViewModel: BluetoothViewModel,
+    private val onProcessingFinished: (() -> Unit)? = null // Callback baru
+
 ) : Thread() {
 
     private val mmSocket: BluetoothSocket = socket
@@ -260,10 +264,11 @@ class ThreadConnected(
                     }
                     val elapsedTime = millisToSeconds(currentTime - startTime)
 
-                    if (elapsedTime >= 10.0 && !stopCommandSent) {
+                    if (elapsedTime >= 15000L && !stopCommandSent) {
                         sendStopCommand()
                         isOn = false
                     }
+
                 } else if (numBytes == -1) { // <-- Handle EOF atau disconnect
                     Log.e("ThreadConnected", "Socket disconnected, Input stream reached EOF, stopping thread")
                     break
@@ -284,6 +289,11 @@ class ThreadConnected(
         // **Konversi ke WAV & simpan**
         data = byteArrayOutputStream.toByteArray()
         saveAsWav(data)
+
+        // Setelah seluruh proses selesai, panggil callback di UI thread
+        Handler(Looper.getMainLooper()).post {
+            onProcessingFinished?.invoke()
+        }
     }
 
     private fun saveAsWav(data: ByteArray) {
@@ -330,6 +340,8 @@ class ThreadConnected(
             } catch (e: IOException) {
                 Log.e(TAG, "Error sending stop command", e)
             }
+        } else {
+            Log.d(TAG, "Stop command already sent, skipping")
         }
     }
 
@@ -363,22 +375,22 @@ class ThreadConnected(
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-fun generateRandomIntFromTime(): Int {
-    val currentTimeMillis = LocalDateTime.now().toInstant(java.time.ZoneOffset.UTC).toEpochMilli()
-    val random = Random(currentTimeMillis)
-    return random.nextInt(100000, 999999) // Generate a 6-digit random integer
-}
-fun amplifyAudio(input: ByteArray, amplificationFactor: Float): ByteArray {
-    val amplifiedData = ByteArray(input.size)
-    for (i in input.indices step 2) {
-        val sample = ((input[i + 1].toInt() shl 8) or (input[i].toInt() and 0xFF)).toShort()
-        val amplifiedSample = (sample * amplificationFactor).toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
-        amplifiedData[i] = (amplifiedSample.toInt() and 0xFF).toByte()
-        amplifiedData[i + 1] = ((amplifiedSample.toInt() shr 8) and 0xFF).toByte()
-    }
-    return amplifiedData
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//fun generateRandomIntFromTime(): Int {
+//    val currentTimeMillis = LocalDateTime.now().toInstant(java.time.ZoneOffset.UTC).toEpochMilli()
+//    val random = Random(currentTimeMillis)
+//    return random.nextInt(100000, 999999) // Generate a 6-digit random integer
+//}
+//fun amplifyAudio(input: ByteArray, amplificationFactor: Float): ByteArray {
+//    val amplifiedData = ByteArray(input.size)
+//    for (i in input.indices step 2) {
+//        val sample = ((input[i + 1].toInt() shl 8) or (input[i].toInt() and 0xFF)).toShort()
+//        val amplifiedSample = (sample * amplificationFactor).toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+//        amplifiedData[i] = (amplifiedSample.toInt() and 0xFF).toByte()
+//        amplifiedData[i + 1] = ((amplifiedSample.toInt() shr 8) and 0xFF).toByte()
+//    }
+//    return amplifiedData
+//}
 
 fun normalizeAudio(input: ByteArray): ByteArray {
     val normalizedData = ByteArray(input.size)
