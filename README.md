@@ -31,7 +31,7 @@ This app integrated with a IoT digital stethoscope via Bluetooth Classic, enable
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/MyoScopeAlert.git
+   git clone https://github.com/bonifasiustrg/MyoScopeAlert.git
    ```
 2. **Open in Android Studio or VS Code.**
 3. **Configure API endpoints and keys** in the appropriate files if needed.
